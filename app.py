@@ -80,12 +80,25 @@ def chat():
         
         current_message_content = [{"type": "text", "text": user_message}]
         
+        # Handle photo - can be either string (old format) or object (new format)
+        photo_data = None
+        photo_media_type = "image/jpeg"
+        
         if photo_base64:
             logger.info("Photo included in message")
-            current_message_content.append({
-                "type": "image",
-                "source": {"type": "base64", "media_type": "image/jpeg", "data": photo_base64}
-            })
+            if isinstance(photo_base64, dict):
+                # New format: {data: base64, media_type: 'image/png'}
+                photo_data = photo_base64.get('data')
+                photo_media_type = photo_base64.get('media_type', 'image/jpeg')
+            else:
+                # Old format: just base64 string
+                photo_data = photo_base64
+            
+            if photo_data:
+                current_message_content.append({
+                    "type": "image",
+                    "source": {"type": "base64", "media_type": photo_media_type, "data": photo_data}
+                })
         
         messages.append({"role": "user", "content": current_message_content})
         
@@ -219,7 +232,7 @@ def attach_photo_to_case(sf, case_id, photo_base64):
 def health():
     """Health check endpoint"""
     return jsonify({'status': 'healthy'})
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
-
