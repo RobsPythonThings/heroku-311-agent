@@ -57,10 +57,12 @@ class ChatApp {
         this.addMessage(message, 'user', this.currentPhoto);
         this.chatInput.value = '';
         
-        this.conversationHistory.push({
-            role: 'user',
-            content: message
-        });
+       // Store the full message content that was sent
+const messageContent = message || "Photo attached";
+this.conversationHistory.push({
+    role: 'user',
+    content: messageContent
+});
         
         this.showTypingIndicator();
         
