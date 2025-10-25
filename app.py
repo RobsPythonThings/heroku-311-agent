@@ -24,11 +24,20 @@ claude_client = anthropic.Anthropic(api_key=os.environ.get('CLAUDE_API_KEY'))
 
 # Initialize Salesforce client
 def get_salesforce_client():
-    """Initialize and return Salesforce client"""
-    return Salesforce(
-        instance_url=os.environ.get('SALESFORCE_INSTANCE_URL'),
-        session_id=os.environ.get('SALESFORCE_ACCESS_TOKEN')
-    )
+    """Initialize and return Salesforce client with auto-refresh"""
+    try:
+        # Try with existing token first
+        sf = Salesforce(
+            instance_url=os.environ.get('SALESFORCE_INSTANCE_URL'),
+            session_id=os.environ.get('SALESFORCE_ACCESS_TOKEN')
+        )
+        # Test the connection
+        sf.query("SELECT Id FROM Case LIMIT 1")
+        return sf
+    except Exception as e:
+        logger.error(f"Salesforce auth failed, token may be expired: {e}")
+        # Token likely expired - you'll need to refresh manually for now
+        raise Exception("Salesforce authentication failed. Please refresh your access token.")
 
 # Agent system prompt for 311 conversations
 AGENT_SYSTEM_PROMPT = """You are a helpful 311 AI Assistant for Toronto's municipal services. Your role is to:
