@@ -219,7 +219,7 @@ def attach_photo_to_case(sf, case_id, photo_base64):
 def health():
     """Health check endpoint"""
     return jsonify({'status': 'healthy'})
-
+rm app_sms_addition.py
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
