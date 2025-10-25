@@ -54,7 +54,7 @@ class ChatApp {
         if (!message && !this.currentPhoto) return;
         if (this.isTyping) return;
         
-        this.addMessage(message, 'user');
+        this.addMessage(message, 'user', this.currentPhoto);
         this.chatInput.value = '';
         
         this.conversationHistory.push({
@@ -101,21 +101,31 @@ class ChatApp {
         }
     }
     
-    addMessage(text, sender) {
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `message ${sender}-message`;
-        
-        const contentDiv = document.createElement('div');
-        contentDiv.className = 'message-content';
-        
-        const formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-        contentDiv.innerHTML = formattedText;
-        
-        messageDiv.appendChild(contentDiv);
-        this.chatMessages.appendChild(messageDiv);
-        
-        this.scrollToBottom();
+    addMessage(text, sender, photo = null) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${sender}-message`;
+    
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'message-content';
+    
+    // Add photo if present
+    if (photo && sender === 'user') {
+        const photoData = typeof photo === 'object' ? photo.data : photo;
+        const mediaType = typeof photo === 'object' ? photo.media_type : 'image/jpeg';
+        contentDiv.innerHTML += `<img src="data:${mediaType};base64,${photoData}" style="max-width: 200px; border-radius: 8px; margin-bottom: 8px; display: block;">`;
     }
+    
+    // Add text if present
+    if (text) {
+        const formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        contentDiv.innerHTML += formattedText;
+    }
+    
+    messageDiv.appendChild(contentDiv);
+    this.chatMessages.appendChild(messageDiv);
+    
+    this.scrollToBottom();
+}
     
     showTypingIndicator() {
         this.isTyping = true;
