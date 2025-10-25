@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 CORS(app)
+
 # Initialize Anthropic client
 claude_client = anthropic.Anthropic(api_key=os.environ.get('CLAUDE_API_KEY'))
 
@@ -210,11 +211,18 @@ def create_salesforce_case(case_info, photo_base64=None):
             output_values = case_result.get('outputValues', {})
             case_id = output_values.get('caseId')
             
+            logger.info(f"Photo attachment check - photo_base64 type: {type(photo_base64)}, case_id: {case_id}")
             if photo_base64 and case_id:
                 # Extract base64 data if photo is an object
                 photo_data = photo_base64.get('data') if isinstance(photo_base64, dict) else photo_base64
+                logger.info(f"Extracted photo_data length: {len(photo_data) if photo_data else 0}")
                 if photo_data:
+                    logger.info(f"Attempting to attach photo to case {case_id}")
                     attach_photo_to_case(sf, case_id, photo_data)
+                else:
+                    logger.warning("photo_data is empty after extraction")
+            else:
+                logger.warning(f"Photo attachment skipped - photo_base64: {bool(photo_base64)}, case_id: {case_id}")
             
             return {
                 'success': output_values.get('success', False),
