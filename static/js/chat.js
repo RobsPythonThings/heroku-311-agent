@@ -57,13 +57,13 @@ class ChatApp {
         this.addMessage(message, 'user', this.currentPhoto);
         this.chatInput.value = '';
         
-       // Store the full message content that was sent
-const messageContent = message || "Photo attached";
-this.conversationHistory.push({
-    role: 'user',
-    content: messageContent,
-    photo: photoBase64  // Add photo to conversation history
-});
+        // Store the full message content that was sent
+        const messageContent = message || "Photo attached";
+        this.conversationHistory.push({
+            role: 'user',
+            content: messageContent,
+            photo: this.currentPhoto
+        });
         
         this.showTypingIndicator();
         
@@ -105,30 +105,30 @@ this.conversationHistory.push({
     }
     
     addMessage(text, sender, photo = null) {
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `message ${sender}-message`;
-    
-    const contentDiv = document.createElement('div');
-    contentDiv.className = 'message-content';
-    
-    // Add photo if present
-    if (photo && sender === 'user') {
-        const photoData = typeof photo === 'object' ? photo.data : photo;
-        const mediaType = typeof photo === 'object' ? photo.media_type : 'image/jpeg';
-        contentDiv.innerHTML += `<img src="data:${mediaType};base64,${photoData}" style="max-width: 200px; border-radius: 8px; margin-bottom: 8px; display: block;">`;
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${sender}-message`;
+        
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'message-content';
+        
+        // Add photo if present
+        if (photo && sender === 'user') {
+            const photoData = typeof photo === 'object' ? photo.data : photo;
+            const mediaType = typeof photo === 'object' ? photo.media_type : 'image/jpeg';
+            contentDiv.innerHTML += `<img src="data:${mediaType};base64,${photoData}" style="max-width: 200px; border-radius: 8px; margin-bottom: 8px; display: block;">`;
+        }
+        
+        // Add text if present
+        if (text) {
+            const formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            contentDiv.innerHTML += formattedText;
+        }
+        
+        messageDiv.appendChild(contentDiv);
+        this.chatMessages.appendChild(messageDiv);
+        
+        this.scrollToBottom();
     }
-    
-    // Add text if present
-    if (text) {
-        const formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-        contentDiv.innerHTML += formattedText;
-    }
-    
-    messageDiv.appendChild(contentDiv);
-    this.chatMessages.appendChild(messageDiv);
-    
-    this.scrollToBottom();
-}
     
     showTypingIndicator() {
         this.isTyping = true;
@@ -177,10 +177,10 @@ this.conversationHistory.push({
         try {
             const base64 = await this.fileToBase64(file);
             this.currentPhoto = {
-    data: base64,
-    media_type: file.type
-};
-this.showPhotoPreview(base64, file.type);
+                data: base64,
+                media_type: file.type
+            };
+            this.showPhotoPreview(base64, file.type);
         } catch (error) {
             console.error('Error processing photo:', error);
             alert('Error processing photo. Please try again.');
@@ -200,9 +200,9 @@ this.showPhotoPreview(base64, file.type);
     }
     
     showPhotoPreview(base64, media_type = 'image/jpeg') {
-    this.photoPreview.innerHTML = `
-        <div style="position: relative; display: inline-block;">
-            <img src="data:${media_type};base64,${base64}" alt="Selected photo">
+        this.photoPreview.innerHTML = `
+            <div style="position: relative; display: inline-block;">
+                <img src="data:${media_type};base64,${base64}" alt="Selected photo">
                 <button onclick="chatApp.clearPhoto()" style="position: absolute; top: 5px; right: 5px;">×</button>
             </div>
         `;
