@@ -238,8 +238,37 @@ def attach_photo_to_case(sf, case_id, photo_base64):
 
 @app.route('/health', methods=['GET'])
 def health():
-    """Health check endpoint"""
-    return jsonify({'status': 'healthy'})
+    """Enhanced health check - tests all critical services"""
+    checks = {
+        'status': 'healthy',
+        'claude_api': 'unknown',
+        'salesforce': 'unknown'
+    }
+    
+    try:
+        # Test Claude API
+        claude_client.messages.create(
+            model="claude-sonnet-4-20250514",
+            max_tokens=10,
+            messages=[{"role": "user", "content": "test"}]
+        )
+        checks['claude_api'] = 'ok'
+    except Exception as e:
+        logger.error(f"Claude health check failed: {e}")
+        checks['claude_api'] = 'error'
+        checks['status'] = 'degraded'
+    
+    try:
+        # Test Salesforce connection
+        sf = get_salesforce_client()
+        sf.query("SELECT Id FROM Case LIMIT 1")
+        checks['salesforce'] = 'ok'
+    except Exception as e:
+        logger.error(f"Salesforce health check failed: {e}")
+        checks['salesforce'] = 'error'
+        checks['status'] = 'degraded'
+    
+    return jsonify(checks)
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
