@@ -72,6 +72,16 @@ def index():
     """Serve the chat widget"""
     return render_template('index.html')
 
+def find_photo_in_conversation(conversation_history):
+    """Search conversation history for a photo"""
+    for msg in reversed(conversation_history):
+        photo = msg.get('photo')
+        if photo:
+            logger.info(f"Found photo in conversation history")
+            return photo
+    logger.info("No photo found in conversation history")
+    return None
+
 @app.route('/chat', methods=['POST'])
 def chat():
     """Handle chat messages"""
@@ -130,7 +140,9 @@ def chat():
             case_info = extract_case_info_from_conversation(messages)
             
             if case_info:
-                case_result = create_salesforce_case(case_info, photo_base64)
+                # Check current message first, then search history for photo
+                photo_to_attach = photo_base64 or find_photo_in_conversation(conversation_history)
+                case_result = create_salesforce_case(case_info, photo_to_attach)
                 
                 if case_result['success']:
                     assistant_response = assistant_response.replace(
