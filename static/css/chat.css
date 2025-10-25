@@ -14,7 +14,7 @@ body {
     right: 24px;
     width: 60px;
     height: 60px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #f5f5f5 0%, #ffffff 100%);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -23,12 +23,13 @@ body {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     transition: all 0.3s ease;
     z-index: 1000;
-    color: white;
+    color: #667eea;
+    border: 2px solid #e8e8e8;
 }
 
 .chat-bubble:hover {
     transform: scale(1.1);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
 }
 
 .chat-window {
