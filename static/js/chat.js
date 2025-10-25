@@ -186,10 +186,10 @@ this.showPhotoPreview(base64, file.type);
         });
     }
     
-    showPhotoPreview(base64) {
-        this.photoPreview.innerHTML = `
-            <div style="position: relative; display: inline-block;">
-                <img src="data:image/jpeg;base64,${base64}" alt="Selected photo">
+    showPhotoPreview(base64, media_type = 'image/jpeg') {
+    this.photoPreview.innerHTML = `
+        <div style="position: relative; display: inline-block;">
+            <img src="data:${media_type};base64,${base64}" alt="Selected photo">
                 <button onclick="chatApp.clearPhoto()" style="position: absolute; top: 5px; right: 5px;">×</button>
             </div>
         `;
