@@ -207,11 +207,12 @@ def create_salesforce_case(case_info, photo_base64=None):
                 if photo_data:
                     attach_photo_to_case(sf, case_id, photo_data)
             
+            output_values = case_result.get('outputValues', {})
             return {
-                'success': case_result.get('success', False),
-                'caseNumber': case_result.get('caseNumber'),
-                'message': case_result.get('message', ''),
-                'caseId': case_id
+                'success': output_values.get('success', False),
+                'caseNumber': output_values.get('caseNumber'),
+                'message': output_values.get('message', ''),
+                'caseId': output_values.get('caseId')
             }
         
         return {'success': False, 'message': 'Unexpected response from Salesforce'}
