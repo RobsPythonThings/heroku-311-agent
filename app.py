@@ -15,6 +15,7 @@ from flask_cors import CORS
 import anthropic
 from simple_salesforce import Salesforce
 import logging
+import httpx
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -24,7 +25,13 @@ app = Flask(__name__)
 CORS(app)
 
 # Initialize Anthropic client
-claude_client = anthropic.Anthropic(api_key=os.environ.get('CLAUDE_API_KEY'))
+import httpx
+
+# Initialize Anthropic client without proxy support
+claude_client = anthropic.Anthropic(
+    api_key=os.environ.get('CLAUDE_API_KEY'),
+    http_client=httpx.Client(proxy=None)
+)
 
 # JWT Authentication for Salesforce
 # JWT Authentication for Salesforce
