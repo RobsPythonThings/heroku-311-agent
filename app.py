@@ -18,7 +18,6 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 CORS(app)
-
 # Initialize Anthropic client
 claude_client = anthropic.Anthropic(api_key=os.environ.get('CLAUDE_API_KEY'))
 
@@ -208,7 +207,8 @@ def create_salesforce_case(case_info, photo_base64=None):
         
         if result and len(result) > 0:
             case_result = result[0]
-            case_id = case_result.get('caseId')
+            output_values = case_result.get('outputValues', {})
+            case_id = output_values.get('caseId')
             
             if photo_base64 and case_id:
                 # Extract base64 data if photo is an object
@@ -216,7 +216,6 @@ def create_salesforce_case(case_info, photo_base64=None):
                 if photo_data:
                     attach_photo_to_case(sf, case_id, photo_data)
             
-            output_values = case_result.get('outputValues', {})
             return {
                 'success': output_values.get('success', False),
                 'caseNumber': output_values.get('caseNumber'),
