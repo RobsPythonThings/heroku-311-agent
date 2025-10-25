@@ -61,7 +61,8 @@ class ChatApp {
 const messageContent = message || "Photo attached";
 this.conversationHistory.push({
     role: 'user',
-    content: messageContent
+    content: messageContent,
+    photo: photoBase64  // Add photo to conversation history
 });
         
         this.showTypingIndicator();
