@@ -72,6 +72,10 @@ def chat():
         conversation_history = data.get('conversation_history', [])
         photo_base64 = data.get('photo')
         
+        # Quick fix: if message is empty but there's a photo, add placeholder
+        if not user_message and photo_base64:
+            user_message = "Photo attached"
+        
         logger.info(f"Received message: {user_message[:100]}")
         
         messages = []
