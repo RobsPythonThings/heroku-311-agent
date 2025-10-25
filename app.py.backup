@@ -1,15 +1,11 @@
 """
 311 AI Chat Application
 Flask backend for handling chat conversations and creating Salesforce cases
-NOW WITH JWT AUTHENTICATION - No more session token expiration!
 """
 
 import os
 import json
 import base64
-import time
-import jwt
-import requests
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 import anthropic
@@ -26,74 +22,14 @@ CORS(app)
 # Initialize Anthropic client
 claude_client = anthropic.Anthropic(api_key=os.environ.get('CLAUDE_API_KEY'))
 
-# JWT Authentication for Salesforce
-# JWT Authentication for Salesforce
-def get_jwt_access_token():
-    """Get Salesforce access token using JWT Bearer flow"""
-    try:
-        # Try to load private key from environment variable first (Heroku)
-        private_key_base64 = os.environ.get('SF_PRIVATE_KEY_BASE64')
-        if private_key_base64:
-            import base64
-            private_key = base64.b64decode(private_key_base64).decode('utf-8')
-            logger.info("Loaded private key from environment variable")
-        else:
-            # Fall back to file (local development)
-            private_key_path = os.path.join(os.path.dirname(__file__), 'server.key')
-            with open(private_key_path, 'r') as f:
-                private_key = f.read()
-            logger.info("Loaded private key from file")
-        
-        # Get config from environment
-        client_id = os.environ.get('SF_CLIENT_ID')
-        username = os.environ.get('SF_USERNAME')
-        instance_url = os.environ.get('SF_INSTANCE_URL', 'https://login.salesforce.com')
-        
-        # Determine login URL based on instance
-        if 'test' in instance_url or 'sandbox' in instance_url:
-            login_url = 'https://test.salesforce.com'
-        else:
-            login_url = 'https://login.salesforce.com'
-        
-        # Build JWT claim
-        claim = {
-            'iss': client_id,
-            'sub': username,
-            'aud': login_url,
-            'exp': int(time.time()) + 300  # 5 minutes from now
-        }
-        
-        # Sign JWT with RS256
-        assertion = jwt.encode(claim, private_key, algorithm='RS256')
-        
-        # Exchange JWT for access token
-        response = requests.post(
-            f'{login_url}/services/oauth2/token',
-            data={
-                'grant_type': 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-                'assertion': assertion
-            }
-        )
-        
-        if response.status_code == 200:
-            token_data = response.json()
-            logger.info("JWT authentication successful")
-            return token_data['access_token'], token_data['instance_url']
-        else:
-            logger.error(f"JWT authentication failed: {response.status_code} - {response.text}")
-            raise Exception(f"JWT auth failed: {response.text}")
-            
-    except Exception as e:
-        logger.error(f"Error getting JWT access token: {str(e)}")
-        raise
-
 # Initialize Salesforce client
 def get_salesforce_client():
-    """Initialize and return Salesforce client with JWT authentication"""
-    access_token, instance_url = get_jwt_access_token()
+    """Initialize and return Salesforce client with username/password auth"""
     return Salesforce(
-        instance_url=instance_url,
-        session_id=access_token
+        username=os.environ.get('SALESFORCE_USERNAME'),
+        password=os.environ.get('SALESFORCE_PASSWORD'),
+        security_token='',  # Security token already included in password
+        domain='test' if 'test' in os.environ.get('SALESFORCE_INSTANCE_URL', '') else 'login'
     )
 
 # Agent system prompt for 311 conversations
