@@ -163,8 +163,11 @@ class ChatApp {
         
         try {
             const base64 = await this.fileToBase64(file);
-            this.currentPhoto = base64;
-            this.showPhotoPreview(base64);
+            this.currentPhoto = {
+    data: base64,
+    media_type: file.type
+};
+this.showPhotoPreview(base64, file.type);
         } catch (error) {
             console.error('Error processing photo:', error);
             alert('Error processing photo. Please try again.');
