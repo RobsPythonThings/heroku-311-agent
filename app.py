@@ -201,8 +201,11 @@ def create_salesforce_case(case_info, photo_base64=None):
             case_result = result[0]
             case_id = case_result.get('caseId')
             
-            if photo_base64 and case_id:
-                attach_photo_to_case(sf, case_id, photo_base64)
+           if photo_base64 and case_id:
+                # Extract base64 data if photo is an object
+                photo_data = photo_base64.get('data') if isinstance(photo_base64, dict) else photo_base64
+                if photo_data:
+                    attach_photo_to_case(sf, case_id, photo_data)
             
             return {
                 'success': case_result.get('success', False),
