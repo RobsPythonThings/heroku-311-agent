@@ -207,11 +207,26 @@ class HerokuInferenceClient:
         if system_prompt:
             api_params["system"] = system_prompt
         
-        response = self.claude_client.messages.create(**api_params)
+        # Log what we're sending for debugging
+        logger.info(f"🔍 Sending to Claude: {len(claude_messages)} messages, system={bool(system_prompt)}")
         
-        logger.info("✅ Claude API response received")
-        
-        return response.content[0].text
+        try:
+            response = self.claude_client.messages.create(**api_params)
+            logger.info("✅ Claude API response received")
+            return response.content[0].text
+        except anthropic.BadRequestError as e:
+            logger.error(f"❌ Claude BadRequestError: {str(e)}")
+            logger.error(f"❌ Number of messages: {len(claude_messages)}")
+            logger.error(f"❌ Has system prompt: {bool(system_prompt)}")
+            # Log message structure (not full content for privacy)
+            for i, msg in enumerate(claude_messages):
+                content_type = "string" if isinstance(msg.get('content'), str) else "list"
+                if content_type == "list":
+                    content_items = [item.get('type') for item in msg.get('content', [])]
+                    logger.error(f"❌ Message {i}: role={msg.get('role')}, content={content_items}")
+                else:
+                    logger.error(f"❌ Message {i}: role={msg.get('role')}, content=text")
+            raise
     
     def create_message(self, messages, max_tokens=1024, temperature=1.0):
         """
