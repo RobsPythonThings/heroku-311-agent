@@ -1,6 +1,7 @@
 """
 311 AI Chat Application - PRODUCTION GRADE
-Flask backend with JWT authentication, retry logic, and comprehensive error handling
+Flask backend with Heroku Managed Inference, JWT authentication, retry logic, and comprehensive error handling
+Supports vision analysis via Heroku Managed Inference with fallback to Claude API
 """
 
 import os
@@ -36,27 +37,208 @@ CORS(app)
 
 # Rate limiting: Track API calls per minute
 API_CALL_COUNTS = {
-    'claude': {'count': 0, 'reset_time': time.time() + 60},
+    'heroku_inference': {'count': 0, 'reset_time': time.time() + 60},
+    'claude_api': {'count': 0, 'reset_time': time.time() + 60},
     'salesforce': {'count': 0, 'reset_time': time.time() + 60}
 }
 RATE_LIMITS = {
-    'claude': 50,  # calls per minute
+    'heroku_inference': 150,  # Heroku Managed Inference limit: 150 req/min
+    'claude_api': 50,  # Direct Claude API fallback limit
     'salesforce': 100  # calls per minute
 }
 
 # ============================================================================
-# ANTHROPIC CLIENT INITIALIZATION
+# HEROKU MANAGED INFERENCE CLIENT INITIALIZATION
 # ============================================================================
 
-try:
-    claude_client = anthropic.Anthropic(
-        api_key=os.environ.get('CLAUDE_API_KEY'),
-        http_client=httpx.Client(proxy=None)
+class HerokuInferenceClient:
+    """
+    Production-grade Heroku Managed Inference client with retry logic,
+    fallback to Claude API, and comprehensive error handling
+    """
+    
+    def __init__(self):
+        # Heroku Managed Inference config
+        self.inference_url = os.environ.get('INFERENCE_URL')
+        self.inference_key = os.environ.get('INFERENCE_KEY')
+        self.inference_model_id = os.environ.get('INFERENCE_MODEL_ID')
+        
+        # Fallback: Direct Claude API
+        self.claude_api_key = os.environ.get('CLAUDE_API_KEY')
+        self.claude_client = None
+        
+        # Determine which service is available
+        self.use_heroku_inference = bool(self.inference_url and self.inference_key and self.inference_model_id)
+        self.use_claude_fallback = bool(self.claude_api_key)
+        
+        if self.use_heroku_inference:
+            logger.info("✅ Heroku Managed Inference initialized")
+            logger.info(f"   Model: {self.inference_model_id}")
+        else:
+            logger.warning("⚠️ Heroku Managed Inference not configured")
+        
+        # Initialize Claude API as fallback
+        if self.use_claude_fallback:
+            try:
+                self.claude_client = anthropic.Anthropic(
+                    api_key=self.claude_api_key,
+                    http_client=httpx.Client(proxy=None)
+                )
+                logger.info("✅ Claude API fallback initialized")
+            except Exception as e:
+                logger.error(f"❌ Failed to initialize Claude API fallback: {str(e)}")
+                self.claude_client = None
+        
+        if not self.use_heroku_inference and not self.use_claude_fallback:
+            logger.error("❌ No AI inference service configured!")
+    
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=1, max=5),
+        retry=retry_if_exception_type((requests.exceptions.RequestException, ConnectionError)),
+        reraise=False
     )
-    logger.info("✅ Claude client initialized successfully")
-except Exception as e:
-    logger.error(f"❌ Failed to initialize Claude client: {str(e)}")
-    claude_client = None
+    def _call_heroku_inference(self, messages, max_tokens=1024, temperature=1.0):
+        """Call Heroku Managed Inference with retry logic"""
+        if not self.use_heroku_inference:
+            raise Exception("Heroku Managed Inference not configured")
+        
+        if not check_rate_limit('heroku_inference'):
+            raise Exception("Rate limit exceeded for Heroku Managed Inference")
+        
+        headers = {
+            "Authorization": f"Bearer {self.inference_key}",
+            "Content-Type": "application/json"
+        }
+        
+        payload = {
+            "model": self.inference_model_id,
+            "messages": messages,
+            "max_tokens": max_tokens,
+            "temperature": temperature
+        }
+        
+        logger.info(f"🔵 Calling Heroku Managed Inference ({self.inference_model_id})")
+        
+        response = requests.post(
+            f"{self.inference_url}/v1/chat/completions",
+            headers=headers,
+            json=payload,
+            timeout=30
+        )
+        
+        if response.status_code != 200:
+            error_msg = f"Heroku Inference API error: {response.status_code} - {response.text}"
+            logger.error(f"❌ {error_msg}")
+            raise Exception(error_msg)
+        
+        result = response.json()
+        logger.info("✅ Heroku Managed Inference response received")
+        
+        return result['choices'][0]['message']['content']
+    
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=1, max=5),
+        retry=retry_if_exception_type((anthropic.APIError, requests.exceptions.RequestException)),
+        reraise=False
+    )
+    def _call_claude_api(self, messages, max_tokens=1024, temperature=1.0):
+        """Call Claude API directly as fallback"""
+        if not self.claude_client:
+            raise Exception("Claude API fallback not configured")
+        
+        if not check_rate_limit('claude_api'):
+            raise Exception("Rate limit exceeded for Claude API")
+        
+        logger.info("🟠 Calling Claude API (fallback)")
+        
+        # Convert message format if needed (Heroku format → Claude format)
+        claude_messages = []
+        for msg in messages:
+            if isinstance(msg['content'], str):
+                claude_messages.append(msg)
+            elif isinstance(msg['content'], list):
+                # Already in proper format with text/image_url
+                claude_messages.append(msg)
+        
+        response = self.claude_client.messages.create(
+            model="claude-sonnet-4-20250514",
+            max_tokens=max_tokens,
+            messages=claude_messages,
+            temperature=temperature
+        )
+        
+        logger.info("✅ Claude API (fallback) response received")
+        
+        return response.content[0].text
+    
+    def create_message(self, messages, max_tokens=1024, temperature=1.0):
+        """
+        Create a message using Heroku Managed Inference with automatic fallback to Claude API
+        Supports multimodal content (text + images)
+        """
+        errors = []
+        
+        # Try Heroku Managed Inference first
+        if self.use_heroku_inference:
+            try:
+                return self._call_heroku_inference(messages, max_tokens, temperature)
+            except Exception as e:
+                error_msg = f"Heroku Inference failed: {str(e)}"
+                logger.warning(f"⚠️ {error_msg}")
+                errors.append(error_msg)
+        
+        # Fallback to Claude API
+        if self.use_claude_fallback:
+            try:
+                logger.info("🔄 Falling back to Claude API")
+                return self._call_claude_api(messages, max_tokens, temperature)
+            except Exception as e:
+                error_msg = f"Claude API fallback failed: {str(e)}"
+                logger.error(f"❌ {error_msg}")
+                errors.append(error_msg)
+        
+        # Both failed
+        error_summary = " | ".join(errors)
+        raise Exception(f"All AI services failed: {error_summary}")
+    
+    def health_check(self):
+        """Test AI service connectivity"""
+        checks = {
+            'heroku_inference': 'not_configured',
+            'claude_api_fallback': 'not_configured'
+        }
+        
+        # Test Heroku Managed Inference
+        if self.use_heroku_inference:
+            try:
+                self._call_heroku_inference(
+                    messages=[{"role": "user", "content": "test"}],
+                    max_tokens=10
+                )
+                checks['heroku_inference'] = 'ok'
+            except Exception as e:
+                logger.error(f"Heroku Inference health check failed: {e}")
+                checks['heroku_inference'] = 'error'
+        
+        # Test Claude API fallback
+        if self.use_claude_fallback and self.claude_client:
+            try:
+                self.claude_client.messages.create(
+                    model="claude-sonnet-4-20250514",
+                    max_tokens=10,
+                    messages=[{"role": "user", "content": "test"}]
+                )
+                checks['claude_api_fallback'] = 'ok'
+            except Exception as e:
+                logger.error(f"Claude API health check failed: {e}")
+                checks['claude_api_fallback'] = 'error'
+        
+        return checks
+
+# Initialize the AI client
+ai_client = HerokuInferenceClient()
 
 # ============================================================================
 # CERTIFICATE MONITORING
@@ -208,143 +390,158 @@ def sanitize_user_input(text):
         text = text[:max_length]
         logger.warning(f"⚠️ Input truncated to {max_length} characters")
     
-    return text.strip()
+    return text
 
-def validate_email(email):
-    """Basic email validation"""
-    if not email:
-        return True  # Email is optional
+def validate_photo_data(photo_data):
+    """Validate photo data format and size"""
+    if not photo_data:
+        return None
     
-    import re
-    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-    return re.match(pattern, email) is not None
+    # Remove data URI prefix if present
+    if isinstance(photo_data, str) and photo_data.startswith('data:image'):
+        photo_data = photo_data.split(',', 1)[1] if ',' in photo_data else photo_data
+    
+    # Validate base64 and size
+    try:
+        decoded = base64.b64decode(photo_data)
+        size_mb = len(decoded) / (1024 * 1024)
+        
+        if size_mb > 10:  # 10 MB limit
+            logger.warning(f"⚠️ Photo size ({size_mb:.2f} MB) exceeds 10 MB limit")
+            return None
+        
+        logger.info(f"✅ Photo validated: {size_mb:.2f} MB")
+        return photo_data
+    except Exception as e:
+        logger.error(f"❌ Invalid photo data: {str(e)}")
+        return None
 
 # ============================================================================
-# AGENT SYSTEM PROMPT
-# ============================================================================
-
-AGENT_SYSTEM_PROMPT = """You are a helpful 311 AI Assistant for Toronto's municipal services. Your role is to:
-
-1. Help citizens report issues like potholes, graffiti, streetlight outages, noise complaints, etc.
-2. Gather required information: issue type, description, location, and contact info
-3. Be empathetic and professional
-4. Ask clarifying questions when needed
-5. Confirm case creation with case numbers
-
-Available complaint types:
-- Pothole
-- Graffiti
-- Streetlight Out
-- Sidewalk Repair
-- Road Repair
-- Noise Complaint
-- Missed Garbage Collection
-- Recycling Issue
-- Water Leak
-- Sewage Issue
-- Tree Issue
-- Park Maintenance
-
-When you have enough information (complaint type, description, and optionally location/contact), respond with:
-READY_TO_CREATE_CASE
-
-Then I will create the case in Salesforce and give you the case number to share with the citizen."""
-
-# ============================================================================
-# ROUTES
+# MAIN ROUTES
 # ============================================================================
 
 @app.route('/')
 def index():
-    """Serve the chat widget"""
+    """Serve the main chat interface"""
     return render_template('index.html')
 
 @app.route('/chat', methods=['POST'])
 def chat():
     """
-    Handle chat messages with comprehensive error handling
+    Main chat endpoint with vision support via Heroku Managed Inference
+    Supports text and photo uploads with multimodal analysis
     """
     try:
-        # Check rate limits
-        if not check_rate_limit('claude'):
-            return jsonify({
-                'success': False, 
-                'error': 'Service temporarily busy. Please try again in a moment.'
-            }), 429
-        
-        # Validate Claude client
-        if not claude_client:
-            logger.error("Claude client not initialized")
-            return jsonify({
-                'success': False,
-                'error': 'AI service temporarily unavailable. Please try again.'
-            }), 503
-        
-        # Get and validate input
-        data = request.json
+        data = request.get_json()
         user_message = sanitize_user_input(data.get('message', ''))
-        conversation_history = data.get('conversation_history', [])
         photo_base64 = data.get('photo')
+        conversation_history = data.get('conversation', [])
         
-        # Quick fix: if message is empty but there's a photo, add placeholder
-        if not user_message and photo_base64:
-            user_message = "Photo attached"
+        if not user_message and not photo_base64:
+            return jsonify({'success': False, 'error': 'Message or photo required'}), 400
         
-        logger.info(f"📨 Received message: {user_message[:100]}")
+        # Validate photo if present
+        if photo_base64:
+            photo_base64 = validate_photo_data(photo_base64)
+            if not photo_base64:
+                return jsonify({'success': False, 'error': 'Invalid photo format'}), 400
         
-        # Build conversation messages
+        # Build conversation for AI - convert to proper format
         messages = []
+        
+        # Add conversation history
         for msg in conversation_history:
-            messages.append({"role": msg["role"], "content": msg["content"]})
+            role = msg.get('role', 'user')
+            content = msg.get('content', '')
+            
+            # Skip system messages
+            if role == 'system':
+                continue
+            
+            # Keep existing message structure
+            if isinstance(content, list):
+                messages.append({"role": role, "content": content})
+            else:
+                messages.append({"role": role, "content": content})
         
-        current_message_content = [{"type": "text", "text": user_message}]
+        # Build current user message with optional photo
+        current_message_content = []
         
-        # Handle photo
-        photo_data = None
-        photo_media_type = "image/jpeg"
+        if user_message:
+            current_message_content.append({
+                "type": "text",
+                "text": user_message
+            })
         
         if photo_base64:
-            logger.info("📷 Photo included in message")
-            if isinstance(photo_base64, dict):
-                photo_data = photo_base64.get('data')
-                photo_media_type = photo_base64.get('media_type', 'image/jpeg')
+            # Use data URI format for Heroku Managed Inference
+            image_data_uri = f"data:image/jpeg;base64,{photo_base64}"
+            current_message_content.append({
+                "type": "image_url",
+                "image_url": image_data_uri
+            })
+            logger.info("📷 Photo included in message for vision analysis")
+        
+        # Add current message
+        if current_message_content:
+            if len(current_message_content) == 1:
+                # Text only - use string format
+                messages.append({
+                    "role": "user",
+                    "content": current_message_content[0]["text"] if current_message_content[0]["type"] == "text" else current_message_content
+                })
             else:
-                photo_data = photo_base64
-            
-            if photo_data:
-                current_message_content.append({
-                    "type": "image",
-                    "source": {"type": "base64", "media_type": photo_media_type, "data": photo_data}
+                # Multimodal - use array format
+                messages.append({
+                    "role": "user",
+                    "content": current_message_content
                 })
         
-        messages.append({"role": "user", "content": current_message_content})
+        # System prompt for 311 assistant
+        system_prompt = """You are a helpful 311 city services assistant. Help citizens report infrastructure issues like potholes, graffiti, streetlight outages, sidewalk repairs, missed garbage collection, and noise complaints.
+
+When analyzing photos:
+- Identify the type of infrastructure issue (pothole, graffiti, sidewalk damage, streetlight, etc.)
+- Note severity and specific details
+- Ask for location if not provided
+
+When you have:
+1. Complaint type
+2. Description/details
+3. Location
+4. Contact info (email or phone)
+
+Say exactly: "READY_TO_CREATE_CASE" and I'll create the service request.
+
+Be empathetic, professional, and efficient. If someone mentions an emergency (injury, danger), advise calling 911 immediately."""
         
-        # Call Claude API with error handling
-        try:
-            response = claude_client.messages.create(
-                model="claude-sonnet-4-20250514",
-                max_tokens=2048,
-                system=AGENT_SYSTEM_PROMPT,
-                messages=messages
-            )
-            assistant_response = response.content[0].text
-            logger.info(f"🤖 Claude response: {assistant_response[:100]}")
-        except Exception as e:
-            logger.error(f"❌ Claude API error: {str(e)}")
-            return jsonify({
-                'success': False,
-                'error': 'AI assistant temporarily unavailable. Please try again in a moment.'
-            }), 503
+        # Prepend system context to first message if this is start of conversation
+        if len(messages) == 1:
+            if isinstance(messages[0]['content'], str):
+                messages[0]['content'] = f"{system_prompt}\n\nUser: {messages[0]['content']}"
+            elif isinstance(messages[0]['content'], list):
+                # Inject system prompt into first text block
+                for content_block in messages[0]['content']:
+                    if content_block['type'] == 'text':
+                        content_block['text'] = f"{system_prompt}\n\nUser: {content_block['text']}"
+                        break
+        
+        # Call AI service (Heroku Managed Inference with Claude fallback)
+        assistant_response = ai_client.create_message(
+            messages=messages,
+            max_tokens=1024,
+            temperature=1.0
+        )
         
         # Check if ready to create case
         if "READY_TO_CREATE_CASE" in assistant_response:
-            logger.info("📋 Agent ready to create case, extracting info...")
+            logger.info("🎯 Case creation triggered")
+            
             case_info = extract_case_info_from_conversation(messages)
             
             if case_info:
-                # Validate email if provided
-                if case_info.get('citizenEmail') and not validate_email(case_info['citizenEmail']):
-                    logger.warning(f"⚠️ Invalid email format: {case_info.get('citizenEmail')}")
+                # Sanitize email to prevent null values
+                if case_info.get('citizenEmail') == 'null' or not case_info.get('citizenEmail'):
                     case_info['citizenEmail'] = None
                 
                 # Check current message first, then search history for photo
@@ -404,13 +601,12 @@ def extract_case_info_from_conversation(messages):
 Return ONLY JSON with these fields (use null for missing):
 {{"complaintType": "Pothole/Graffiti/etc", "subject": "brief subject", "description": "details", "location": "address", "citizenEmail": "email", "citizenPhone": "phone", "ward": "ward"}}"""
         
-        response = claude_client.messages.create(
-            model="claude-sonnet-4-20250514",
-            max_tokens=1024,
-            messages=[{"role": "user", "content": extraction_prompt}]
+        # Use AI client for extraction
+        extracted_text = ai_client.create_message(
+            messages=[{"role": "user", "content": extraction_prompt}],
+            max_tokens=1024
         )
         
-        extracted_text = response.content[0].text
         json_start = extracted_text.find('{')
         json_end = extracted_text.rfind('}') + 1
         if json_start >= 0 and json_end > json_start:
@@ -498,31 +694,19 @@ def attach_photo_to_case(sf, case_id, photo_base64):
 @app.route('/health', methods=['GET'])
 def health():
     """
-    Enhanced health check - tests all critical services
+    Enhanced health check - tests all critical services including Heroku Managed Inference
     """
     checks = {
         'status': 'healthy',
-        'timestamp': datetime.utcnow().isoformat(),
-        'claude_api': 'unknown',
-        'salesforce': 'unknown',
-        'certificate': 'unknown'
+        'timestamp': datetime.utcnow().isoformat()
     }
     
-    # Test Claude API
-    try:
-        if claude_client:
-            claude_client.messages.create(
-                model="claude-sonnet-4-20250514",
-                max_tokens=10,
-                messages=[{"role": "user", "content": "test"}]
-            )
-            checks['claude_api'] = 'ok'
-        else:
-            checks['claude_api'] = 'not_initialized'
-            checks['status'] = 'degraded'
-    except Exception as e:
-        logger.error(f"Claude health check failed: {e}")
-        checks['claude_api'] = 'error'
+    # Test AI services (Heroku Managed Inference + fallback)
+    ai_checks = ai_client.health_check()
+    checks.update(ai_checks)
+    
+    # Check if at least one AI service is working
+    if all(status in ['error', 'not_configured'] for status in ai_checks.values()):
         checks['status'] = 'degraded'
     
     # Test Salesforce connection
@@ -548,6 +732,21 @@ def health():
 
 # Check certificate on startup
 check_certificate_expiration()
+
+# Log AI service configuration
+logger.info("=" * 80)
+logger.info("311 AI AGENT - STARTUP CONFIGURATION")
+logger.info("=" * 80)
+if ai_client.use_heroku_inference:
+    logger.info(f"✅ Primary AI Service: Heroku Managed Inference ({ai_client.inference_model_id})")
+else:
+    logger.info("⚠️ Primary AI Service: Not configured")
+
+if ai_client.use_claude_fallback:
+    logger.info("✅ Fallback AI Service: Claude API (Direct)")
+else:
+    logger.info("⚠️ Fallback AI Service: Not configured")
+logger.info("=" * 80)
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
