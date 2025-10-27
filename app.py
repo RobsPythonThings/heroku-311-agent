@@ -511,7 +511,7 @@ def chat():
         
         # Extract photo data if it's a dict
         if isinstance(photo_base64, dict):
-            photo_base64 = photo_base64.get('data')
+            photo_base64 = photo_base64.get('compressed_data') or photo_base64.get('data')
         
         # Require either message or photo
         if not user_message and not photo_base64:
@@ -721,7 +721,7 @@ def create_salesforce_case(case_info, photo_base64=None):
             # Attach photo if available
             if photo_base64 and case_id:
                 try:
-                    photo_data = photo_base64.get('data') if isinstance(photo_base64, dict) else photo_base64
+                    photo_data = photo_base64.get('compressed_data') or photo_base64.get('data') if isinstance(photo_base64, dict) else photo_base64
                     if photo_data:
                         logger.info(f"📎 Attempting to attach photo to case {case_id}")
                         attach_photo_to_case(sf, case_id, photo_data)
