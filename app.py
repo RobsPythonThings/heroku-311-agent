@@ -156,17 +156,10 @@ class HerokuInferenceClient:
         
         logger.info("🟠 Calling Claude API")
         
-        # Extract system message (Claude API requires it separate from messages)
-        system_prompt = None
+        # Convert messages to Claude format (no need to extract system messages anymore)
         claude_messages = []
         
         for msg in messages:
-            # Handle system messages separately
-            if msg.get('role') == 'system':
-                system_prompt = msg['content']
-                logger.info("🎯 Extracted system prompt for Claude API")
-                continue
-            
             # Convert user/assistant messages
             if isinstance(msg['content'], str):
                 # Simple text message
@@ -205,10 +198,6 @@ class HerokuInferenceClient:
             "temperature": temperature,
             "messages": claude_messages
         }
-        
-        # Add system prompt if present
-        if system_prompt:
-            api_params["system"] = system_prompt
         
         response = self.claude_client.messages.create(**api_params)
         logger.info("✅ Claude API response received")
@@ -404,6 +393,12 @@ def chat():
         conversation = data.get('conversation', [])
         photo_payload = data.get('photo')  # Base64 encoded image or dict with data/media_type
         
+        # DEBUG: Log what we received
+        logger.info(f"🔍 DEBUG - Received data keys: {list(data.keys())}")
+        logger.info(f"🔍 DEBUG - Photo payload type: {type(photo_payload)}")
+        if isinstance(photo_payload, dict):
+            logger.info(f"🔍 DEBUG - Photo payload keys: {list(photo_payload.keys())}")
+        
         # Extract photo data and media type
         photo_base64 = None
         photo_media_type = 'image/jpeg'  # Default fallback
@@ -411,6 +406,9 @@ def chat():
         if isinstance(photo_payload, dict):
             # Extract base64 data
             photo_base64 = photo_payload.get('compressed_data') or photo_payload.get('data')
+            
+            if not photo_base64:
+                logger.error(f"❌ Photo object received but no 'data' or 'compressed_data' key found. Keys: {list(photo_payload.keys())}")
             
             # Extract and validate media type
             media_type = photo_payload.get('media_type', 'image/jpeg')
@@ -447,21 +445,12 @@ def chat():
         # Build current message content
         current_message_content = []
         
-        # Add text if present
-        if user_message:
-            current_message_content.append({
-                "type": "text",
-                "text": user_message
-            })
-        
-        # ONLY add system prompt if this is the very first message (no conversation history)
+        # ONLY prepend system instructions if this is the very first message (no conversation history)
         is_first_message = len(conversation) == 0
         
         if is_first_message:
-            # Add system prompt as first message
-            system_message = {
-                "role": "system",
-                "content": """You are a helpful 311 service assistant for the City of Austin, Texas. 
+            # Add system instructions as part of the first user message (works better with both APIs)
+            system_instructions = """You are a helpful 311 service assistant for the City of Austin, Texas. 
 Help citizens report issues like potholes, graffiti, broken streetlights, and other city services.
 
 Be friendly, gather necessary information (location, description), and when ready, confirm with the user before creating a case.
@@ -469,10 +458,22 @@ Ask: "Would you like me to create a service request for this?"
 
 When analyzing photos, describe what you see and ask clarifying questions about the issue shown.
 
-IMPORTANT: Do NOT automatically create cases. Always confirm with the user first."""
-            }
-            messages.insert(0, system_message)
-            logger.info("🎬 First message - system prompt added")
+IMPORTANT: Do NOT automatically create cases. Always confirm with the user first.
+
+---
+
+"""
+            current_message_content.append({
+                "type": "text",
+                "text": system_instructions + (user_message if user_message else "I've uploaded a photo for you to analyze.")
+            })
+            logger.info("🎬 First message - system instructions prepended to user message")
+        elif user_message:
+            # Not first message - just add user text
+            current_message_content.append({
+                "type": "text",
+                "text": user_message
+            })
         
         # Add photo to current message if present
         if photo_base64:
@@ -501,7 +502,7 @@ IMPORTANT: Do NOT automatically create cases. Always confirm with the user first
                     "content": current_message_content
                 })
         
-        logger.info(f"📊 Conversation context: {len(messages)} messages (first_message={is_first_message})")
+        logger.info(f"📊 Conversation context: {len(messages)} messages total, current message has {len(current_message_content)} content items (first_message={is_first_message})")
         
         # Call AI service (Heroku Managed Inference with Claude fallback)
         assistant_response = ai_client.create_message(
