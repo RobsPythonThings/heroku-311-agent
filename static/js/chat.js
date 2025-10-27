@@ -40,7 +40,6 @@ class ChatApp {
         this.chatWindow.classList.remove('hidden');
         this.chatBubble.style.display = 'none';
         this.chatInput.focus();
-        this.scrollToBottom();
     }
     
     closeChat() {
@@ -52,18 +51,18 @@ class ChatApp {
         const message = this.chatInput.value.trim();
         
         if (!message && !this.currentPhoto) return;
+        
         if (this.isTyping) return;
         
         this.addMessage(message, 'user', this.currentPhoto);
-        this.chatInput.value = '';
         
-        // Store the full message content that was sent
-        const messageContent = message || "Photo attached";
         this.conversationHistory.push({
             role: 'user',
-            content: messageContent,
-            photo: this.currentPhoto
+            content: message
         });
+        
+        this.chatInput.value = '';
+        this.chatInput.style.height = 'auto';
         
         this.showTypingIndicator();
         
@@ -75,8 +74,8 @@ class ChatApp {
                 },
                 body: JSON.stringify({
                     message: message,
-                    conversation_history: this.conversationHistory,
-                    photo: this.currentPhoto
+                    conversation: this.conversationHistory,  // FIXED: Changed from conversation_history
+                    photo: this.currentPhoto ? this.currentPhoto.data : null  // FIXED: Send just the base64 string
                 })
             });
             
