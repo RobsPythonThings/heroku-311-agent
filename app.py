@@ -437,39 +437,100 @@ def chat():
         messages = []
         
         # Add conversation history (if this is a follow-up message)
-        for msg in conversation:
+        logger.info(f"🔍 DEBUG - Processing {len(conversation)} messages from conversation history")
+        for i, msg in enumerate(conversation):
             role = msg.get('role', 'user')
             content = msg.get('content', '')
+            
+            # Debug log each message
+            content_preview = str(content)[:100] if content else "[EMPTY]"
+            logger.info(f"🔍 DEBUG - History msg {i}: role={role}, content_type={type(content)}, preview={content_preview}")
+            
+            # Skip messages with empty content (they'll cause API errors)
+            if not content or (isinstance(content, str) and not content.strip()):
+                logger.warning(f"⚠️ Skipping message {i} with empty content from conversation history")
+                continue
+                
             messages.append({"role": role, "content": content})
         
         # Build current message content
         current_message_content = []
         
-        # ONLY prepend system instructions if this is the very first message (no conversation history)
+        # Check if this is the first message OR if there's a photo
         is_first_message = len(conversation) == 0
+        has_photo = bool(photo_base64)
         
-        if is_first_message:
-            # Add system instructions as part of the first user message (works better with both APIs)
-            system_instructions = """You are a helpful 311 service assistant for the City of Austin, Texas. 
-Help citizens report issues like potholes, graffiti, broken streetlights, and other city services.
+        # Include 311 instructions if: (1) first message OR (2) photo upload
+        if is_first_message or has_photo:
+            # Add comprehensive 311 context as part of the user message
+            if has_photo:
+                system_instructions = """You are a 311 service assistant for the City of Toronto, Canada. Your role is to help citizens report city infrastructure issues and create service requests.
 
-Be friendly, gather necessary information (location, description), and when ready, confirm with the user before creating a case.
-Ask: "Would you like me to create a service request for this?"
+🎯 YOUR CORE MISSION:
+Analyze the uploaded photo, identify the exact issue type, gather required information, and guide the citizen through creating a service request.
 
-When analyzing photos, describe what you see and ask clarifying questions about the issue shown.
+📋 SUPPORTED ISSUE TYPES - Use these EXACT strings when identifying issues:
+1. **Pothole** - Damaged road surface, holes, cracks, asphalt damage
+2. **Graffiti** - Vandalism, spray paint, tags on public/private property  
+3. **Streetlight Out** - Non-functioning street lights, dark poles, broken fixtures
+4. **Sidewalk Repair** - Damaged sidewalk, cracks, uneven concrete, tripping hazards
+5. **Missed Garbage Collection** - Overflowing bins, uncollected trash/recycling
+6. **Noise Complaint** - Excessive noise issues (usually reported without photo)
 
-IMPORTANT: Do NOT automatically create cases. Always confirm with the user first.
+🔍 PHOTO ANALYSIS WORKFLOW:
+1. **Identify the issue type**: Examine the photo carefully and determine which of the 6 types it shows. Use the EXACT complaint type name from the list above.
+2. **Describe what you see**: Be specific and detailed about the infrastructure problem (e.g., "I can see a large pothole in the road surface, approximately 2-3 feet wide with cracked edges and exposed gravel")
+3. **Gather location**: Ask for the specific address or intersection where this issue is located
+4. **Ask clarifying questions**: Get details about severity, size, safety concerns, how long it's been an issue
+5. **Collect contact info**: Ask for their email address and optionally phone number for updates
+6. **Confirm before creating**: Once you have: issue type, location, description, and email, ask: "Would you like me to create a service request for this [issue type]? You'll receive a case number to track the status."
+
+⚠️ CRITICAL INSTRUCTIONS:
+- ALWAYS identify the specific complaint type from the 6 options above
+- Be descriptive and specific about what you see in the photo
+- ALWAYS ask for location/address - field crews need to know where to go
+- ALWAYS collect citizen email for case tracking and updates
+- NEVER create a case without explicit confirmation from the citizen
+- Keep responses professional, concise, and action-oriented
+- If the photo doesn't clearly show one of the 6 issue types, ask clarifying questions
 
 ---
 
+CITIZEN'S MESSAGE WITH PHOTO:
 """
+            else:
+                system_instructions = """You are a 311 service assistant for the City of Toronto, Canada. Help citizens report city infrastructure issues.
+
+📋 SUPPORTED ISSUE TYPES - Use these EXACT strings:
+• **Pothole** - Road damage, holes, cracks
+• **Graffiti** - Vandalism on property
+• **Streetlight Out** - Non-functioning lights  
+• **Sidewalk Repair** - Damaged concrete, tripping hazards
+• **Missed Garbage Collection** - Uncollected trash/recycling
+• **Noise Complaint** - Excessive noise issues
+
+📝 YOUR WORKFLOW:
+1. Understand what issue the citizen is reporting and identify the correct complaint type from the list above
+2. Gather specific location (address or intersection)
+3. Get detailed description of the issue
+4. Collect citizen email address for case updates
+5. Confirm before creating: "Would you like me to create a service request for this [complaint type]?"
+
+Be friendly, efficient, and use the EXACT complaint type names when creating cases.
+
+---
+
+CITIZEN'S MESSAGE:
+"""
+            
+            message_text = system_instructions + (user_message if user_message else "I've uploaded a photo showing a city issue that needs attention.")
             current_message_content.append({
                 "type": "text",
-                "text": system_instructions + (user_message if user_message else "I've uploaded a photo for you to analyze.")
+                "text": message_text
             })
-            logger.info("🎬 First message - system instructions prepended to user message")
+            logger.info(f"🎯 Added 311 context (first_message={is_first_message}, has_photo={has_photo})")
         elif user_message:
-            # Not first message - just add user text
+            # Follow-up text message without photo - just add user text
             current_message_content.append({
                 "type": "text",
                 "text": user_message
@@ -502,7 +563,22 @@ IMPORTANT: Do NOT automatically create cases. Always confirm with the user first
                     "content": current_message_content
                 })
         
-        logger.info(f"📊 Conversation context: {len(messages)} messages total, current message has {len(current_message_content)} content items (first_message={is_first_message})")
+        # Add current message
+        if current_message_content:
+            if len(current_message_content) == 1 and current_message_content[0].get("type") == "text":
+                # Text only - use string format
+                messages.append({
+                    "role": "user",
+                    "content": current_message_content[0]["text"]
+                })
+            else:
+                # Multimodal (or photo-only) - use array format
+                messages.append({
+                    "role": "user",
+                    "content": current_message_content
+                })
+        
+        logger.info(f"📊 Conversation context: {len(messages)} messages total, current message has {len(current_message_content)} content items")
         
         # Call AI service (Heroku Managed Inference with Claude fallback)
         assistant_response = ai_client.create_message(
@@ -574,8 +650,16 @@ def extract_case_info_from_conversation(messages):
 
 {conversation_text}
 
+CRITICAL: Use ONLY these exact complaint types (case-sensitive):
+- "Pothole"
+- "Graffiti"  
+- "Streetlight Out"
+- "Sidewalk Repair"
+- "Missed Garbage Collection"
+- "Noise Complaint"
+
 Return ONLY JSON with these fields (use null for missing):
-{{"complaintType": "Pothole/Graffiti/etc", "subject": "brief subject", "description": "details", "location": "address", "citizenEmail": "email", "citizenPhone": "phone", "ward": "ward"}}"""
+{{"complaintType": "one of the exact types above", "subject": "brief subject", "description": "details including location", "citizenEmail": "email", "citizenPhone": "phone", "ward": "ward number if mentioned"}}"""
         
         # Use AI client for extraction
         extracted_text = ai_client.create_message(
