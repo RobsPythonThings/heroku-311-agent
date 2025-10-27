@@ -153,9 +153,18 @@ class HerokuInferenceClient:
         
         logger.info("🟠 Calling Claude API")
         
-        # Convert message format from HMI/OpenAI format → Claude format
+        # Extract system message (Claude API requires it separate from messages)
+        system_prompt = None
         claude_messages = []
+        
         for msg in messages:
+            # Handle system messages separately
+            if msg.get('role') == 'system':
+                system_prompt = msg['content']
+                logger.info("🎯 Extracted system prompt for Claude API")
+                continue
+            
+            # Convert user/assistant messages
             if isinstance(msg['content'], str):
                 # Simple text message
                 claude_messages.append(msg)
@@ -186,12 +195,19 @@ class HerokuInferenceClient:
                     "content": converted_content
                 })
         
-        response = self.claude_client.messages.create(
-            model="claude-sonnet-4-20250514",
-            max_tokens=max_tokens,
-            messages=claude_messages,
-            temperature=temperature
-        )
+        # Build API call parameters
+        api_params = {
+            "model": "claude-sonnet-4-20250514",
+            "max_tokens": max_tokens,
+            "messages": claude_messages,
+            "temperature": temperature
+        }
+        
+        # Add system prompt if present
+        if system_prompt:
+            api_params["system"] = system_prompt
+        
+        response = self.claude_client.messages.create(**api_params)
         
         logger.info("✅ Claude API response received")
         
@@ -211,20 +227,17 @@ class HerokuInferenceClient:
             for msg in messages
         )
         
-        # If there's an image, use Claude API directly (HMI can't handle base64 images)
+        # If has image, route directly to Claude API (HMI vision support is limited)
         if has_image:
-            if self.use_claude_fallback:
-                try:
-                    logger.info("📷 Vision request detected - using Claude API directly")
-                    return self._call_claude_api(messages, max_tokens, temperature)
-                except Exception as e:
-                    error_msg = f"Claude API failed: {str(e)}"
-                    logger.error(f"❌ {error_msg}")
-                    raise Exception(error_msg)
-            else:
-                raise Exception("Vision request requires Claude API, but it's not configured")
+            logger.info("📷 Vision request detected - using Claude API directly")
+            try:
+                return self._call_claude_api(messages, max_tokens, temperature)
+            except Exception as e:
+                error_msg = f"Claude API failed: {str(e)}"
+                logger.error(f"❌ {error_msg}")
+                raise Exception(error_msg)
         
-        # For text-only, try Heroku Managed Inference first (faster, included)
+        # Text-only: Try Heroku Managed Inference first, fallback to Claude
         if self.use_heroku_inference:
             try:
                 return self._call_heroku_inference(messages, max_tokens, temperature)
@@ -233,7 +246,7 @@ class HerokuInferenceClient:
                 logger.warning(f"⚠️ {error_msg}")
                 errors.append(error_msg)
         
-        # Fallback to Claude API for text
+        # Fallback to Claude API if Heroku Inference fails or isn't configured
         if self.use_claude_fallback:
             try:
                 logger.info("🔄 Falling back to Claude API")
@@ -257,31 +270,30 @@ class HerokuInferenceClient:
         # Test Heroku Managed Inference
         if self.use_heroku_inference:
             try:
-                self._call_heroku_inference(
+                test_response = self._call_heroku_inference(
                     messages=[{"role": "user", "content": "test"}],
                     max_tokens=10
                 )
-                checks['heroku_inference'] = 'ok'
+                checks['heroku_inference'] = 'ok' if test_response else 'error'
             except Exception as e:
                 logger.error(f"Heroku Inference health check failed: {e}")
                 checks['heroku_inference'] = 'error'
         
         # Test Claude API fallback
-        if self.use_claude_fallback and self.claude_client:
+        if self.use_claude_fallback:
             try:
-                self.claude_client.messages.create(
-                    model="claude-sonnet-4-20250514",
-                    max_tokens=10,
-                    messages=[{"role": "user", "content": "test"}]
+                test_response = self._call_claude_api(
+                    messages=[{"role": "user", "content": "test"}],
+                    max_tokens=10
                 )
-                checks['claude_api_fallback'] = 'ok'
+                checks['claude_api_fallback'] = 'ok' if test_response else 'error'
             except Exception as e:
                 logger.error(f"Claude API health check failed: {e}")
                 checks['claude_api_fallback'] = 'error'
         
         return checks
 
-# Initialize the AI client
+# Initialize AI client globally
 ai_client = HerokuInferenceClient()
 
 # ============================================================================
@@ -338,7 +350,7 @@ def check_rate_limit(service):
 def get_jwt_access_token():
     """
     Get Salesforce access token using JWT Bearer flow
-    Includes automatic retry logic for transient failures
+    Enhanced with retry logic and comprehensive error handling
     """
     try:
         # Load private key from environment variable (Heroku) or file (local)
@@ -387,62 +399,62 @@ def get_jwt_access_token():
             timeout=10
         )
         
-        if response.status_code == 200:
-            token_data = response.json()
-            logger.info("✅ JWT authentication successful")
-            return token_data['access_token'], token_data['instance_url']
-        else:
-            error_msg = f"JWT auth failed: {response.status_code} - {response.text}"
+        if response.status_code != 200:
+            error_msg = f"JWT token exchange failed: {response.status_code} - {response.text}"
             logger.error(f"❌ {error_msg}")
             raise Exception(error_msg)
-            
+        
+        token_data = response.json()
+        logger.info("✅ JWT authentication successful")
+        
+        return token_data['access_token'], token_data['instance_url']
+    
     except Exception as e:
-        logger.error(f"❌ Error getting JWT access token: {str(e)}")
+        logger.error(f"❌ Error in JWT authentication: {str(e)}")
         raise
 
+# ============================================================================
+# SALESFORCE CLIENT INITIALIZATION
+# ============================================================================
+
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=2, max=10),
+    retry=retry_if_exception_type((Exception,)),
+    reraise=True
+)
 def get_salesforce_client():
     """
-    Initialize and return Salesforce client with JWT authentication
-    Includes error handling and logging
+    Get Salesforce client with JWT authentication
+    Enhanced with retry logic
     """
     try:
         access_token, instance_url = get_jwt_access_token()
-        return Salesforce(
+        
+        sf = Salesforce(
             instance_url=instance_url,
-            session_id=access_token
+            session_id=access_token,
+            version='58.0'
         )
+        
+        logger.info("✅ Salesforce client initialized")
+        return sf
+        
     except Exception as e:
-        logger.error(f"❌ Failed to create Salesforce client: {str(e)}")
+        logger.error(f"❌ Error initializing Salesforce client: {str(e)}")
         raise
 
 # ============================================================================
-# INPUT VALIDATION
+# PHOTO VALIDATION
 # ============================================================================
 
-def sanitize_user_input(text):
-    """Sanitize user input to prevent injection attacks"""
-    if not text or not isinstance(text, str):
-        return ""
-    
-    # Basic sanitization - remove potential script tags
-    text = text.replace('<script>', '').replace('</script>', '')
-    text = text.replace('javascript:', '')
-    
-    # Limit length
-    max_length = 5000
-    if len(text) > max_length:
-        text = text[:max_length]
-        logger.warning(f"⚠️ Input truncated to {max_length} characters")
-    
-    return text
-
-def validate_photo_data(photo_data):
-    """Validate photo data format and size"""
+def validate_photo(photo_data):
+    """Validate photo data and return cleaned base64 string"""
     if not photo_data:
         return None
     
-    # Remove data URI prefix if present
-    if isinstance(photo_data, str) and photo_data.startswith('data:image'):
+    # Strip data URI prefix if present
+    if isinstance(photo_data, str) and photo_data.startswith('data:'):
         photo_data = photo_data.split(',', 1)[1] if ',' in photo_data else photo_data
     
     # Validate base64 and size
@@ -473,84 +485,61 @@ def index():
 def chat():
     """
     Main chat endpoint with vision support via Heroku Managed Inference
-    Supports text and photo uploads with multimodal analysis
+    Accepts: message (required), conversation (optional), photo (optional)
+    Returns: AI assistant response with case creation capability
     """
     try:
-        data = request.get_json()
-        user_message = sanitize_user_input(data.get('message', ''))
-        photo_base64 = data.get('photo')
-        conversation_history = data.get('conversation', [])
+        data = request.json
+        user_message = data.get('message', '').strip()
+        conversation = data.get('conversation', [])
+        photo_base64 = data.get('photo')  # Base64 encoded image
         
-        if not user_message and not photo_base64:
-            return jsonify({'success': False, 'error': 'Message or photo required'}), 400
+        if not user_message:
+            return jsonify({'success': False, 'error': 'Message is required'}), 400
+        
+        logger.info(f"📨 Received message: {user_message[:100]}...")
         
         # Validate photo if present
         if photo_base64:
-            photo_base64 = validate_photo_data(photo_base64)
+            photo_base64 = validate_photo(photo_base64)
             if not photo_base64:
-                return jsonify({'success': False, 'error': 'Invalid photo format'}), 400
+                return jsonify({'success': False, 'error': 'Invalid photo data'}), 400
         
-        # System prompt for 311 assistant
-        system_prompt = """You are a helpful 311 city services assistant. Help citizens report infrastructure issues like potholes, graffiti, streetlight outages, sidewalk repairs, missed garbage collection, and noise complaints.
-
-When analyzing photos:
-- Identify the type of infrastructure issue (pothole, graffiti, sidewalk damage, streetlight, etc.)
-- Note severity and specific details
-- Ask for location if not provided
-
-When you have:
-1. Complaint type
-2. Description/details
-3. Location
-4. Contact info (email or phone)
-
-Say exactly: "READY_TO_CREATE_CASE" and I'll create the service request.
-
-Be empathetic, professional, and efficient. If someone mentions an emergency (injury, danger), advise calling 911 immediately."""
-        
-        # Build conversation for AI - convert to proper format
+        # Build conversation context for AI
         messages = []
         
+        # Add conversation history (if this is a follow-up message)
+        for msg in conversation:
+            role = msg.get('role', 'user')
+            content = msg.get('content', '')
+            messages.append({"role": role, "content": content})
+        
+        # Build current message content
+        current_message_content = []
+        current_message_content.append({
+            "type": "text",
+            "text": user_message
+        })
+        
         # ONLY add system prompt if this is the very first message (no conversation history)
-        is_first_message = len(conversation_history) == 0
+        is_first_message = len(conversation) == 0
         
         if is_first_message:
             # Add system prompt as first message
-            messages.append({
-                "role": "user",
-                "content": system_prompt
-            })
+            system_message = {
+                "role": "system",
+                "content": """You are a helpful 311 service assistant for the City of Austin, Texas. 
+Help citizens report issues like potholes, graffiti, broken streetlights, and other city services.
+
+Be friendly, gather necessary information (location, description), and when ready, confirm with the user before creating a case.
+Ask: "Would you like me to create a service request for this?"
+
+IMPORTANT: Do NOT automatically create cases. Always confirm with the user first."""
+            }
+            messages.insert(0, system_message)
             logger.info("🎬 First message - system prompt added")
         
-        # Add conversation history (skip any old system prompts)
-        for msg in conversation_history:
-            role = msg.get('role', 'user')
-            content = msg.get('content', '')
-            
-            # Skip system messages and any messages containing the system prompt
-            if role == 'system':
-                continue
-            
-            # Skip messages that look like system prompts (contain instruction text)
-            if isinstance(content, str) and "311 city services assistant" in content:
-                logger.debug("⏭️ Skipping old system prompt from history")
-                continue
-            
-            # Keep existing message structure
-            if isinstance(content, list):
-                messages.append({"role": role, "content": content})
-            else:
-                messages.append({"role": role, "content": content})
-        
-        # Build current user message with optional photo
-        current_message_content = []
-        
-        if user_message:
-            current_message_content.append({
-                "type": "text",
-                "text": user_message
-            })
-        
+        # Add photo to current message if present
         if photo_base64:
             # Use data URI format for Heroku Managed Inference
             image_data_uri = f"data:image/jpeg;base64,{photo_base64}"
@@ -586,34 +575,32 @@ Be empathetic, professional, and efficient. If someone mentions an emergency (in
             temperature=1.0
         )
         
-        # Check if ready to create case
-        if "READY_TO_CREATE_CASE" in assistant_response:
-            logger.info("🎯 Case creation triggered")
+        # Check if user wants to create a case
+        if any(phrase in user_message.lower() for phrase in ['create', 'submit', 'yes', 'please do', 'go ahead']):
+            # Look for photo in conversation if not in current message
+            if not photo_base64:
+                photo_base64 = find_photo_in_conversation(conversation)
             
-            case_info = extract_case_info_from_conversation(messages)
-            
-            if case_info:
-                # Sanitize email to prevent null values
-                if case_info.get('citizenEmail') == 'null' or not case_info.get('citizenEmail'):
-                    case_info['citizenEmail'] = None
+            # Check if assistant is confirming case creation
+            if any(phrase in assistant_response.lower() for phrase in ['create', 'submit', 'service request']):
+                # Extract case info from conversation
+                case_info = extract_case_info_from_conversation(messages)
                 
-                # Check current message first, then search history for photo
-                photo_to_attach = photo_base64 or find_photo_in_conversation(conversation_history)
-                
-                try:
-                    case_result = create_salesforce_case(case_info, photo_to_attach)
+                if case_info:
+                    logger.info(f"📝 Creating case with info: {case_info}")
                     
-                    if case_result['success']:
-                        assistant_response = assistant_response.replace(
-                            "READY_TO_CREATE_CASE",
-                            f"Great! I've created your service request. Your case number is **{case_result['caseNumber']}**. "
-                            f"You can use this number to track your request. {case_result['message']}"
-                        )
-                    else:
-                        assistant_response = f"I apologize, but there was an error creating your case: {case_result['message']}"
-                except Exception as e:
-                    logger.error(f"❌ Error creating case: {str(e)}")
-                    assistant_response = "I apologize, but I'm having trouble creating your case right now. Please try again in a moment, or contact 311 directly."
+                    try:
+                        case_result = create_salesforce_case(case_info, photo_base64)
+                        if case_result['success']:
+                            assistant_response = (
+                                f"Great! I've created your service request. Your case number is **{case_result['caseNumber']}**. "
+                                f"You can use this number to track your request. {case_result['message']}"
+                            )
+                        else:
+                            assistant_response = f"I apologize, but there was an error creating your case: {case_result['message']}"
+                    except Exception as e:
+                        logger.error(f"❌ Error creating case: {str(e)}")
+                        assistant_response = "I apologize, but I'm having trouble creating your case right now. Please try again in a moment, or contact 311 directly."
         
         return jsonify({'success': True, 'response': assistant_response})
         
