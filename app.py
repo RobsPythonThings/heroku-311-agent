@@ -512,7 +512,9 @@ Be empathetic, professional, and efficient. If someone mentions an emergency (in
             image_data_uri = f"data:image/jpeg;base64,{photo_base64}"
             current_message_content.append({
                 "type": "image_url",
-                "image_url": image_data_uri
+                "image_url": {
+                    "url": image_data_uri
+                }
             })
             logger.info("📷 Photo included in message for vision analysis")
         
