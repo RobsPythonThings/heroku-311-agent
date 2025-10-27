@@ -144,23 +144,47 @@ class HerokuInferenceClient:
         reraise=False
     )
     def _call_claude_api(self, messages, max_tokens=1024, temperature=1.0):
-        """Call Claude API directly as fallback"""
+        """Call Claude API directly - supports vision with base64 images"""
         if not self.claude_client:
             raise Exception("Claude API fallback not configured")
         
         if not check_rate_limit('claude_api'):
             raise Exception("Rate limit exceeded for Claude API")
         
-        logger.info("🟠 Calling Claude API (fallback)")
+        logger.info("🟠 Calling Claude API")
         
-        # Convert message format if needed (Heroku format → Claude format)
+        # Convert message format from HMI/OpenAI format → Claude format
         claude_messages = []
         for msg in messages:
             if isinstance(msg['content'], str):
+                # Simple text message
                 claude_messages.append(msg)
             elif isinstance(msg['content'], list):
-                # Already in proper format with text/image_url
-                claude_messages.append(msg)
+                # Multimodal message - convert image_url format to Claude's image format
+                converted_content = []
+                for item in msg['content']:
+                    if item['type'] == 'text':
+                        converted_content.append(item)
+                    elif item['type'] == 'image_url':
+                        # Extract base64 from data URI format
+                        image_url = item['image_url']['url']
+                        if image_url.startswith('data:image/'):
+                            # Parse: data:image/jpeg;base64,<base64_data>
+                            media_type = image_url.split(';')[0].split(':')[1]
+                            base64_data = image_url.split(',', 1)[1]
+                            converted_content.append({
+                                "type": "image",
+                                "source": {
+                                    "type": "base64",
+                                    "media_type": media_type,
+                                    "data": base64_data
+                                }
+                            })
+                            logger.info("📷 Converted image to Claude format")
+                claude_messages.append({
+                    "role": msg['role'],
+                    "content": converted_content
+                })
         
         response = self.claude_client.messages.create(
             model="claude-sonnet-4-20250514",
@@ -169,18 +193,38 @@ class HerokuInferenceClient:
             temperature=temperature
         )
         
-        logger.info("✅ Claude API (fallback) response received")
+        logger.info("✅ Claude API response received")
         
         return response.content[0].text
     
     def create_message(self, messages, max_tokens=1024, temperature=1.0):
         """
-        Create a message using Heroku Managed Inference with automatic fallback to Claude API
-        Supports multimodal content (text + images)
+        Create a message using Heroku Managed Inference for text, Claude API for vision
+        Routes intelligently based on content type
         """
         errors = []
         
-        # Try Heroku Managed Inference first
+        # Detect if this is a vision request (has images)
+        has_image = any(
+            isinstance(msg.get('content'), list) and 
+            any(item.get('type') == 'image_url' for item in msg['content'])
+            for msg in messages
+        )
+        
+        # If there's an image, use Claude API directly (HMI can't handle base64 images)
+        if has_image:
+            if self.use_claude_fallback:
+                try:
+                    logger.info("📷 Vision request detected - using Claude API directly")
+                    return self._call_claude_api(messages, max_tokens, temperature)
+                except Exception as e:
+                    error_msg = f"Claude API failed: {str(e)}"
+                    logger.error(f"❌ {error_msg}")
+                    raise Exception(error_msg)
+            else:
+                raise Exception("Vision request requires Claude API, but it's not configured")
+        
+        # For text-only, try Heroku Managed Inference first (faster, included)
         if self.use_heroku_inference:
             try:
                 return self._call_heroku_inference(messages, max_tokens, temperature)
@@ -189,7 +233,7 @@ class HerokuInferenceClient:
                 logger.warning(f"⚠️ {error_msg}")
                 errors.append(error_msg)
         
-        # Fallback to Claude API
+        # Fallback to Claude API for text
         if self.use_claude_fallback:
             try:
                 logger.info("🔄 Falling back to Claude API")
