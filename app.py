@@ -446,16 +446,50 @@ def chat():
             if not photo_base64:
                 return jsonify({'success': False, 'error': 'Invalid photo format'}), 400
         
+        # System prompt for 311 assistant
+        system_prompt = """You are a helpful 311 city services assistant. Help citizens report infrastructure issues like potholes, graffiti, streetlight outages, sidewalk repairs, missed garbage collection, and noise complaints.
+
+When analyzing photos:
+- Identify the type of infrastructure issue (pothole, graffiti, sidewalk damage, streetlight, etc.)
+- Note severity and specific details
+- Ask for location if not provided
+
+When you have:
+1. Complaint type
+2. Description/details
+3. Location
+4. Contact info (email or phone)
+
+Say exactly: "READY_TO_CREATE_CASE" and I'll create the service request.
+
+Be empathetic, professional, and efficient. If someone mentions an emergency (injury, danger), advise calling 911 immediately."""
+        
         # Build conversation for AI - convert to proper format
         messages = []
         
-        # Add conversation history
+        # ONLY add system prompt if this is the very first message (no conversation history)
+        is_first_message = len(conversation_history) == 0
+        
+        if is_first_message:
+            # Add system prompt as first message
+            messages.append({
+                "role": "user",
+                "content": system_prompt
+            })
+            logger.info("🎬 First message - system prompt added")
+        
+        # Add conversation history (skip any old system prompts)
         for msg in conversation_history:
             role = msg.get('role', 'user')
             content = msg.get('content', '')
             
-            # Skip system messages
+            # Skip system messages and any messages containing the system prompt
             if role == 'system':
+                continue
+            
+            # Skip messages that look like system prompts (contain instruction text)
+            if isinstance(content, str) and "311 city services assistant" in content:
+                logger.debug("⏭️ Skipping old system prompt from history")
                 continue
             
             # Keep existing message structure
@@ -497,34 +531,7 @@ def chat():
                     "content": current_message_content
                 })
         
-        # System prompt for 311 assistant
-        system_prompt = """You are a helpful 311 city services assistant. Help citizens report infrastructure issues like potholes, graffiti, streetlight outages, sidewalk repairs, missed garbage collection, and noise complaints.
-
-When analyzing photos:
-- Identify the type of infrastructure issue (pothole, graffiti, sidewalk damage, streetlight, etc.)
-- Note severity and specific details
-- Ask for location if not provided
-
-When you have:
-1. Complaint type
-2. Description/details
-3. Location
-4. Contact info (email or phone)
-
-Say exactly: "READY_TO_CREATE_CASE" and I'll create the service request.
-
-Be empathetic, professional, and efficient. If someone mentions an emergency (injury, danger), advise calling 911 immediately."""
-        
-        # Prepend system context to first message if this is start of conversation
-        if len(messages) == 1:
-            if isinstance(messages[0]['content'], str):
-                messages[0]['content'] = f"{system_prompt}\n\nUser: {messages[0]['content']}"
-            elif isinstance(messages[0]['content'], list):
-                # Inject system prompt into first text block
-                for content_block in messages[0]['content']:
-                    if content_block['type'] == 'text':
-                        content_block['text'] = f"{system_prompt}\n\nUser: {content_block['text']}"
-                        break
+        logger.info(f"📊 Conversation context: {len(messages)} messages (first_message={is_first_message})")
         
         # Call AI service (Heroku Managed Inference with Claude fallback)
         assistant_response = ai_client.create_message(
