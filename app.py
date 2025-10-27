@@ -35,6 +35,9 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 CORS(app)
 
+# Supported image formats for vision API
+ALLOWED_IMAGE_TYPES = {'image/jpeg', 'image/png', 'image/gif', 'image/webp'}
+
 # Rate limiting: Track API calls per minute
 API_CALL_COUNTS = {
     'heroku_inference': {'count': 0, 'reset_time': time.time() + 60},
@@ -189,7 +192,7 @@ class HerokuInferenceClient:
                                     "data": base64_data
                                 }
                             })
-                            logger.info("📷 Converted image to Claude format")
+                            logger.info(f"📷 Converted image to Claude format ({media_type})")
                 claude_messages.append({
                     "role": msg['role'],
                     "content": converted_content
@@ -199,60 +202,26 @@ class HerokuInferenceClient:
         api_params = {
             "model": "claude-sonnet-4-20250514",
             "max_tokens": max_tokens,
-            "messages": claude_messages,
-            "temperature": temperature
+            "temperature": temperature,
+            "messages": claude_messages
         }
         
         # Add system prompt if present
         if system_prompt:
             api_params["system"] = system_prompt
         
-        # Log what we're sending for debugging
-        logger.info(f"🔍 Sending to Claude: {len(claude_messages)} messages, system={bool(system_prompt)}")
+        response = self.claude_client.messages.create(**api_params)
+        logger.info("✅ Claude API response received")
         
-        try:
-            response = self.claude_client.messages.create(**api_params)
-            logger.info("✅ Claude API response received")
-            return response.content[0].text
-        except anthropic.BadRequestError as e:
-            logger.error(f"❌ Claude BadRequestError: {str(e)}")
-            logger.error(f"❌ Number of messages: {len(claude_messages)}")
-            logger.error(f"❌ Has system prompt: {bool(system_prompt)}")
-            # Log message structure (not full content for privacy)
-            for i, msg in enumerate(claude_messages):
-                content_type = "string" if isinstance(msg.get('content'), str) else "list"
-                if content_type == "list":
-                    content_items = [item.get('type') for item in msg.get('content', [])]
-                    logger.error(f"❌ Message {i}: role={msg.get('role')}, content={content_items}")
-                else:
-                    logger.error(f"❌ Message {i}: role={msg.get('role')}, content=text")
-            raise
+        return response.content[0].text
     
     def create_message(self, messages, max_tokens=1024, temperature=1.0):
         """
-        Create a message using Heroku Managed Inference for text, Claude API for vision
-        Routes intelligently based on content type
+        Smart routing: Try Heroku Managed Inference first, fallback to Claude API on failure
         """
         errors = []
         
-        # Detect if this is a vision request (has images)
-        has_image = any(
-            isinstance(msg.get('content'), list) and 
-            any(item.get('type') == 'image_url' for item in msg['content'])
-            for msg in messages
-        )
-        
-        # If has image, route directly to Claude API (HMI vision support is limited)
-        if has_image:
-            logger.info("📷 Vision request detected - using Claude API directly")
-            try:
-                return self._call_claude_api(messages, max_tokens, temperature)
-            except Exception as e:
-                error_msg = f"Claude API failed: {str(e)}"
-                logger.error(f"❌ {error_msg}")
-                raise Exception(error_msg)
-        
-        # Text-only: Try Heroku Managed Inference first, fallback to Claude
+        # Try Heroku Managed Inference first (if configured)
         if self.use_heroku_inference:
             try:
                 return self._call_heroku_inference(messages, max_tokens, temperature)
@@ -261,234 +230,160 @@ class HerokuInferenceClient:
                 logger.warning(f"⚠️ {error_msg}")
                 errors.append(error_msg)
         
-        # Fallback to Claude API if Heroku Inference fails or isn't configured
+        # Fallback to Claude API
         if self.use_claude_fallback:
             try:
-                logger.info("🔄 Falling back to Claude API")
                 return self._call_claude_api(messages, max_tokens, temperature)
             except Exception as e:
-                error_msg = f"Claude API fallback failed: {str(e)}"
+                error_msg = f"Claude API failed: {str(e)}"
                 logger.error(f"❌ {error_msg}")
                 errors.append(error_msg)
         
-        # Both failed
-        error_summary = " | ".join(errors)
-        raise Exception(f"All AI services failed: {error_summary}")
+        # If both failed, raise exception
+        raise Exception(f"All AI services failed: {'; '.join(errors)}")
     
     def health_check(self):
-        """Test AI service connectivity"""
-        checks = {
-            'heroku_inference': 'not_configured',
-            'claude_api_fallback': 'not_configured'
-        }
+        """Test both AI services and return status"""
+        status = {}
         
         # Test Heroku Managed Inference
         if self.use_heroku_inference:
             try:
-                test_response = self._call_heroku_inference(
-                    messages=[{"role": "user", "content": "test"}],
-                    max_tokens=10
-                )
-                checks['heroku_inference'] = 'ok' if test_response else 'error'
+                test_msg = [{"role": "user", "content": "Say 'ok'"}]
+                response = self._call_heroku_inference(test_msg, max_tokens=10)
+                status['heroku_inference'] = 'ok' if response else 'error'
             except Exception as e:
                 logger.error(f"Heroku Inference health check failed: {e}")
-                checks['heroku_inference'] = 'error'
+                status['heroku_inference'] = 'error'
+        else:
+            status['heroku_inference'] = 'not_configured'
         
-        # Test Claude API fallback
+        # Test Claude API
         if self.use_claude_fallback:
             try:
-                test_response = self._call_claude_api(
-                    messages=[{"role": "user", "content": "test"}],
-                    max_tokens=10
-                )
-                checks['claude_api_fallback'] = 'ok' if test_response else 'error'
+                test_msg = [{"role": "user", "content": "Say 'ok'"}]
+                response = self._call_claude_api(test_msg, max_tokens=10)
+                status['claude_api'] = 'ok' if response else 'error'
             except Exception as e:
                 logger.error(f"Claude API health check failed: {e}")
-                checks['claude_api_fallback'] = 'error'
+                status['claude_api'] = 'error'
+        else:
+            status['claude_api'] = 'not_configured'
         
-        return checks
+        return status
 
-# Initialize AI client globally
+# Initialize AI client
 ai_client = HerokuInferenceClient()
 
 # ============================================================================
-# CERTIFICATE MONITORING
+# HELPER FUNCTIONS
 # ============================================================================
 
-def check_certificate_expiration():
-    """Check if certificate is expiring soon and log warnings"""
-    try:
-        private_key_base64 = os.environ.get('SF_PRIVATE_KEY_BASE64')
-        if not private_key_base64:
-            logger.warning("⚠️ No private key found in environment")
-            return None
-        
-        # Note: We have the private key, but to check expiration we'd need the cert
-        # For now, just log that monitoring is active
-        logger.info("🔐 Certificate monitoring active")
-        return None
-    except Exception as e:
-        logger.error(f"Certificate check failed: {str(e)}")
-        return None
-
-# ============================================================================
-# RATE LIMITING
-# ============================================================================
-
-def check_rate_limit(service):
-    """Check if we're within rate limits for a service"""
+def check_rate_limit(service_name):
+    """Check if API rate limit is exceeded"""
     current_time = time.time()
+    service = API_CALL_COUNTS[service_name]
     
-    # Reset counter if time window expired
-    if current_time >= API_CALL_COUNTS[service]['reset_time']:
-        API_CALL_COUNTS[service]['count'] = 0
-        API_CALL_COUNTS[service]['reset_time'] = current_time + 60
+    # Reset counter if minute has passed
+    if current_time > service['reset_time']:
+        service['count'] = 0
+        service['reset_time'] = current_time + 60
     
-    # Check if we're over the limit
-    if API_CALL_COUNTS[service]['count'] >= RATE_LIMITS[service]:
-        logger.warning(f"⚠️ Rate limit approaching for {service}")
+    # Check limit
+    if service['count'] >= RATE_LIMITS[service_name]:
+        logger.warning(f"⚠️ Rate limit exceeded for {service_name}")
         return False
     
-    API_CALL_COUNTS[service]['count'] += 1
+    # Increment and allow
+    service['count'] += 1
     return True
 
-# ============================================================================
-# JWT AUTHENTICATION WITH RETRY LOGIC
-# ============================================================================
-
-@retry(
-    stop=stop_after_attempt(3),
-    wait=wait_exponential(multiplier=1, min=2, max=10),
-    retry=retry_if_exception_type((requests.exceptions.RequestException, ConnectionError)),
-    reraise=True
-)
-def get_jwt_access_token():
-    """
-    Get Salesforce access token using JWT Bearer flow
-    Enhanced with retry logic and comprehensive error handling
-    """
+def get_salesforce_client():
+    """Create Salesforce client with JWT authentication"""
     try:
-        # Load private key from environment variable (Heroku) or file (local)
-        private_key_base64 = os.environ.get('SF_PRIVATE_KEY_BASE64')
-        if private_key_base64:
-            private_key = base64.b64decode(private_key_base64).decode('utf-8')
-            logger.debug("🔑 Loaded private key from environment variable")
-        else:
-            private_key_path = os.path.join(os.path.dirname(__file__), 'server.key')
-            with open(private_key_path, 'r') as f:
-                private_key = f.read()
-            logger.debug("🔑 Loaded private key from file")
-        
-        # Get config from environment
-        client_id = os.environ.get('SF_CLIENT_ID')
+        # JWT authentication for Salesforce
+        private_key = os.environ.get('SF_PRIVATE_KEY', '').replace('\\n', '\n')
+        consumer_key = os.environ.get('SF_CONSUMER_KEY')
         username = os.environ.get('SF_USERNAME')
-        instance_url = os.environ.get('SF_INSTANCE_URL', 'https://login.salesforce.com')
         
-        if not all([client_id, username]):
-            raise ValueError("Missing required Salesforce credentials (SF_CLIENT_ID, SF_USERNAME)")
+        if not all([private_key, consumer_key, username]):
+            raise ValueError("Missing Salesforce credentials")
         
-        # Determine login URL based on instance
-        if 'test' in instance_url or 'sandbox' in instance_url:
-            login_url = 'https://test.salesforce.com'
-        else:
-            login_url = 'https://login.salesforce.com'
-        
-        # Build JWT claim
+        # Create JWT
         claim = {
-            'iss': client_id,
+            'iss': consumer_key,
             'sub': username,
-            'aud': login_url,
-            'exp': int(time.time()) + 300  # 5 minutes from now
+            'aud': 'https://login.salesforce.com',
+            'exp': datetime.utcnow() + timedelta(minutes=3)
         }
         
-        # Sign JWT with RS256
         assertion = jwt.encode(claim, private_key, algorithm='RS256')
         
-        # Exchange JWT for access token
-        response = requests.post(
-            f'{login_url}/services/oauth2/token',
+        # Request access token
+        r = requests.post(
+            'https://login.salesforce.com/services/oauth2/token',
             data={
                 'grant_type': 'urn:ietf:params:oauth:grant-type:jwt-bearer',
                 'assertion': assertion
-            },
-            timeout=10
+            }
         )
         
-        if response.status_code != 200:
-            error_msg = f"JWT token exchange failed: {response.status_code} - {response.text}"
-            logger.error(f"❌ {error_msg}")
-            raise Exception(error_msg)
+        if r.status_code != 200:
+            raise Exception(f"Salesforce auth failed: {r.text}")
         
-        token_data = response.json()
-        logger.info("✅ JWT authentication successful")
+        access_token = r.json()['access_token']
+        instance_url = r.json()['instance_url']
         
-        return token_data['access_token'], token_data['instance_url']
+        return Salesforce(instance_url=instance_url, session_id=access_token)
+    except Exception as e:
+        logger.error(f"❌ Salesforce authentication failed: {str(e)}")
+        raise
+
+def check_certificate_expiration():
+    """Check if SSL certificate is expiring soon"""
+    cert_path = os.environ.get('SSL_CERT_PATH')
+    if not cert_path or not os.path.exists(cert_path):
+        return None
     
-    except Exception as e:
-        logger.error(f"❌ Error in JWT authentication: {str(e)}")
-        raise
-
-# ============================================================================
-# SALESFORCE CLIENT INITIALIZATION
-# ============================================================================
-
-@retry(
-    stop=stop_after_attempt(3),
-    wait=wait_exponential(multiplier=1, min=2, max=10),
-    retry=retry_if_exception_type((Exception,)),
-    reraise=True
-)
-def get_salesforce_client():
-    """
-    Get Salesforce client with JWT authentication
-    Enhanced with retry logic
-    """
     try:
-        access_token, instance_url = get_jwt_access_token()
+        with open(cert_path, 'rb') as f:
+            cert_data = f.read()
+            cert = x509.load_pem_x509_certificate(cert_data, default_backend())
+            
+        expiry = cert.not_valid_after_utc
+        days_until_expiry = (expiry - datetime.now(expiry.tzinfo)).days
         
-        sf = Salesforce(
-            instance_url=instance_url,
-            session_id=access_token,
-            version='58.0'
-        )
+        if days_until_expiry < 30:
+            logger.warning(f"⚠️ SSL certificate expires in {days_until_expiry} days!")
+            return f"expires_in_{days_until_expiry}_days"
         
-        logger.info("✅ Salesforce client initialized")
-        return sf
-        
+        return None
     except Exception as e:
-        logger.error(f"❌ Error initializing Salesforce client: {str(e)}")
-        raise
-
-# ============================================================================
-# PHOTO VALIDATION
-# ============================================================================
+        logger.error(f"Certificate check failed: {e}")
+        return None
 
 def validate_photo(photo_data):
-    """Validate photo data and return cleaned base64 string"""
-    if not photo_data:
-        return None
-    
-    # Strip data URI prefix if present
-    if isinstance(photo_data, str) and photo_data.startswith('data:'):
-        photo_data = photo_data.split(',', 1)[1] if ',' in photo_data else photo_data
-    
-    # Validate base64 and size
+    """Validate base64 photo data"""
     try:
-        decoded = base64.b64decode(photo_data)
-        size_mb = len(decoded) / (1024 * 1024)
+        if isinstance(photo_data, dict):
+            photo_data = photo_data.get('compressed_data') or photo_data.get('data')
         
-        if size_mb > 10:  # 10 MB limit
-            logger.warning(f"⚠️ Photo size ({size_mb:.2f} MB) exceeds 10 MB limit")
+        if not photo_data:
             return None
         
-        logger.info(f"✅ Photo validated: {size_mb:.2f} MB")
+        # Remove data URI prefix if present
+        if isinstance(photo_data, str) and photo_data.startswith('data:'):
+            photo_data = photo_data.split(',', 1)[1]
+        
+        # Validate base64
+        base64.b64decode(photo_data)
         return photo_data
     except Exception as e:
-        logger.error(f"❌ Invalid photo data: {str(e)}")
+        logger.error(f"❌ Photo validation failed: {str(e)}")
         return None
 
 # ============================================================================
-# MAIN ROUTES
+# FLASK ROUTES
 # ============================================================================
 
 @app.route('/')
@@ -507,11 +402,26 @@ def chat():
         data = request.json
         user_message = data.get('message', '').strip()
         conversation = data.get('conversation', [])
-        photo_base64 = data.get('photo')  # Base64 encoded image or dict with data/media_type
+        photo_payload = data.get('photo')  # Base64 encoded image or dict with data/media_type
         
-        # Extract photo data if it's a dict
-        if isinstance(photo_base64, dict):
-            photo_base64 = photo_base64.get('compressed_data') or photo_base64.get('data')
+        # Extract photo data and media type
+        photo_base64 = None
+        photo_media_type = 'image/jpeg'  # Default fallback
+        
+        if isinstance(photo_payload, dict):
+            # Extract base64 data
+            photo_base64 = photo_payload.get('compressed_data') or photo_payload.get('data')
+            
+            # Extract and validate media type
+            media_type = photo_payload.get('media_type', 'image/jpeg')
+            if media_type in ALLOWED_IMAGE_TYPES:
+                photo_media_type = media_type
+                logger.info(f"📷 Photo media type: {photo_media_type}")
+            else:
+                logger.warning(f"⚠️ Unsupported media type '{media_type}', defaulting to image/jpeg")
+        else:
+            # Direct base64 string
+            photo_base64 = photo_payload
         
         # Require either message or photo
         if not user_message and not photo_base64:
@@ -566,15 +476,15 @@ IMPORTANT: Do NOT automatically create cases. Always confirm with the user first
         
         # Add photo to current message if present
         if photo_base64:
-            # Use data URI format for vision analysis
-            image_data_uri = f"data:image/jpeg;base64,{photo_base64}"
+            # Use data URI format with correct media type for vision analysis
+            image_data_uri = f"data:{photo_media_type};base64,{photo_base64}"
             current_message_content.append({
                 "type": "image_url",
                 "image_url": {
                     "url": image_data_uri
                 }
             })
-            logger.info("📷 Photo included in message for vision analysis")
+            logger.info(f"📷 Photo included in message for vision analysis ({photo_media_type})")
         
         # Add current message
         if current_message_content:
@@ -618,7 +528,7 @@ IMPORTANT: Do NOT automatically create cases. Always confirm with the user first
                         case_result = create_salesforce_case(case_info, photo_base64)
                         if case_result['success']:
                             assistant_response = (
-                                f"Great! I've created your service request. Your case number is **{case_result['caseNumber']}**. "
+                                f"✅ Great! I've created service request #{case_result['caseNumber']} for you. "
                                 f"You can use this number to track your request. {case_result['message']}"
                             )
                         else:
