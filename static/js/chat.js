@@ -1,98 +1,97 @@
 /**
- * 311 AI Chat Application - Frontend
- * Handles user interactions, photo uploads, and chat display
+ * 311 AI Chat - Diagnostic Version
  */
+
+console.log('chat.js loading...');
 
 class ChatApp {
     constructor() {
-        // DOM elements
-        this.chatMessages = document.getElementById('chat-messages');
-        this.chatInput = document.getElementById('chat-input');
-        this.sendButton = document.getElementById('send-button');
-        this.photoButton = document.getElementById('photo-button');
-        this.photoInput = document.getElementById('photo-input');
-        this.photoPreview = document.getElementById('photo-preview');
+        console.log('ChatApp constructor starting...');
         
-        // State
-        this.conversation = [];
-        this.isTyping = false;
-        this.currentPhoto = null;
-        
-        // Compression settings
-        this.MAX_SIZE_BYTES = 5 * 1024 * 1024;
-        this.MAX_DIMENSION = 1920;
-        this.COMPRESSION_QUALITY = 0.85;
-        
-        // Event listeners
-        this.setupEventListeners();
-        
-        // Initial greeting
-        this.addMessage(
-            "Hello! I'm your 311 AI Assistant. I can help you report issues like potholes, graffiti, streetlight outages, and more. What can I help you with today?",
-            'assistant'
-        );
+        try {
+            this.chatMessages = document.getElementById('chat-messages');
+            console.log('chatMessages:', this.chatMessages);
+            
+            this.chatInput = document.getElementById('chat-input');
+            console.log('chatInput:', this.chatInput);
+            
+            this.sendButton = document.getElementById('send-button');
+            console.log('sendButton:', this.sendButton);
+            
+            this.photoButton = document.getElementById('photo-button');
+            console.log('photoButton:', this.photoButton);
+            
+            this.photoInput = document.getElementById('photo-input');
+            console.log('photoInput:', this.photoInput);
+            
+            this.photoPreview = document.getElementById('photo-preview');
+            console.log('photoPreview:', this.photoPreview);
+            
+            if (!this.chatMessages || !this.chatInput || !this.sendButton || !this.photoButton || !this.photoInput || !this.photoPreview) {
+                console.error('MISSING DOM ELEMENTS!');
+                alert('ERROR: Missing DOM elements. Check console.');
+                return;
+            }
+            
+            this.conversation = [];
+            this.isTyping = false;
+            this.currentPhoto = null;
+            this.MAX_SIZE_BYTES = 5 * 1024 * 1024;
+            this.MAX_DIMENSION = 1920;
+            this.COMPRESSION_QUALITY = 0.85;
+            
+            console.log('About to setup event listeners...');
+            this.setupEventListeners();
+            console.log('Event listeners setup complete');
+            
+            console.log('About to add greeting message...');
+            this.addMessage("Hello! I'm your 311 AI Assistant. I can help you report issues like potholes, graffiti, streetlight outages, and more. What can I help you with today?", 'assistant');
+            console.log('Greeting message added');
+            
+            console.log('ChatApp constructor complete!');
+        } catch (error) {
+            console.error('Constructor error:', error);
+            alert('Constructor error: ' + error.message);
+        }
     }
     
     setupEventListeners() {
-        // Send message on button click
+        console.log('Setting up event listeners...');
         this.sendButton.addEventListener('click', () => this.sendMessage());
-        
-        // Send message on Enter key
         this.chatInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 this.sendMessage();
             }
         });
-        
-        // Photo upload
         this.photoButton.addEventListener('click', () => {
+            console.log('Photo button clicked!');
             this.photoInput.click();
         });
-        
         this.photoInput.addEventListener('change', (e) => this.handlePhotoSelect(e));
+        console.log('Event listeners attached');
     }
     
     async sendMessage() {
+        console.log('sendMessage called');
         const message = this.chatInput.value.trim();
-        
-        // Require either message or photo
         if (!message && !this.currentPhoto) return;
-        
-        // Don't send if already typing
         if (this.isTyping) return;
         
-        // Add user message to chat
         this.addMessage(message, 'user', this.currentPhoto);
-        
-        // Clear input and photo
         const photoToSend = this.currentPhoto;
         this.chatInput.value = '';
         this.clearPhoto();
-        
-        // Add to conversation history
-        this.conversation.push({
-            role: 'user',
-            content: message,
-            photo: photoToSend
-        });
-        
-        // Show typing indicator
+        this.conversation.push({role: 'user', content: message, photo: photoToSend});
         this.showTypingIndicator();
         
         try {
-            // Send to backend
             const response = await fetch('/chat', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
                     message: message,
-                    conversation: this.conversation.map(msg => ({
-                        role: msg.role,
-                        content: msg.content
-                    })),
+                    conversation: this.conversation.map(msg => ({role: msg.role, content: msg.content})),
                     photo: photoToSend
                 })
             });
@@ -101,26 +100,14 @@ class ChatApp {
             
             if (response.ok) {
                 const data = await response.json();
-                
-                // Add assistant response
                 this.addMessage(data.response, 'assistant');
-                
-                // Add to conversation history
-                this.conversation.push({
-                    role: 'assistant',
-                    content: data.response
-                });
+                this.conversation.push({role: 'assistant', content: data.response});
             } else {
-                // Try to get error message from response
                 let errorMessage = 'Sorry, I encountered an error. Please try again.';
                 try {
                     const errorData = await response.json();
-                    if (errorData.error) {
-                        errorMessage = errorData.error;
-                    }
-                } catch (e) {
-                    // JSON parsing failed, use default message
-                }
+                    if (errorData.error) errorMessage = errorData.error;
+                } catch (e) {}
                 this.addMessage(errorMessage, 'assistant');
             }
         } catch (error) {
@@ -133,45 +120,29 @@ class ChatApp {
     addMessage(text, sender, photo = null) {
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${sender}-message`;
-        
         const contentDiv = document.createElement('div');
         contentDiv.className = 'message-content';
-        
-        // Add photo if present
         if (photo && sender === 'user') {
             const photoData = typeof photo === 'object' ? (photo.compressed_data || photo.data) : photo;
             const mediaType = typeof photo === 'object' ? photo.media_type : 'image/jpeg';
             contentDiv.innerHTML += `<img src="data:${mediaType};base64,${photoData}" style="max-width: 200px; border-radius: 8px; margin-bottom: 8px; display: block;">`;
         }
-        
-        // Add text if present
         if (text) {
             const formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
             contentDiv.innerHTML += formattedText;
         }
-        
         messageDiv.appendChild(contentDiv);
         this.chatMessages.appendChild(messageDiv);
-        
         this.scrollToBottom();
     }
     
     showTypingIndicator() {
         this.isTyping = true;
         this.sendButton.disabled = true;
-        
         const typingDiv = document.createElement('div');
         typingDiv.className = 'message assistant-message';
         typingDiv.id = 'typing-indicator';
-        
-        typingDiv.innerHTML = `
-            <div class="typing-indicator">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-        `;
-        
+        typingDiv.innerHTML = `<div class="typing-indicator"><span></span><span></span><span></span></div>`;
         this.chatMessages.appendChild(typingDiv);
         this.scrollToBottom();
     }
@@ -179,63 +150,38 @@ class ChatApp {
     hideTypingIndicator() {
         this.isTyping = false;
         this.sendButton.disabled = false;
-        
         const typingIndicator = document.getElementById('typing-indicator');
-        if (typingIndicator) {
-            typingIndicator.remove();
-        }
+        if (typingIndicator) typingIndicator.remove();
     }
     
     async handlePhotoSelect(event) {
+        console.log('handlePhotoSelect called');
         const file = event.target.files[0];
         if (!file) return;
-        
         if (!file.type.startsWith('image/')) {
             alert('Please select an image file');
             return;
         }
-        
         const fileSizeMB = file.size / (1024 * 1024);
-        
         try {
-            // Show processing message for large files
-            if (fileSizeMB > 3) {
-                this.showPhotoPreview('', file.type, true);
-            }
-            
-            // Read original file
+            if (fileSizeMB > 3) this.showPhotoPreview('', file.type, true);
             const originalBase64 = await this.fileToBase64(file);
-            
-            // Decide: compress or use as-is?
             let compressedData = originalBase64;
             let needsCompression = file.size > this.MAX_SIZE_BYTES;
-            
             if (needsCompression) {
                 console.log(`Image is ${fileSizeMB.toFixed(2)} MB, compressing...`);
                 compressedData = await this.compressImage(file);
-                
-                // Verify compressed size
                 const compressedSize = (compressedData.length * 3) / 4;
                 const compressedMB = compressedSize / (1024 * 1024);
                 console.log(`Compressed to ${compressedMB.toFixed(2)} MB`);
-                
                 if (compressedSize > this.MAX_SIZE_BYTES) {
                     alert(`Image is too large (${compressedMB.toFixed(1)} MB even after compression). Please use a smaller image.`);
                     this.photoInput.value = '';
                     return;
                 }
             }
-            
-            // Store both versions
-            this.currentPhoto = {
-                compressed_data: compressedData,
-                original_data: originalBase64,
-                media_type: file.type,
-                was_compressed: needsCompression
-            };
-            
+            this.currentPhoto = {compressed_data: compressedData, original_data: originalBase64, media_type: file.type, was_compressed: needsCompression};
             this.showPhotoPreview(compressedData, file.type, false);
-            
         } catch (error) {
             console.error('Error processing photo:', error);
             alert('Error processing photo. Please try again with a different image.');
@@ -246,10 +192,7 @@ class ChatApp {
     fileToBase64(file) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
-            reader.onload = () => {
-                const base64 = reader.result.split(',')[1];
-                resolve(base64);
-            };
+            reader.onload = () => resolve(reader.result.split(',')[1]);
             reader.onerror = reject;
             reader.readAsDataURL(file);
         });
@@ -258,14 +201,11 @@ class ChatApp {
     async compressImage(file) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
-            
             reader.onload = (e) => {
                 const img = new Image();
-                
                 img.onload = () => {
                     let width = img.width;
                     let height = img.height;
-                    
                     if (width > this.MAX_DIMENSION || height > this.MAX_DIMENSION) {
                         if (width > height) {
                             height = Math.round((height * this.MAX_DIMENSION) / width);
@@ -275,24 +215,17 @@ class ChatApp {
                             height = this.MAX_DIMENSION;
                         }
                     }
-                    
                     const canvas = document.createElement('canvas');
                     canvas.width = width;
                     canvas.height = height;
-                    
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
-                    
                     const compressedDataUrl = canvas.toDataURL(file.type, this.COMPRESSION_QUALITY);
-                    const base64 = compressedDataUrl.split(',')[1];
-                    
-                    resolve(base64);
+                    resolve(compressedDataUrl.split(',')[1]);
                 };
-                
                 img.onerror = () => reject(new Error('Failed to load image for compression'));
                 img.src = e.target.result;
             };
-            
             reader.onerror = () => reject(new Error('Failed to read image file'));
             reader.readAsDataURL(file);
         });
@@ -300,18 +233,9 @@ class ChatApp {
     
     showPhotoPreview(base64, media_type = 'image/jpeg', isLoading = false) {
         if (isLoading) {
-            this.photoPreview.innerHTML = `
-                <div style="padding: 20px; text-align: center;">
-                    <div>Processing large image...</div>
-                </div>
-            `;
+            this.photoPreview.innerHTML = '<div style="padding: 20px; text-align: center;"><div>Processing large image...</div></div>';
         } else {
-            this.photoPreview.innerHTML = `
-                <div style="position: relative; display: inline-block;">
-                    <img src="data:${media_type};base64,${base64}" alt="Selected photo">
-                    <button onclick="chatApp.clearPhoto()" style="position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 20px; line-height: 1;">×</button>
-                </div>
-            `;
+            this.photoPreview.innerHTML = `<div style="position: relative; display: inline-block;"><img src="data:${media_type};base64,${base64}" alt="Selected photo"><button onclick="chatApp.clearPhoto()" style="position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 20px; line-height: 1;">×</button></div>`;
         }
         this.photoPreview.classList.remove('hidden');
     }
@@ -329,6 +253,10 @@ class ChatApp {
 }
 
 let chatApp;
+console.log('Setting up DOMContentLoaded listener...');
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM loaded, creating ChatApp...');
     chatApp = new ChatApp();
+    console.log('ChatApp created:', chatApp);
 });
+console.log('chat.js loaded completely');
