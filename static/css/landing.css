@@ -1,0 +1,184 @@
+/* Landing Page Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+}
+
+.hero-section {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.hero-content {
+    text-align: center;
+    max-width: 900px;
+    width: 100%;
+}
+
+h1 {
+    font-size: 3rem;
+    color: white;
+    margin-bottom: 1rem;
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.hero-subtitle {
+    font-size: 1.25rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 3rem;
+    font-weight: 400;
+}
+
+.issue-types {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.issue-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    padding: 1.5rem 1rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.issue-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+    background: white;
+}
+
+.issue-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.issue-label {
+    font-size: 0.9rem;
+    color: #333;
+    font-weight: 600;
+}
+
+.cta-container {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding-right: 6rem;
+}
+
+.arrow-indicator {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    animation: float 2s ease-in-out infinite;
+}
+
+.arrow-text {
+    font-size: 1.5rem;
+    color: white;
+    font-weight: 600;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.arrow {
+    font-size: 2.5rem;
+    color: white;
+    animation: bounce-right 1s ease-in-out infinite;
+}
+
+/* Pulse animation for chat bubble */
+.chat-bubble.pulse {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transform: scale(1);
+    }
+    50% {
+        box-shadow: 0 4px 20px rgba(102, 126, 234, 0.6);
+        transform: scale(1.05);
+    }
+}
+
+@keyframes bounce-right {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    50% {
+        transform: translateX(10px);
+    }
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    h1 {
+        font-size: 2rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1rem;
+    }
+    
+    .issue-types {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+    
+    .issue-card {
+        padding: 1rem;
+    }
+    
+    .issue-icon {
+        font-size: 2rem;
+    }
+    
+    .cta-container {
+        justify-content: center;
+        padding-right: 0;
+    }
+    
+    .arrow-text {
+        font-size: 1.2rem;
+    }
+    
+    .arrow {
+        font-size: 2rem;
+    }
+}
+
+/* Make sure chat bubble stays on top */
+.chat-bubble {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+}
