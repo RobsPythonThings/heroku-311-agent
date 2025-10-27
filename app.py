@@ -500,19 +500,24 @@ def index():
 def chat():
     """
     Main chat endpoint with vision support via Heroku Managed Inference
-    Accepts: message (required), conversation (optional), photo (optional)
+    Accepts: message (optional if photo present), conversation (optional), photo (optional)
     Returns: AI assistant response with case creation capability
     """
     try:
         data = request.json
         user_message = data.get('message', '').strip()
         conversation = data.get('conversation', [])
-        photo_base64 = data.get('photo')  # Base64 encoded image
+        photo_base64 = data.get('photo')  # Base64 encoded image or dict with data/media_type
         
-        if not user_message:
-            return jsonify({'success': False, 'error': 'Message is required'}), 400
+        # Extract photo data if it's a dict
+        if isinstance(photo_base64, dict):
+            photo_base64 = photo_base64.get('data')
         
-        logger.info(f"📨 Received message: {user_message[:100]}...")
+        # Require either message or photo
+        if not user_message and not photo_base64:
+            return jsonify({'success': False, 'error': 'Message or photo is required'}), 400
+        
+        logger.info(f"📨 Received message: {user_message[:100] if user_message else '[photo only]'}...")
         
         # Validate photo if present
         if photo_base64:
@@ -531,10 +536,13 @@ def chat():
         
         # Build current message content
         current_message_content = []
-        current_message_content.append({
-            "type": "text",
-            "text": user_message
-        })
+        
+        # Add text if present
+        if user_message:
+            current_message_content.append({
+                "type": "text",
+                "text": user_message
+            })
         
         # ONLY add system prompt if this is the very first message (no conversation history)
         is_first_message = len(conversation) == 0
@@ -549,6 +557,8 @@ Help citizens report issues like potholes, graffiti, broken streetlights, and ot
 Be friendly, gather necessary information (location, description), and when ready, confirm with the user before creating a case.
 Ask: "Would you like me to create a service request for this?"
 
+When analyzing photos, describe what you see and ask clarifying questions about the issue shown.
+
 IMPORTANT: Do NOT automatically create cases. Always confirm with the user first."""
             }
             messages.insert(0, system_message)
@@ -556,7 +566,7 @@ IMPORTANT: Do NOT automatically create cases. Always confirm with the user first
         
         # Add photo to current message if present
         if photo_base64:
-            # Use data URI format for Heroku Managed Inference
+            # Use data URI format for vision analysis
             image_data_uri = f"data:image/jpeg;base64,{photo_base64}"
             current_message_content.append({
                 "type": "image_url",
@@ -568,14 +578,14 @@ IMPORTANT: Do NOT automatically create cases. Always confirm with the user first
         
         # Add current message
         if current_message_content:
-            if len(current_message_content) == 1:
+            if len(current_message_content) == 1 and current_message_content[0].get("type") == "text":
                 # Text only - use string format
                 messages.append({
                     "role": "user",
-                    "content": current_message_content[0]["text"] if current_message_content[0]["type"] == "text" else current_message_content
+                    "content": current_message_content[0]["text"]
                 })
             else:
-                # Multimodal - use array format
+                # Multimodal (or photo-only) - use array format
                 messages.append({
                     "role": "user",
                     "content": current_message_content
@@ -591,7 +601,7 @@ IMPORTANT: Do NOT automatically create cases. Always confirm with the user first
         )
         
         # Check if user wants to create a case
-        if any(phrase in user_message.lower() for phrase in ['create', 'submit', 'yes', 'please do', 'go ahead']):
+        if user_message and any(phrase in user_message.lower() for phrase in ['create', 'submit', 'yes', 'please do', 'go ahead']):
             # Look for photo in conversation if not in current message
             if not photo_base64:
                 photo_base64 = find_photo_in_conversation(conversation)
