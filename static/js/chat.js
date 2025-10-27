@@ -1,5 +1,5 @@
 /**
- * 311 AI Chat - Diagnostic Version
+ * 311 AI Chat - Deep Diagnostic Version
  */
 
 console.log('chat.js loading...');
@@ -74,8 +74,12 @@ class ChatApp {
     
     async sendMessage() {
         console.log('sendMessage called');
+        console.log('currentPhoto:', this.currentPhoto);
         const message = this.chatInput.value.trim();
-        if (!message && !this.currentPhoto) return;
+        if (!message && !this.currentPhoto) {
+            console.log('No message and no photo - returning');
+            return;
+        }
         if (this.isTyping) return;
         
         this.addMessage(message, 'user', this.currentPhoto);
@@ -155,55 +159,104 @@ class ChatApp {
     }
     
     async handlePhotoSelect(event) {
-        console.log('handlePhotoSelect called');
-        const file = event.target.files[0];
-        if (!file) return;
-        if (!file.type.startsWith('image/')) {
-            alert('Please select an image file');
-            return;
-        }
-        const fileSizeMB = file.size / (1024 * 1024);
+        console.log('=== handlePhotoSelect START ===');
         try {
-            if (fileSizeMB > 3) this.showPhotoPreview('', file.type, true);
+            console.log('Step 1: Getting file...');
+            const file = event.target.files[0];
+            console.log('File:', file);
+            
+            if (!file) {
+                console.log('No file selected, returning');
+                return;
+            }
+            
+            console.log('Step 2: Checking file type:', file.type);
+            if (!file.type.startsWith('image/')) {
+                console.log('Not an image!');
+                alert('Please select an image file');
+                return;
+            }
+            
+            console.log('Step 3: Calculating size...');
+            const fileSizeMB = file.size / (1024 * 1024);
+            console.log('File size:', fileSizeMB, 'MB');
+            
+            console.log('Step 4: Entering try block...');
+            if (fileSizeMB > 3) {
+                console.log('Large file, showing preview...');
+                this.showPhotoPreview('', file.type, true);
+            }
+            
+            console.log('Step 5: Converting to base64...');
             const originalBase64 = await this.fileToBase64(file);
+            console.log('Base64 length:', originalBase64.length);
+            
+            console.log('Step 6: Checking if compression needed...');
             let compressedData = originalBase64;
             let needsCompression = file.size > this.MAX_SIZE_BYTES;
+            console.log('Needs compression:', needsCompression);
+            
             if (needsCompression) {
-                console.log(`Image is ${fileSizeMB.toFixed(2)} MB, compressing...`);
+                console.log('Step 7: Compressing image...');
                 compressedData = await this.compressImage(file);
                 const compressedSize = (compressedData.length * 3) / 4;
                 const compressedMB = compressedSize / (1024 * 1024);
                 console.log(`Compressed to ${compressedMB.toFixed(2)} MB`);
+                
                 if (compressedSize > this.MAX_SIZE_BYTES) {
                     alert(`Image is too large (${compressedMB.toFixed(1)} MB even after compression). Please use a smaller image.`);
                     this.photoInput.value = '';
                     return;
                 }
             }
-            this.currentPhoto = {compressed_data: compressedData, original_data: originalBase64, media_type: file.type, was_compressed: needsCompression};
+            
+            console.log('Step 8: Setting currentPhoto...');
+            this.currentPhoto = {
+                compressed_data: compressedData,
+                original_data: originalBase64,
+                media_type: file.type,
+                was_compressed: needsCompression
+            };
+            console.log('currentPhoto set:', this.currentPhoto);
+            
+            console.log('Step 9: Showing preview...');
             this.showPhotoPreview(compressedData, file.type, false);
+            console.log('=== handlePhotoSelect COMPLETE ===');
+            
         } catch (error) {
-            console.error('Error processing photo:', error);
-            alert('Error processing photo. Please try again with a different image.');
+            console.error('=== handlePhotoSelect ERROR ===');
+            console.error('Error:', error);
+            console.error('Stack:', error.stack);
+            alert('Error processing photo: ' + error.message);
             this.photoInput.value = '';
         }
     }
     
     fileToBase64(file) {
+        console.log('fileToBase64 called');
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
-            reader.onload = () => resolve(reader.result.split(',')[1]);
-            reader.onerror = reject;
+            reader.onload = () => {
+                console.log('FileReader onload');
+                resolve(reader.result.split(',')[1]);
+            };
+            reader.onerror = (error) => {
+                console.error('FileReader error:', error);
+                reject(error);
+            };
             reader.readAsDataURL(file);
         });
     }
     
     async compressImage(file) {
+        console.log('compressImage called');
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = (e) => {
+                console.log('Image reader onload');
                 const img = new Image();
                 img.onload = () => {
+                    console.log('Image onload, size:', img.width, 'x', img.height);
                     let width = img.width;
                     let height = img.height;
                     if (width > this.MAX_DIMENSION || height > this.MAX_DIMENSION) {
@@ -215,32 +268,43 @@ class ChatApp {
                             height = this.MAX_DIMENSION;
                         }
                     }
+                    console.log('Resized to:', width, 'x', height);
                     const canvas = document.createElement('canvas');
                     canvas.width = width;
                     canvas.height = height;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
                     const compressedDataUrl = canvas.toDataURL(file.type, this.COMPRESSION_QUALITY);
+                    console.log('Compressed dataURL length:', compressedDataUrl.length);
                     resolve(compressedDataUrl.split(',')[1]);
                 };
-                img.onerror = () => reject(new Error('Failed to load image for compression'));
+                img.onerror = (error) => {
+                    console.error('Image load error:', error);
+                    reject(new Error('Failed to load image for compression'));
+                };
                 img.src = e.target.result;
             };
-            reader.onerror = () => reject(new Error('Failed to read image file'));
+            reader.onerror = (error) => {
+                console.error('Compress reader error:', error);
+                reject(new Error('Failed to read image file'));
+            };
             reader.readAsDataURL(file);
         });
     }
     
     showPhotoPreview(base64, media_type = 'image/jpeg', isLoading = false) {
+        console.log('showPhotoPreview called, isLoading:', isLoading);
         if (isLoading) {
             this.photoPreview.innerHTML = '<div style="padding: 20px; text-align: center;"><div>Processing large image...</div></div>';
         } else {
             this.photoPreview.innerHTML = `<div style="position: relative; display: inline-block;"><img src="data:${media_type};base64,${base64}" alt="Selected photo"><button onclick="chatApp.clearPhoto()" style="position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 20px; line-height: 1;">×</button></div>`;
         }
         this.photoPreview.classList.remove('hidden');
+        console.log('Preview shown');
     }
     
     clearPhoto() {
+        console.log('clearPhoto called');
         this.currentPhoto = null;
         this.photoPreview.classList.add('hidden');
         this.photoPreview.innerHTML = '';
