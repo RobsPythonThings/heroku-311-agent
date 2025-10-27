@@ -23,7 +23,10 @@ class ChatApp {
     setupEventListeners() {
         this.sendButton.addEventListener('click', () => this.sendMessage());
         this.chatInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this.sendMessage(); }
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                this.sendMessage();
+            }
         });
         this.photoButton.addEventListener('click', () => this.photoInput.click());
         this.photoInput.addEventListener('change', (e) => this.handlePhotoSelect(e));
@@ -37,15 +40,15 @@ class ChatApp {
         const photoToSend = this.currentPhoto;
         this.chatInput.value = '';
         this.clearPhoto();
-        this.conversation.push({ role: 'user', content: message, photo: photoToSend });
+        this.conversation.push({role: 'user', content: message, photo: photoToSend});
         this.showTypingIndicator();
         try {
             const response = await fetch('/chat', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
                     message: message,
-                    conversation: this.conversation.map(msg => ({ role: msg.role, content: msg.content })),
+                    conversation: this.conversation.map(msg => ({role: msg.role, content: msg.content})),
                     photo: photoToSend
                 })
             });
@@ -53,7 +56,7 @@ class ChatApp {
             if (response.ok) {
                 const data = await response.json();
                 this.addMessage(data.response, 'assistant');
-                this.conversation.push({ role: 'assistant', content: data.response });
+                this.conversation.push({role: 'assistant', content: data.response});
             } else {
                 let errorMessage = 'Sorry, I encountered an error. Please try again.';
                 try {
@@ -71,13 +74,13 @@ class ChatApp {
     
     addMessage(text, sender, photo = null) {
         const messageDiv = document.createElement('div');
-        messageDiv.className = `message ${sender}-message`;
+        messageDiv.className = 'message ' + sender + '-message';
         const contentDiv = document.createElement('div');
         contentDiv.className = 'message-content';
         if (photo && sender === 'user') {
-            const photoData = typeof photo === 'object' ? photo.compressed_data : photo;
+            const photoData = typeof photo === 'object' ? photo.compressed_data || photo.data : photo;
             const mediaType = typeof photo === 'object' ? photo.media_type : 'image/jpeg';
-            contentDiv.innerHTML += `<img src="data:${mediaType};base64,${photoData}" style="max-width: 200px; border-radius: 8px; margin-bottom: 8px; display: block;">`;
+            contentDiv.innerHTML += '<img src="data:' + mediaType + ';base64,' + photoData + '" style="max-width: 200px; border-radius: 8px; margin-bottom: 8px; display: block;">';
         }
         if (text) {
             const formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
@@ -94,7 +97,7 @@ class ChatApp {
         const typingDiv = document.createElement('div');
         typingDiv.className = 'message assistant-message';
         typingDiv.id = 'typing-indicator';
-        typingDiv.innerHTML = `<div class="typing-indicator"><span></span><span></span><span></span></div>`;
+        typingDiv.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
         this.chatMessages.appendChild(typingDiv);
         this.scrollToBottom();
     }
@@ -109,7 +112,10 @@ class ChatApp {
     async handlePhotoSelect(event) {
         const file = event.target.files[0];
         if (!file) return;
-        if (!file.type.startsWith('image/')) { alert('Please select an image file'); return; }
+        if (!file.type.startsWith('image/')) {
+            alert('Please select an image file');
+            return;
+        }
         const fileSizeMB = file.size / (1024 * 1024);
         try {
             if (fileSizeMB > 3) this.showPhotoPreview('', file.type, true);
@@ -117,13 +123,13 @@ class ChatApp {
             let compressedData = originalBase64;
             let needsCompression = file.size > this.MAX_SIZE_BYTES;
             if (needsCompression) {
-                console.log(`Image is ${fileSizeMB.toFixed(2)} MB, compressing...`);
+                console.log('Image is ' + fileSizeMB.toFixed(2) + ' MB, compressing...');
                 compressedData = await this.compressImage(file);
                 const compressedSize = (compressedData.length * 3) / 4;
                 const compressedMB = compressedSize / (1024 * 1024);
-                console.log(`Compressed to ${compressedMB.toFixed(2)} MB`);
+                console.log('Compressed to ' + compressedMB.toFixed(2) + ' MB');
                 if (compressedSize > this.MAX_SIZE_BYTES) {
-                    alert(`Image is too large (${compressedMB.toFixed(1)} MB even after compression). Please use a smaller image.`);
+                    alert('Image is too large (' + compressedMB.toFixed(1) + ' MB even after compression). Please use a smaller image.');
                     this.photoInput.value = '';
                     return;
                 }
@@ -184,11 +190,11 @@ class ChatApp {
         });
     }
     
-    showPhotoPreview(base64, media_type = 'image/jpeg', isLoading = false) {
+    showPhotoPreview(base64, media_type, isLoading) {
         if (isLoading) {
-            this.photoPreview.innerHTML = `<div style="padding: 20px; text-align: center;"><div>Processing large image...</div></div>`;
+            this.photoPreview.innerHTML = '<div style="padding: 20px; text-align: center;"><div>Processing large image...</div></div>';
         } else {
-            this.photoPreview.innerHTML = `<div style="position: relative; display: inline-block;"><img src="data:${media_type};base64,${base64}" alt="Selected photo"><button onclick="chatApp.clearPhoto()" style="position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 20px; line-height: 1;">×</button></div>`;
+            this.photoPreview.innerHTML = '<div style="position: relative; display: inline-block;"><img src="data:' + media_type + ';base64,' + base64 + '" alt="Selected photo"><button onclick="chatApp.clearPhoto()" style="position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 20px; line-height: 1;">×</button></div>';
         }
         this.photoPreview.classList.remove('hidden');
     }
@@ -206,4 +212,6 @@ class ChatApp {
 }
 
 let chatApp;
-document.addEventListener('DOMContentLoaded', () => { chatApp = new ChatApp(); });
+document.addEventListener('DOMContentLoaded', function() {
+    chatApp = new ChatApp();
+});
