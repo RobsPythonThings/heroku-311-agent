@@ -1,7 +1,8 @@
 """
-311 AI Chat Application - PRODUCTION GRADE
-Flask backend with Heroku Managed Inference, JWT authentication, retry logic, and comprehensive error handling
-Supports vision analysis via Heroku Managed Inference with fallback to Claude API
+311 AI Chat Application - WORLD CLASS PRODUCTION GRADE
+Smart routing: Photos → Claude API, Text → Heroku Managed Inference
+Unified 311 agent personality across both LLMs
+JWT authentication, retry logic, comprehensive error handling
 """
 
 import os
@@ -20,7 +21,6 @@ import httpx
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
-from dateutil import parser
 
 # ============================================================================
 # CONFIGURATION & LOGGING
@@ -45,65 +45,135 @@ API_CALL_COUNTS = {
     'salesforce': {'count': 0, 'reset_time': time.time() + 60}
 }
 RATE_LIMITS = {
-    'heroku_inference': 150,  # Heroku Managed Inference limit: 150 req/min
-    'claude_api': 50,  # Direct Claude API fallback limit
-    'salesforce': 100  # calls per minute
+    'heroku_inference': 150,  # Heroku Managed Inference limit
+    'claude_api': 50,         # Claude API limit
+    'salesforce': 100         # Salesforce API limit
 }
 
 # ============================================================================
-# HEROKU MANAGED INFERENCE CLIENT INITIALIZATION
+# UNIFIED 311 AGENT PERSONALITY
 # ============================================================================
 
-class HerokuInferenceClient:
+AGENT_311_PERSONALITY = """You are a professional, empathetic, and helpful 311 service assistant for the City of Toronto, Canada. 
+
+Your mission is to help citizens report city infrastructure issues efficiently and create accurate service requests.
+
+📋 SUPPORTED ISSUE TYPES (use these EXACT strings):
+• **Pothole** - Damaged road surface, holes, cracks, asphalt damage
+• **Graffiti** - Vandalism, spray paint, tags on public/private property
+• **Streetlight Out** - Non-functioning street lights, dark poles, broken fixtures
+• **Sidewalk Repair** - Damaged sidewalk, cracks, uneven concrete, tripping hazards
+• **Missed Garbage Collection** - Overflowing bins, uncollected trash/recycling
+• **Noise Complaint** - Excessive noise issues
+
+YOUR WORKFLOW:
+1. **Understand the issue**: Identify which of the 6 complaint types this is
+2. **Gather location**: Get the specific address or intersection
+3. **Collect details**: Ask clarifying questions about severity, size, duration
+4. **Get contact info**: Request email address (required) and phone (optional)
+5. **Confirm**: Once you have all info, ask: "Would you like me to create a service request for this [complaint type]?"
+
+PERSONALITY GUIDELINES:
+✅ Professional but warm - you're here to help
+✅ Efficient - ask focused questions to get needed info
+✅ Empathetic - acknowledge the citizen's concern
+✅ Clear - use simple language, avoid jargon
+✅ Action-oriented - guide them toward resolution
+
+CRITICAL RULES:
+⚠️ ALWAYS use the EXACT complaint type names from the list above
+⚠️ NEVER create a case without citizen confirmation
+⚠️ NEVER hallucinate or make up case numbers
+⚠️ ALWAYS collect location and email before case creation
+⚠️ Be concise - keep responses focused and helpful
+"""
+
+PHOTO_ANALYSIS_INSTRUCTIONS = """
+🔍 PHOTO ANALYSIS PROTOCOL:
+When a photo is uploaded, follow this process:
+
+1. **Identify the issue**: Examine the photo carefully and determine which of the 6 supported types it shows
+2. **Describe what you see**: Be specific about the infrastructure problem
+   Example: "I can see a large pothole approximately 2-3 feet in diameter with cracked edges, water pooling, and exposed gravel"
+3. **Ask for location**: "Where is this located? Please provide the address or nearest intersection"
+4. **Clarifying questions**: Ask about duration, safety concerns, additional details
+5. **Collect email**: "What email address should we use for updates on your request?"
+6. **Confirm**: "I have all the details. Would you like me to create a service request for this [complaint type]?"
+
+Be descriptive and professional when analyzing photos.
+"""
+
+# ============================================================================
+# SMART AI ROUTING CLIENT
+# ============================================================================
+
+class SmartAIRouter:
     """
-    Production-grade Heroku Managed Inference client with retry logic,
-    fallback to Claude API, and comprehensive error handling
+    World-class AI routing: Photos → Claude API (vision), Text → Heroku Managed Inference
+    Unified 311 personality across both LLMs
     """
     
     def __init__(self):
         # Heroku Managed Inference config
         self.inference_url = os.environ.get('INFERENCE_URL')
         self.inference_key = os.environ.get('INFERENCE_KEY')
-        self.inference_model_id = os.environ.get('INFERENCE_MODEL_ID')
+        self.inference_model_id = os.environ.get('INFERENCE_MODEL_ID', 'claude-4-5-sonnet')
         
-        # Fallback: Direct Claude API
+        # Claude API config
         self.claude_api_key = os.environ.get('CLAUDE_API_KEY')
         self.claude_client = None
         
-        # Determine which service is available
-        self.use_heroku_inference = bool(self.inference_url and self.inference_key and self.inference_model_id)
-        self.use_claude_fallback = bool(self.claude_api_key)
+        # Service availability
+        self.hmi_available = bool(self.inference_url and self.inference_key)
+        self.claude_available = bool(self.claude_api_key)
         
-        if self.use_heroku_inference:
-            logger.info("✅ Heroku Managed Inference initialized")
-            logger.info(f"   Model: {self.inference_model_id}")
+        if self.hmi_available:
+            logger.info(f"✅ Heroku Managed Inference ready ({self.inference_model_id})")
         else:
             logger.warning("⚠️ Heroku Managed Inference not configured")
         
-        # Initialize Claude API as fallback
-        if self.use_claude_fallback:
+        if self.claude_available:
             try:
                 self.claude_client = anthropic.Anthropic(
                     api_key=self.claude_api_key,
                     http_client=httpx.Client(proxy=None)
                 )
-                logger.info("✅ Claude API fallback initialized")
+                logger.info("✅ Claude API ready")
             except Exception as e:
-                logger.error(f"❌ Failed to initialize Claude API fallback: {str(e)}")
-                self.claude_client = None
+                logger.error(f"❌ Claude API initialization failed: {e}")
+                self.claude_available = False
         
-        if not self.use_heroku_inference and not self.use_claude_fallback:
-            logger.error("❌ No AI inference service configured!")
+        if not self.hmi_available and not self.claude_available:
+            logger.error("❌ NO AI SERVICES CONFIGURED!")
+    
+    def create_message(self, messages, has_photo=False, max_tokens=1024):
+        """
+        Smart routing with unified 311 personality:
+        - Photo present → Claude API (vision capable)
+        - Text only → Heroku Managed Inference (faster, cheaper)
+        """
+        # DECISION: Route based on photo presence
+        if has_photo:
+            logger.info("🎯 ROUTING: Photo detected → Claude API")
+            return self._call_claude_api(messages, max_tokens)
+        else:
+            logger.info("🎯 ROUTING: Text only → Heroku Managed Inference")
+            # Try HMI, fallback to Claude if it fails
+            try:
+                return self._call_heroku_inference(messages, max_tokens)
+            except Exception as e:
+                logger.warning(f"⚠️ HMI failed, falling back to Claude API: {e}")
+                return self._call_claude_api(messages, max_tokens)
     
     @retry(
         stop=stop_after_attempt(3),
         wait=wait_exponential(multiplier=1, min=1, max=5),
         retry=retry_if_exception_type((requests.exceptions.RequestException, ConnectionError)),
-        reraise=False
+        reraise=True
     )
-    def _call_heroku_inference(self, messages, max_tokens=1024, temperature=1.0):
+    def _call_heroku_inference(self, messages, max_tokens=1024):
         """Call Heroku Managed Inference with retry logic"""
-        if not self.use_heroku_inference:
+        if not self.hmi_available:
             raise Exception("Heroku Managed Inference not configured")
         
         if not check_rate_limit('heroku_inference'):
@@ -118,7 +188,7 @@ class HerokuInferenceClient:
             "model": self.inference_model_id,
             "messages": messages,
             "max_tokens": max_tokens,
-            "temperature": temperature
+            "temperature": 1.0
         }
         
         logger.info(f"🔵 Calling Heroku Managed Inference ({self.inference_model_id})")
@@ -131,7 +201,7 @@ class HerokuInferenceClient:
         )
         
         if response.status_code != 200:
-            error_msg = f"Heroku Inference API error: {response.status_code} - {response.text}"
+            error_msg = f"HMI error: {response.status_code} - {response.text}"
             logger.error(f"❌ {error_msg}")
             raise Exception(error_msg)
         
@@ -143,38 +213,36 @@ class HerokuInferenceClient:
     @retry(
         stop=stop_after_attempt(3),
         wait=wait_exponential(multiplier=1, min=1, max=5),
-        retry=retry_if_exception_type((anthropic.APIError, requests.exceptions.RequestException)),
-        reraise=False
+        retry=retry_if_exception_type((anthropic.APIError,)),
+        reraise=True
     )
-    def _call_claude_api(self, messages, max_tokens=1024, temperature=1.0):
+    def _call_claude_api(self, messages, max_tokens=1024):
         """Call Claude API directly - supports vision with base64 images"""
-        if not self.claude_client:
-            raise Exception("Claude API fallback not configured")
+        if not self.claude_available:
+            raise Exception("Claude API not configured")
         
         if not check_rate_limit('claude_api'):
             raise Exception("Rate limit exceeded for Claude API")
         
         logger.info("🟠 Calling Claude API")
         
-        # Convert messages to Claude format (no need to extract system messages anymore)
+        # Convert messages to Claude format
         claude_messages = []
         
         for msg in messages:
-            # Convert user/assistant messages
             if isinstance(msg['content'], str):
                 # Simple text message
                 claude_messages.append(msg)
             elif isinstance(msg['content'], list):
-                # Multimodal message - convert image_url format to Claude's image format
+                # Multimodal message - convert image_url format to Claude's format
                 converted_content = []
                 for item in msg['content']:
                     if item['type'] == 'text':
                         converted_content.append(item)
                     elif item['type'] == 'image_url':
-                        # Extract base64 from data URI format
+                        # Extract base64 from data URI
                         image_url = item['image_url']['url']
                         if image_url.startswith('data:image/'):
-                            # Parse: data:image/jpeg;base64,<base64_data>
                             media_type = image_url.split(';')[0].split(':')[1]
                             base64_data = image_url.split(',', 1)[1]
                             converted_content.append({
@@ -186,83 +254,52 @@ class HerokuInferenceClient:
                                 }
                             })
                             logger.info(f"📷 Converted image to Claude format ({media_type})")
+                
                 claude_messages.append({
                     "role": msg['role'],
                     "content": converted_content
                 })
         
-        # Build API call parameters
-        api_params = {
-            "model": "claude-sonnet-4-20250514",
-            "max_tokens": max_tokens,
-            "temperature": temperature,
-            "messages": claude_messages
-        }
+        response = self.claude_client.messages.create(
+            model="claude-sonnet-4-20250514",
+            max_tokens=max_tokens,
+            temperature=1.0,
+            messages=claude_messages
+        )
         
-        response = self.claude_client.messages.create(**api_params)
         logger.info("✅ Claude API response received")
-        
         return response.content[0].text
     
-    def create_message(self, messages, max_tokens=1024, temperature=1.0):
-        """
-        Smart routing: Try Heroku Managed Inference first, fallback to Claude API on failure
-        """
-        errors = []
-        
-        # Try Heroku Managed Inference first (if configured)
-        if self.use_heroku_inference:
-            try:
-                return self._call_heroku_inference(messages, max_tokens, temperature)
-            except Exception as e:
-                error_msg = f"Heroku Inference failed: {str(e)}"
-                logger.warning(f"⚠️ {error_msg}")
-                errors.append(error_msg)
-        
-        # Fallback to Claude API
-        if self.use_claude_fallback:
-            try:
-                return self._call_claude_api(messages, max_tokens, temperature)
-            except Exception as e:
-                error_msg = f"Claude API failed: {str(e)}"
-                logger.error(f"❌ {error_msg}")
-                errors.append(error_msg)
-        
-        # If both failed, raise exception
-        raise Exception(f"All AI services failed: {'; '.join(errors)}")
-    
     def health_check(self):
-        """Test both AI services and return status"""
+        """Test both services"""
         status = {}
         
-        # Test Heroku Managed Inference
-        if self.use_heroku_inference:
+        # Test HMI
+        if self.hmi_available:
             try:
-                test_msg = [{"role": "user", "content": "Say 'ok'"}]
-                response = self._call_heroku_inference(test_msg, max_tokens=10)
-                status['heroku_inference'] = 'ok' if response else 'error'
+                test = self._call_heroku_inference([{"role": "user", "content": "Say ok"}], max_tokens=10)
+                status['heroku_inference'] = 'ok' if test else 'error'
             except Exception as e:
-                logger.error(f"Heroku Inference health check failed: {e}")
+                logger.error(f"HMI health check failed: {e}")
                 status['heroku_inference'] = 'error'
         else:
             status['heroku_inference'] = 'not_configured'
         
-        # Test Claude API
-        if self.use_claude_fallback:
+        # Test Claude
+        if self.claude_available:
             try:
-                test_msg = [{"role": "user", "content": "Say 'ok'"}]
-                response = self._call_claude_api(test_msg, max_tokens=10)
-                status['claude_api'] = 'ok' if response else 'error'
+                test = self._call_claude_api([{"role": "user", "content": "Say ok"}], max_tokens=10)
+                status['claude_api'] = 'ok' if test else 'error'
             except Exception as e:
-                logger.error(f"Claude API health check failed: {e}")
+                logger.error(f"Claude health check failed: {e}")
                 status['claude_api'] = 'error'
         else:
             status['claude_api'] = 'not_configured'
         
         return status
 
-# Initialize AI client
-ai_client = HerokuInferenceClient()
+# Initialize AI router
+ai_router = SmartAIRouter()
 
 # ============================================================================
 # HELPER FUNCTIONS
@@ -288,68 +325,63 @@ def check_rate_limit(service_name):
     return True
 
 def get_salesforce_client():
-    """Create Salesforce client with JWT authentication"""
+    """
+    Create Salesforce client with JWT authentication
+    FIXED: Now uses SF_CLIENT_ID and decodes SF_PRIVATE_KEY_BASE64
+    """
     try:
-        # JWT authentication for Salesforce
-        private_key = os.environ.get('SF_PRIVATE_KEY', '').replace('\\n', '\n')
-        consumer_key = os.environ.get('SF_CONSUMER_KEY')
+        # Get credentials from environment
         username = os.environ.get('SF_USERNAME')
+        client_id = os.environ.get('SF_CLIENT_ID')  # Changed from SF_CONSUMER_KEY
+        private_key_base64 = os.environ.get('SF_PRIVATE_KEY_BASE64')  # Changed to use base64 version
         
-        if not all([private_key, consumer_key, username]):
-            raise ValueError("Missing Salesforce credentials")
+        if not all([username, client_id, private_key_base64]):
+            missing = []
+            if not username: missing.append('SF_USERNAME')
+            if not client_id: missing.append('SF_CLIENT_ID')
+            if not private_key_base64: missing.append('SF_PRIVATE_KEY_BASE64')
+            raise ValueError(f"Missing Salesforce credentials: {', '.join(missing)}")
         
-        # Create JWT
+        # Decode the base64 private key
+        private_key = base64.b64decode(private_key_base64).decode('utf-8')
+        logger.info("✅ Decoded private key from base64")
+        
+        # Create JWT claim
         claim = {
-            'iss': consumer_key,
+            'iss': client_id,
             'sub': username,
             'aud': 'https://login.salesforce.com',
             'exp': datetime.utcnow() + timedelta(minutes=3)
         }
         
+        # Encode JWT
         assertion = jwt.encode(claim, private_key, algorithm='RS256')
         
         # Request access token
-        r = requests.post(
+        response = requests.post(
             'https://login.salesforce.com/services/oauth2/token',
             data={
                 'grant_type': 'urn:ietf:params:oauth:grant-type:jwt-bearer',
                 'assertion': assertion
-            }
+            },
+            timeout=10
         )
         
-        if r.status_code != 200:
-            raise Exception(f"Salesforce auth failed: {r.text}")
+        if response.status_code != 200:
+            logger.error(f"❌ Salesforce auth failed: {response.text}")
+            raise Exception(f"Salesforce auth failed: {response.text}")
         
-        access_token = r.json()['access_token']
-        instance_url = r.json()['instance_url']
+        token_data = response.json()
+        access_token = token_data['access_token']
+        instance_url = token_data['instance_url']
+        
+        logger.info(f"✅ Salesforce authenticated: {instance_url}")
         
         return Salesforce(instance_url=instance_url, session_id=access_token)
+        
     except Exception as e:
         logger.error(f"❌ Salesforce authentication failed: {str(e)}")
         raise
-
-def check_certificate_expiration():
-    """Check if SSL certificate is expiring soon"""
-    cert_path = os.environ.get('SSL_CERT_PATH')
-    if not cert_path or not os.path.exists(cert_path):
-        return None
-    
-    try:
-        with open(cert_path, 'rb') as f:
-            cert_data = f.read()
-            cert = x509.load_pem_x509_certificate(cert_data, default_backend())
-            
-        expiry = cert.not_valid_after_utc
-        days_until_expiry = (expiry - datetime.now(expiry.tzinfo)).days
-        
-        if days_until_expiry < 30:
-            logger.warning(f"⚠️ SSL certificate expires in {days_until_expiry} days!")
-            return f"expires_in_{days_until_expiry}_days"
-        
-        return None
-    except Exception as e:
-        logger.error(f"Certificate check failed: {e}")
-        return None
 
 def validate_photo(photo_data):
     """Validate base64 photo data"""
@@ -371,6 +403,25 @@ def validate_photo(photo_data):
         logger.error(f"❌ Photo validation failed: {str(e)}")
         return None
 
+def build_311_context_message(user_message, has_photo):
+    """
+    Build the context-enriched message with unified 311 personality
+    Same instructions for both Claude API and HMI
+    """
+    context = AGENT_311_PERSONALITY
+    
+    if has_photo:
+        context += "\n\n" + PHOTO_ANALYSIS_INSTRUCTIONS
+    
+    context += "\n\n---\n\nCITIZEN'S MESSAGE:\n"
+    
+    if user_message:
+        context += user_message
+    else:
+        context += "I've uploaded a photo showing a city issue that needs attention."
+    
+    return context
+
 # ============================================================================
 # FLASK ROUTES
 # ============================================================================
@@ -383,243 +434,133 @@ def index():
 @app.route('/chat', methods=['POST'])
 def chat():
     """
-    Main chat endpoint with vision support via Heroku Managed Inference
-    Accepts: message (optional if photo present), conversation (optional), photo (optional)
-    Returns: AI assistant response with case creation capability
+    Main chat endpoint with smart routing:
+    - Photo present → Claude API
+    - Text only → Heroku Managed Inference
     """
     try:
         data = request.json
         user_message = data.get('message', '').strip()
         conversation = data.get('conversation', [])
-        photo_payload = data.get('photo')  # Base64 encoded image or dict with data/media_type
-        
-        # DEBUG: Log what we received
-        logger.info(f"🔍 DEBUG - Received data keys: {list(data.keys())}")
-        logger.info(f"🔍 DEBUG - Photo payload type: {type(photo_payload)}")
-        if isinstance(photo_payload, dict):
-            logger.info(f"🔍 DEBUG - Photo payload keys: {list(photo_payload.keys())}")
+        photo_payload = data.get('photo')
         
         # Extract photo data and media type
         photo_base64 = None
-        photo_media_type = 'image/jpeg'  # Default fallback
+        photo_media_type = 'image/jpeg'
         
         if isinstance(photo_payload, dict):
-            # Extract base64 data
             photo_base64 = photo_payload.get('compressed_data') or photo_payload.get('data')
-            
-            if not photo_base64:
-                logger.error(f"❌ Photo object received but no 'data' or 'compressed_data' key found. Keys: {list(photo_payload.keys())}")
-            
-            # Extract and validate media type
             media_type = photo_payload.get('media_type', 'image/jpeg')
             if media_type in ALLOWED_IMAGE_TYPES:
                 photo_media_type = media_type
                 logger.info(f"📷 Photo media type: {photo_media_type}")
-            else:
-                logger.warning(f"⚠️ Unsupported media type '{media_type}', defaulting to image/jpeg")
         else:
-            # Direct base64 string
             photo_base64 = photo_payload
         
         # Require either message or photo
         if not user_message and not photo_base64:
             return jsonify({'success': False, 'error': 'Message or photo is required'}), 400
         
-        logger.info(f"📨 Received message: {user_message[:100] if user_message else '[photo only]'}...")
+        logger.info(f"📨 Received: {user_message[:80] if user_message else '[photo only]'}...")
         
         # Validate photo if present
+        has_photo = False
         if photo_base64:
             photo_base64 = validate_photo(photo_base64)
-            if not photo_base64:
+            if photo_base64:
+                has_photo = True
+                logger.info("✅ Photo validated")
+            else:
                 return jsonify({'success': False, 'error': 'Invalid photo data'}), 400
         
-        # Build conversation context for AI
+        # Build conversation context
         messages = []
         
-        # Add conversation history (if this is a follow-up message)
-        logger.info(f"🔍 DEBUG - Processing {len(conversation)} messages from conversation history")
-        for i, msg in enumerate(conversation):
+        # Add conversation history
+        for msg in conversation:
             role = msg.get('role', 'user')
             content = msg.get('content', '')
             
-            # Debug log each message
-            content_preview = str(content)[:100] if content else "[EMPTY]"
-            logger.info(f"🔍 DEBUG - History msg {i}: role={role}, content_type={type(content)}, preview={content_preview}")
-            
-            # Skip messages with empty content (they'll cause API errors)
+            # Skip empty messages
             if not content or (isinstance(content, str) and not content.strip()):
-                logger.warning(f"⚠️ Skipping message {i} with empty content from conversation history")
                 continue
-                
+            
             messages.append({"role": role, "content": content})
         
-        # Build current message content
-        current_message_content = []
-        
-        # Check if this is the first message OR if there's a photo
+        # Build current message
         is_first_message = len(conversation) == 0
-        has_photo = bool(photo_base64)
         
-        # Include 311 instructions if: (1) first message OR (2) photo upload
+        # Add 311 context on first message OR when photo present
         if is_first_message or has_photo:
-            # Add comprehensive 311 context as part of the user message
-            if has_photo:
-                system_instructions = """You are a 311 service assistant for the City of Toronto, Canada. Your role is to help citizens report city infrastructure issues and create service requests.
-
-🎯 YOUR CORE MISSION:
-Analyze the uploaded photo, identify the exact issue type, gather required information, and guide the citizen through creating a service request.
-
-📋 SUPPORTED ISSUE TYPES - Use these EXACT strings when identifying issues:
-1. **Pothole** - Damaged road surface, holes, cracks, asphalt damage
-2. **Graffiti** - Vandalism, spray paint, tags on public/private property  
-3. **Streetlight Out** - Non-functioning street lights, dark poles, broken fixtures
-4. **Sidewalk Repair** - Damaged sidewalk, cracks, uneven concrete, tripping hazards
-5. **Missed Garbage Collection** - Overflowing bins, uncollected trash/recycling
-6. **Noise Complaint** - Excessive noise issues (usually reported without photo)
-
-🔍 PHOTO ANALYSIS WORKFLOW:
-1. **Identify the issue type**: Examine the photo carefully and determine which of the 6 types it shows. Use the EXACT complaint type name from the list above.
-2. **Describe what you see**: Be specific and detailed about the infrastructure problem (e.g., "I can see a large pothole in the road surface, approximately 2-3 feet wide with cracked edges and exposed gravel")
-3. **Gather location**: Ask for the specific address or intersection where this issue is located
-4. **Ask clarifying questions**: Get details about severity, size, safety concerns, how long it's been an issue
-5. **Collect contact info**: Ask for their email address and optionally phone number for updates
-6. **Confirm before creating**: Once you have: issue type, location, description, and email, ask: "Would you like me to create a service request for this [issue type]? You'll receive a case number to track the status."
-
-⚠️ CRITICAL INSTRUCTIONS:
-- ALWAYS identify the specific complaint type from the 6 options above
-- Be descriptive and specific about what you see in the photo
-- ALWAYS ask for location/address - field crews need to know where to go
-- ALWAYS collect citizen email for case tracking and updates
-- NEVER create a case without explicit confirmation from the citizen
-- Keep responses professional, concise, and action-oriented
-- If the photo doesn't clearly show one of the 6 issue types, ask clarifying questions
-
----
-
-CITIZEN'S MESSAGE WITH PHOTO:
-"""
-            else:
-                system_instructions = """You are a 311 service assistant for the City of Toronto, Canada. Help citizens report city infrastructure issues.
-
-📋 SUPPORTED ISSUE TYPES - Use these EXACT strings:
-• **Pothole** - Road damage, holes, cracks
-• **Graffiti** - Vandalism on property
-• **Streetlight Out** - Non-functioning lights  
-• **Sidewalk Repair** - Damaged concrete, tripping hazards
-• **Missed Garbage Collection** - Uncollected trash/recycling
-• **Noise Complaint** - Excessive noise issues
-
-📝 YOUR WORKFLOW:
-1. Understand what issue the citizen is reporting and identify the correct complaint type from the list above
-2. Gather specific location (address or intersection)
-3. Get detailed description of the issue
-4. Collect citizen email address for case updates
-5. Confirm before creating: "Would you like me to create a service request for this [complaint type]?"
-
-Be friendly, efficient, and use the EXACT complaint type names when creating cases.
-
----
-
-CITIZEN'S MESSAGE:
-"""
+            context_message = build_311_context_message(user_message, has_photo)
             
-            message_text = system_instructions + (user_message if user_message else "I've uploaded a photo showing a city issue that needs attention.")
-            current_message_content.append({
-                "type": "text",
-                "text": message_text
-            })
-            logger.info(f"🎯 Added 311 context (first_message={is_first_message}, has_photo={has_photo})")
-        elif user_message:
-            # Follow-up text message without photo - just add user text
-            current_message_content.append({
-                "type": "text",
-                "text": user_message
-            })
-        
-        # Add photo to current message if present
-        if photo_base64:
-            # Use data URI format with correct media type for vision analysis
-            image_data_uri = f"data:{photo_media_type};base64,{photo_base64}"
-            current_message_content.append({
-                "type": "image_url",
-                "image_url": {
-                    "url": image_data_uri
-                }
-            })
-            logger.info(f"📷 Photo included in message for vision analysis ({photo_media_type})")
-        
-        # Add current message
-        if current_message_content:
-            if len(current_message_content) == 1 and current_message_content[0].get("type") == "text":
-                # Text only - use string format
-                messages.append({
-                    "role": "user",
-                    "content": current_message_content[0]["text"]
-                })
+            if has_photo:
+                # Multimodal message
+                current_content = [
+                    {"type": "text", "text": context_message},
+                    {
+                        "type": "image_url",
+                        "image_url": {"url": f"data:{photo_media_type};base64,{photo_base64}"}
+                    }
+                ]
+                messages.append({"role": "user", "content": current_content})
             else:
-                # Multimodal (or photo-only) - use array format
-                messages.append({
-                    "role": "user",
-                    "content": current_message_content
-                })
+                # Text only with context
+                messages.append({"role": "user", "content": context_message})
+            
+            logger.info(f"🎯 Added 311 context (first={is_first_message}, photo={has_photo})")
+        else:
+            # Follow-up text message without context
+            messages.append({"role": "user", "content": user_message})
         
-        # Add current message
-        if current_message_content:
-            if len(current_message_content) == 1 and current_message_content[0].get("type") == "text":
-                # Text only - use string format
-                messages.append({
-                    "role": "user",
-                    "content": current_message_content[0]["text"]
-                })
-            else:
-                # Multimodal (or photo-only) - use array format
-                messages.append({
-                    "role": "user",
-                    "content": current_message_content
-                })
+        logger.info(f"📊 Total messages: {len(messages)}")
         
-        logger.info(f"📊 Conversation context: {len(messages)} messages total, current message has {len(current_message_content)} content items")
-        
-        # Call AI service (Heroku Managed Inference with Claude fallback)
-        assistant_response = ai_client.create_message(
+        # SMART ROUTING: Call appropriate AI service
+        assistant_response = ai_router.create_message(
             messages=messages,
-            max_tokens=1024,
-            temperature=1.0
+            has_photo=has_photo,
+            max_tokens=1024
         )
         
         # Check if user wants to create a case
-        if user_message and any(phrase in user_message.lower() for phrase in ['create', 'submit', 'yes', 'please do', 'go ahead']):
-            # Look for photo in conversation if not in current message
-            if not photo_base64:
-                photo_base64 = find_photo_in_conversation(conversation)
+        should_create_case = False
+        if user_message:
+            trigger_phrases = ['create', 'submit', 'yes', 'please do', 'go ahead', 'sounds good']
+            if any(phrase in user_message.lower() for phrase in trigger_phrases):
+                confirmation_phrases = ['create', 'submit', 'service request', 'case number']
+                if any(phrase in assistant_response.lower() for phrase in confirmation_phrases):
+                    should_create_case = True
+        
+        if should_create_case:
+            # Extract case info and create
+            case_info = extract_case_info_from_conversation(messages)
             
-            # Check if assistant is confirming case creation
-            if any(phrase in assistant_response.lower() for phrase in ['create', 'submit', 'service request']):
-                # Extract case info from conversation
-                case_info = extract_case_info_from_conversation(messages)
+            if case_info:
+                logger.info(f"📝 Creating case: {case_info}")
                 
-                if case_info:
-                    logger.info(f"📝 Creating case with info: {case_info}")
+                try:
+                    # Find photo in conversation if not in current message
+                    case_photo = photo_base64 if has_photo else find_photo_in_conversation(conversation)
                     
-                    try:
-                        case_result = create_salesforce_case(case_info, photo_base64)
-                        if case_result['success']:
-                            assistant_response = (
-                                f"✅ Great! I've created service request #{case_result['caseNumber']} for you. "
-                                f"You can use this number to track your request. {case_result['message']}"
-                            )
-                        else:
-                            assistant_response = f"I apologize, but there was an error creating your case: {case_result['message']}"
-                    except Exception as e:
-                        logger.error(f"❌ Error creating case: {str(e)}")
-                        assistant_response = "I apologize, but I'm having trouble creating your case right now. Please try again in a moment, or contact 311 directly."
+                    case_result = create_salesforce_case(case_info, case_photo)
+                    
+                    if case_result['success']:
+                        assistant_response = (
+                            f"✅ Perfect! I've created service request **#{case_result['caseNumber']}** for you. "
+                            f"You'll receive updates at the email address you provided. {case_result['message']}"
+                        )
+                    else:
+                        assistant_response = f"I apologize, but there was an issue creating your case: {case_result['message']}"
+                except Exception as e:
+                    logger.error(f"❌ Case creation error: {e}")
+                    assistant_response = "I apologize, but I'm having trouble creating your case right now. Please try again in a moment."
         
         return jsonify({'success': True, 'response': assistant_response})
         
     except Exception as e:
         logger.error(f"❌ Error in chat endpoint: {str(e)}")
         return jsonify({
-            'success': False, 
+            'success': False,
             'error': 'An unexpected error occurred. Please try again.'
         }), 500
 
@@ -630,11 +571,10 @@ def find_photo_in_conversation(conversation_history):
         if photo:
             logger.info("📷 Found photo in conversation history")
             return photo
-    logger.debug("No photo found in conversation history")
     return None
 
 def extract_case_info_from_conversation(messages):
-    """Extract case information from conversation"""
+    """Extract case information from conversation using AI"""
     try:
         conversation_text = ""
         for msg in messages:
@@ -646,27 +586,29 @@ def extract_case_info_from_conversation(messages):
             else:
                 conversation_text += f"{role}: {msg['content']}\n"
         
-        extraction_prompt = f"""Based on this conversation, extract info for creating a 311 case:
+        extraction_prompt = f"""Based on this conversation, extract information for creating a 311 case.
 
 {conversation_text}
 
 CRITICAL: Use ONLY these exact complaint types (case-sensitive):
 - "Pothole"
-- "Graffiti"  
+- "Graffiti"
 - "Streetlight Out"
 - "Sidewalk Repair"
 - "Missed Garbage Collection"
 - "Noise Complaint"
 
-Return ONLY JSON with these fields (use null for missing):
-{{"complaintType": "one of the exact types above", "subject": "brief subject", "description": "details including location", "citizenEmail": "email", "citizenPhone": "phone", "ward": "ward number if mentioned"}}"""
+Return ONLY valid JSON with these fields (use null for missing):
+{{"complaintType": "exact type from list above", "subject": "brief subject", "description": "detailed description with location", "citizenEmail": "email", "citizenPhone": "phone or null", "ward": "ward number or null"}}"""
         
-        # Use AI client for extraction
-        extracted_text = ai_client.create_message(
+        # Use AI router for extraction (will use HMI since no photo)
+        extracted_text = ai_router.create_message(
             messages=[{"role": "user", "content": extraction_prompt}],
+            has_photo=False,
             max_tokens=1024
         )
         
+        # Parse JSON from response
         json_start = extracted_text.find('{')
         json_end = extracted_text.rfind('}') + 1
         if json_start >= 0 and json_end > json_start:
@@ -679,16 +621,10 @@ Return ONLY JSON with these fields (use null for missing):
         return None
 
 def create_salesforce_case(case_info, photo_base64=None):
-    """
-    Create a case in Salesforce with error handling
-    """
+    """Create a case in Salesforce via Apex action"""
     try:
-        # Check rate limits
         if not check_rate_limit('salesforce'):
-            return {
-                'success': False, 
-                'message': 'Service temporarily busy. Please try again in a moment.'
-            }
+            return {'success': False, 'message': 'Service temporarily busy. Please try again.'}
         
         sf = get_salesforce_client()
         
@@ -703,14 +639,12 @@ def create_salesforce_case(case_info, photo_base64=None):
             }]
         }
         
-        logger.info(f"📝 Creating case with data: {apex_request}")
+        logger.info(f"📝 Calling Salesforce Apex action")
         
         result = sf.restful('actions/custom/apex/Create311Case', method='POST', data=json.dumps(apex_request))
-        logger.info(f"✅ Salesforce response: {result}")
         
         if result and len(result) > 0:
-            case_result = result[0]
-            output_values = case_result.get('outputValues', {})
+            output_values = result[0].get('outputValues', {})
             case_id = output_values.get('caseId')
             
             # Attach photo if available
@@ -718,16 +652,15 @@ def create_salesforce_case(case_info, photo_base64=None):
                 try:
                     photo_data = photo_base64.get('compressed_data') or photo_base64.get('data') if isinstance(photo_base64, dict) else photo_base64
                     if photo_data:
-                        logger.info(f"📎 Attempting to attach photo to case {case_id}")
                         attach_photo_to_case(sf, case_id, photo_data)
                 except Exception as e:
-                    logger.warning(f"⚠️ Photo attachment failed for case {case_id}: {e}")
+                    logger.warning(f"⚠️ Photo attachment failed: {e}")
             
             return {
                 'success': output_values.get('success', False),
                 'caseNumber': output_values.get('caseNumber'),
                 'message': output_values.get('message', ''),
-                'caseId': output_values.get('caseId')
+                'caseId': case_id
             }
         
         return {'success': False, 'message': 'Unexpected response from Salesforce'}
@@ -745,7 +678,7 @@ def attach_photo_to_case(sf, case_id, photo_base64):
             'FirstPublishLocationId': case_id
         }
         result = sf.ContentVersion.create(content_version)
-        logger.info(f"✅ Photo attached to case {case_id}: {result}")
+        logger.info(f"✅ Photo attached to case {case_id}")
         return True
     except Exception as e:
         logger.error(f"❌ Error attaching photo: {str(e)}")
@@ -753,23 +686,21 @@ def attach_photo_to_case(sf, case_id, photo_base64):
 
 @app.route('/health', methods=['GET'])
 def health():
-    """
-    Enhanced health check - tests all critical services including Heroku Managed Inference
-    """
+    """Comprehensive health check"""
     checks = {
         'status': 'healthy',
         'timestamp': datetime.utcnow().isoformat()
     }
     
-    # Test AI services (Heroku Managed Inference + fallback)
-    ai_checks = ai_client.health_check()
+    # Test AI services
+    ai_checks = ai_router.health_check()
     checks.update(ai_checks)
     
     # Check if at least one AI service is working
     if all(status in ['error', 'not_configured'] for status in ai_checks.values()):
         checks['status'] = 'degraded'
     
-    # Test Salesforce connection
+    # Test Salesforce
     try:
         sf = get_salesforce_client()
         sf.query("SELECT Id FROM Case LIMIT 1")
@@ -779,10 +710,6 @@ def health():
         checks['salesforce'] = 'error'
         checks['status'] = 'degraded'
     
-    # Check certificate
-    cert_status = check_certificate_expiration()
-    checks['certificate'] = cert_status if cert_status else 'ok'
-    
     status_code = 200 if checks['status'] == 'healthy' else 503
     return jsonify(checks), status_code
 
@@ -790,22 +717,12 @@ def health():
 # STARTUP
 # ============================================================================
 
-# Check certificate on startup
-check_certificate_expiration()
-
-# Log AI service configuration
 logger.info("=" * 80)
-logger.info("311 AI AGENT - STARTUP CONFIGURATION")
+logger.info("311 AI AGENT - WORLD CLASS PRODUCTION")
 logger.info("=" * 80)
-if ai_client.use_heroku_inference:
-    logger.info(f"✅ Primary AI Service: Heroku Managed Inference ({ai_client.inference_model_id})")
-else:
-    logger.info("⚠️ Primary AI Service: Not configured")
-
-if ai_client.use_claude_fallback:
-    logger.info("✅ Fallback AI Service: Claude API (Direct)")
-else:
-    logger.info("⚠️ Fallback AI Service: Not configured")
+logger.info(f"✅ Smart Routing: Photos → Claude API, Text → HMI")
+logger.info(f"✅ Unified 311 Personality across both LLMs")
+logger.info(f"✅ Salesforce JWT Authentication configured")
 logger.info("=" * 80)
 
 if __name__ == '__main__':
