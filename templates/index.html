@@ -86,6 +86,7 @@
         #chat-form {
             display: flex;
             gap: 10px;
+            align-items: flex-end;
         }
         #message-input {
             flex: 1;
@@ -98,6 +99,19 @@
         }
         #message-input:focus {
             border-color: #667eea;
+        }
+        #photo-button {
+            padding: 12px;
+            background: #f5f5f5;
+            border: 2px solid #e0e0e0;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        #photo-button:hover {
+            background: #667eea;
+            border-color: #667eea;
+            color: white;
         }
         #send-button {
             padding: 12px 24px;
@@ -142,6 +156,11 @@
             width: 12px;
             height: 12px;
             border-radius: 50%;
+        }
+        .photo-preview {
+            margin-top: 10px;
+            max-width: 200px;
+            border-radius: 8px;
         }
         @media (max-width: 768px) {
             body {
@@ -188,6 +207,8 @@
         <div id="chat-messages"></div>
         <div id="chat-input-container">
             <form id="chat-form">
+                <input type="file" id="photo-input" accept="image/*" style="display: none;">
+                <button type="button" id="photo-button" title="Upload photo">📷</button>
                 <input type="text" id="message-input" placeholder="Describe an issue or ask a question..." autocomplete="off">
                 <button type="submit" id="send-button">Send</button>
             </form>
@@ -201,8 +222,10 @@
         const chatForm = document.getElementById('chat-form');
         const messageInput = document.getElementById('message-input');
         const sendButton = document.getElementById('send-button');
+        const photoInput = document.getElementById('photo-input');
+        const photoButton = document.getElementById('photo-button');
+        let currentPhoto = null;
 
-        // Initialize map
         const map = L.map('map').setView([43.6532, -79.3832], 12);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors'
@@ -250,24 +273,62 @@
                 });
         }
 
-        function addMessage(role, content) {
+        function addMessage(role, content, photoUrl) {
             const msg = document.createElement('div');
             msg.className = `message ${role}`;
             const msgContent = document.createElement('div');
             msgContent.className = 'message-content';
-            msgContent.textContent = content;
+            
+            if (photoUrl) {
+                const img = document.createElement('img');
+                img.src = photoUrl;
+                img.className = 'photo-preview';
+                msgContent.appendChild(img);
+                if (content) {
+                    const text = document.createElement('div');
+                    text.textContent = content;
+                    text.style.marginTop = '10px';
+                    msgContent.appendChild(text);
+                }
+            } else {
+                msgContent.textContent = content;
+            }
+            
             msg.appendChild(msgContent);
             messagesContainer.appendChild(msg);
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
 
+        photoButton.addEventListener('click', () => {
+            photoInput.click();
+        });
+
+        photoInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    currentPhoto = event.target.result;
+                    addMessage('user', '📸 Photo uploaded', currentPhoto);
+                    photoButton.style.background = '#667eea';
+                    photoButton.style.color = 'white';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
         chatForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const message = messageInput.value.trim();
-            if (!message) return;
+            if (!message && !currentPhoto) return;
 
-            addMessage('user', message);
-            conversation.push({ role: 'user', content: message });
+            if (message && !currentPhoto) {
+                addMessage('user', message);
+            } else if (message && currentPhoto) {
+                addMessage('user', message);
+            }
+            
+            conversation.push({ role: 'user', content: message, photo: currentPhoto });
             messageInput.value = '';
             sendButton.disabled = true;
 
@@ -275,7 +336,11 @@
                 const response = await fetch('/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message, conversation })
+                    body: JSON.stringify({ 
+                        message, 
+                        conversation,
+                        photo: currentPhoto 
+                    })
                 });
                 const data = await response.json();
                 
@@ -283,7 +348,6 @@
                     addMessage('assistant', data.response);
                     conversation.push({ role: 'assistant', content: data.response });
                     
-                    // Reload map if case was created
                     if (data.response.includes('🎉') || data.response.includes('service request')) {
                         setTimeout(loadCases, 1000);
                     }
@@ -294,17 +358,17 @@
                 addMessage('assistant', 'Connection error. Please try again.');
             }
             
+            currentPhoto = null;
+            photoButton.style.background = '#f5f5f5';
+            photoButton.style.color = 'inherit';
+            photoInput.value = '';
             sendButton.disabled = false;
             messageInput.focus();
         });
 
-        // Initial greeting
         addMessage('assistant', "Hi! I'm your 311 AI Assistant. 👋 Report issues like potholes, graffiti, or streetlight outages. What can I help you with?");
         
-        // Load cases on page load
         loadCases();
-        
-        // Refresh cases every 30 seconds
         setInterval(loadCases, 30000);
     </script>
 </body>
