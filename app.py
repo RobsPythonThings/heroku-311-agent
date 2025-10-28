@@ -586,10 +586,10 @@ def get_cases():
         
         query = """
             SELECT Id, CaseNumber, Subject, Description, Complaint_Type__c, 
-                   Status, CreatedDate, Latitude, Longitude, Street_Address
+                   Status, CreatedDate, Latitude__c, Longitude__c, Street_Address__c
             FROM Case
-            WHERE Latitude != null 
-            AND Longitude != null
+            WHERE Latitude__c != null 
+            AND Longitude__c != null
             AND CreatedDate = LAST_N_DAYS:30
             ORDER BY CreatedDate DESC
             LIMIT 500
@@ -607,9 +607,9 @@ def get_cases():
                 'complaintType': sanitize_input(record.get('Complaint_Type__c', '')),
                 'status': sanitize_input(record.get('Status', '')),
                 'createdDate': record.get('CreatedDate', ''),
-                'latitude': float(record.get('Latitude', 0)),
-                'longitude': float(record.get('Longitude', 0)),
-                'address': sanitize_input(record.get('Street_Address', ''))
+                'latitude': float(record.get('Latitude__c', 0)),
+                'longitude': float(record.get('Longitude__c', 0)),
+                'address': sanitize_input(record.get('Street_Address__c', ''))
             })
         
         logger.info(f"📍 Retrieved {len(cases)} cases for map")
