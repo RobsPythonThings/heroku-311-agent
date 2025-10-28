@@ -249,33 +249,66 @@ class ChatApp {
     }
     
     async compressImage(file) {
-        console.log('compressImage called');
+        console.log('🎨 Smart compression starting...');
+        const fileSizeMB = file.size / (1024 * 1024);
+        console.log('Original size:', fileSizeMB.toFixed(2), 'MB');
+        
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = (e) => {
-                console.log('Image reader onload');
                 const img = new Image();
                 img.onload = () => {
-                    console.log('Image onload, size:', img.width, 'x', img.height);
+                    console.log('Image dimensions:', img.width, 'x', img.height);
                     let width = img.width;
                     let height = img.height;
-                    if (width > this.MAX_DIMENSION || height > this.MAX_DIMENSION) {
+                    
+                    // Smart dimension reduction based on file size
+                    let maxDimension = this.MAX_DIMENSION;
+                    if (fileSizeMB > 8) {
+                        maxDimension = 1280; // Aggressive for huge photos
+                        console.log('📱 Large photo detected, using 1280px max');
+                    }
+                    
+                    if (width > maxDimension || height > maxDimension) {
                         if (width > height) {
-                            height = Math.round((height * this.MAX_DIMENSION) / width);
-                            width = this.MAX_DIMENSION;
+                            height = Math.round((height * maxDimension) / width);
+                            width = maxDimension;
                         } else {
-                            width = Math.round((width * this.MAX_DIMENSION) / height);
-                            height = this.MAX_DIMENSION;
+                            width = Math.round((width * maxDimension) / height);
+                            height = maxDimension;
                         }
                     }
                     console.log('Resized to:', width, 'x', height);
+                    
                     const canvas = document.createElement('canvas');
                     canvas.width = width;
                     canvas.height = height;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
-                    const compressedDataUrl = canvas.toDataURL(file.type, this.COMPRESSION_QUALITY);
-                    console.log('Compressed dataURL length:', compressedDataUrl.length);
+                    
+                    // Smart quality adjustment
+                    let quality = this.COMPRESSION_QUALITY;
+                    if (fileSizeMB > 8) {
+                        quality = 0.6;
+                        console.log('✨ Using aggressive quality (0.6)');
+                    } else if (fileSizeMB > 3) {
+                        quality = 0.7;
+                        console.log('✨ Using moderate quality (0.7)');
+                    }
+                    
+                    let compressedDataUrl = canvas.toDataURL(file.type, quality);
+                    let compressedSizeMB = (compressedDataUrl.length * 0.75) / (1024 * 1024);
+                    console.log('First pass:', compressedSizeMB.toFixed(2), 'MB');
+                    
+                    // If still too big, compress more aggressively
+                    if (compressedSizeMB > 4.5 && quality > 0.5) {
+                        console.log('🔄 Still too large, compressing again...');
+                        compressedDataUrl = canvas.toDataURL(file.type, 0.5);
+                        compressedSizeMB = (compressedDataUrl.length * 0.75) / (1024 * 1024);
+                        console.log('Second pass:', compressedSizeMB.toFixed(2), 'MB');
+                    }
+                    
+                    console.log('✅ Compression complete!');
                     resolve(compressedDataUrl.split(',')[1]);
                 };
                 img.onerror = (error) => {
@@ -295,7 +328,7 @@ class ChatApp {
     showPhotoPreview(base64, media_type = 'image/jpeg', isLoading = false) {
         console.log('showPhotoPreview called, isLoading:', isLoading);
         if (isLoading) {
-            this.photoPreview.innerHTML = '<div style="padding: 20px; text-align: center;"><div>Processing large image...</div></div>';
+            this.photoPreview.innerHTML = '<div style="padding: 20px; text-align: center;"><div>✨ Optimizing your photo...</div></div>';
         } else {
             this.photoPreview.innerHTML = `<div style="position: relative; display: inline-block;"><img src="data:${media_type};base64,${base64}" alt="Selected photo"><button onclick="chatApp.clearPhoto()" style="position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 20px; line-height: 1;">×</button></div>`;
         }
