@@ -407,210 +407,162 @@ class SmartAIRouter:
         return status
     
     def get_stats(self):
-        """Return analytics stats"""
+        """Get call statistics"""
         return self.call_stats
 
 ai_router = SmartAIRouter()
 
 # ============================================================================
-# HELPER FUNCTIONS
+# SALESFORCE CONNECTION
 # ============================================================================
 
-def check_rate_limit(service_name):
-    """Check if API rate limit is exceeded"""
-    current_time = time.time()
-    service = API_CALL_COUNTS[service_name]
-    
-    if current_time > service['reset_time']:
-        service['count'] = 0
-        service['reset_time'] = current_time + 60
-    
-    if service['count'] >= RATE_LIMITS[service_name]:
-        logger.warning(f"⚠️ Rate limit exceeded for {service_name}")
-        return False
-    
-    service['count'] += 1
-    return True
+def decode_private_key(encoded_key):
+    """Decode base64 private key"""
+    try:
+        decoded_key = base64.b64decode(encoded_key)
+        logger.info("✅ Decoded private key from base64")
+        return decoded_key.decode('utf-8')
+    except Exception as e:
+        logger.error(f"❌ Error decoding private key: {e}")
+        raise
 
 def get_salesforce_client():
     """Create Salesforce client with JWT authentication"""
-    try:
-        username = os.environ.get('SF_USERNAME')
-        client_id = os.environ.get('SF_CLIENT_ID')
-        private_key_base64 = os.environ.get('SF_PRIVATE_KEY_BASE64')
-        
-        if not all([username, client_id, private_key_base64]):
-            missing = []
-            if not username: missing.append('SF_USERNAME')
-            if not client_id: missing.append('SF_CLIENT_ID')
-            if not private_key_base64: missing.append('SF_PRIVATE_KEY_BASE64')
-            raise ValueError(f"Missing Salesforce credentials: {', '.join(missing)}")
-        
-        private_key = base64.b64decode(private_key_base64).decode('utf-8')
-        logger.info("✅ Decoded private key from base64")
-        
-        claim = {
-            'iss': client_id,
-            'sub': username,
-            'aud': 'https://login.salesforce.com',
-            'exp': datetime.utcnow() + timedelta(minutes=3)
-        }
-        
-        assertion = jwt.encode(claim, private_key, algorithm='RS256')
-        
-        response = requests.post(
-            'https://login.salesforce.com/services/oauth2/token',
-            data={
-                'grant_type': 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-                'assertion': assertion
-            },
-            timeout=10
-        )
-        
-        if response.status_code != 200:
-            logger.error(f"❌ Salesforce auth failed: {response.text}")
-            raise Exception(f"Salesforce auth failed")
-        
-        token_data = response.json()
-        access_token = token_data['access_token']
-        instance_url = token_data['instance_url']
-        
-        logger.info(f"✅ Salesforce authenticated: {instance_url}")
-        
-        return Salesforce(instance_url=instance_url, session_id=access_token)
-        
-    except Exception as e:
-        logger.error(f"❌ Salesforce authentication failed: {str(e)}")
-        raise
+    username = os.environ.get('SF_USERNAME')
+    consumer_key = os.environ.get('SF_CONSUMER_KEY')
+    private_key_base64 = os.environ.get('SF_PRIVATE_KEY')
+    domain = os.environ.get('SF_DOMAIN', 'login')
+    
+    if not all([username, consumer_key, private_key_base64]):
+        raise Exception("Missing Salesforce credentials")
+    
+    private_key_pem = decode_private_key(private_key_base64)
+    
+    sf = Salesforce(
+        username=username,
+        consumer_key=consumer_key,
+        privatekey=private_key_pem,
+        domain=domain
+    )
+    
+    logger.info(f"✅ Salesforce authenticated: {sf.base_url}")
+    return sf
 
-def extract_location(text):
-    """Enhanced location extraction supporting intersections and numbered addresses"""
-    if not text:
-        return None
+def check_rate_limit(service):
+    """Check and update API rate limits"""
+    current_time = time.time()
     
-    text = text.lower()
+    if current_time > API_CALL_COUNTS[service]['reset_time']:
+        API_CALL_COUNTS[service]['count'] = 0
+        API_CALL_COUNTS[service]['reset_time'] = current_time + 60
     
-    # Pattern 1: Intersections (e.g., "Carlton and Jarvis", "Main St & King Ave")
-    intersection_patterns = [
-        r'(?:at |on |near )?([a-z0-9\s]+(?:street|st|avenue|ave|road|rd|blvd|boulevard))\s+(?:and|&|at)\s+([a-z0-9\s]+(?:street|st|avenue|ave|road|rd|blvd|boulevard))',
-        r'(?:at |on |near )?([a-z0-9\s]+(?:st|ave|rd|blvd))\s+(?:and|&|at)\s+([a-z0-9\s]+(?:st|ave|rd|blvd))',
-    ]
+    if API_CALL_COUNTS[service]['count'] >= RATE_LIMITS[service]:
+        logger.warning(f"⚠️ Rate limit hit for {service}")
+        return False
     
-    for pattern in intersection_patterns:
-        match = re.search(pattern, text)
-        if match:
-            street1 = match.group(1).strip()
-            street2 = match.group(2).strip()
-            location = f"{street1} and {street2}"
-            logger.info(f"🗺️ Extracted intersection: {location}")
-            return location
-    
-    # Pattern 2: Numbered addresses (e.g., "123 Main St")
-    numbered_patterns = [
-        r'\b(\d+[a-z]?)\s+([a-z0-9\s]+(?:street|st|avenue|ave|road|rd|drive|dr|blvd|boulevard))',
-        r'\b(\d+[a-z]?)\s+([a-z0-9\s]+(?:st|ave|rd|dr|blvd))',
-    ]
-    
-    for pattern in numbered_patterns:
-        match = re.search(pattern, text)
-        if match:
-            number = match.group(1)
-            street = match.group(2).strip()
-            location = f"{number} {street}"
-            logger.info(f"🗺️ Extracted numbered address: {location}")
-            return location
-    
-    logger.warning(f"⚠️ Could not extract location from: {text[:100]}")
-    return None
+    API_CALL_COUNTS[service]['count'] += 1
+    return True
 
-def geocode_address(address):
-    """Convert address to latitude/longitude coordinates with retry logic"""
+def validate_photo(photo_base64):
+    """Validate and compress photo if needed"""
     try:
-        address = sanitize_input(address, 200)
-        
-        if not address:
+        if not photo_base64 or len(photo_base64) < 100:
             return None
         
-        full_address = f"{address}, Toronto, Ontario, Canada"
+        decoded = base64.b64decode(photo_base64)
+        size_mb = len(decoded) / (1024 * 1024)
         
-        geolocator = Nominatim(user_agent="toronto-311-app")
-        location = geolocator.geocode(full_address, timeout=5)
-        
-        if location:
-            logger.info(f"📍 Geocoded '{address}' to ({location.latitude}, {location.longitude})")
-            return {
-                'latitude': location.latitude,
-                'longitude': location.longitude,
-                'formatted_address': location.address
-            }
-        else:
-            # Try without "Toronto" suffix
-            logger.info(f"⚠️ Retrying geocode without city suffix")
-            location = geolocator.geocode(address, timeout=5)
-            if location:
-                logger.info(f"📍 Geocoded '{address}' to ({location.latitude}, {location.longitude})")
-                return {
-                    'latitude': location.latitude,
-                    'longitude': location.longitude,
-                    'formatted_address': location.address
-                }
-            
-            logger.warning(f"⚠️ Could not geocode address: {address}")
+        if size_mb > 10:
+            logger.warning(f"⚠️ Photo too large: {size_mb:.1f}MB")
             return None
-            
-    except (GeocoderTimedOut, GeocoderServiceError) as e:
-        logger.error(f"❌ Geocoding error: {str(e)}")
-        return None
+        
+        logger.info(f"✅ Photo validated ({size_mb:.2f}MB)")
+        return photo_base64
     except Exception as e:
-        logger.error(f"❌ Unexpected geocoding error: {str(e)}")
-        return None
-
-def validate_photo(photo_data):
-    """Validate base64 photo data with size limits"""
-    try:
-        if isinstance(photo_data, dict):
-            photo_data = photo_data.get('compressed_data') or photo_data.get('data')
-        
-        if not photo_data:
-            return None
-        
-        if isinstance(photo_data, str) and photo_data.startswith('data:'):
-            photo_data = photo_data.split(',', 1)[1]
-        
-        decoded = base64.b64decode(photo_data)
-        
-        if len(decoded) > 10 * 1024 * 1024:
-            logger.warning("⚠️ Photo too large (>10MB)")
-            return None
-        
-        return photo_data
-    except Exception as e:
-        logger.error(f"❌ Photo validation failed: {str(e)}")
+        logger.error(f"❌ Error validating photo: {e}")
         return None
 
 def build_311_context_message(user_message, has_photo):
-    """Build the context-enriched message with unified 311 personality"""
-    context = AGENT_311_PERSONALITY
-    
+    """Build the context message with 311 personality"""
     if has_photo:
-        context += "\n\n" + PHOTO_ANALYSIS_INSTRUCTIONS
-    
-    context += "\n\n---\n\nCITIZEN'S MESSAGE:\n"
-    
-    if user_message:
-        context += sanitize_input(user_message, MAX_MESSAGE_LENGTH)
+        return f"{AGENT_311_PERSONALITY}\n\n{PHOTO_ANALYSIS_INSTRUCTIONS}\n\nUser: {user_message if user_message else 'I want to report this issue [photo attached]'}"
     else:
-        context += "I've uploaded a photo showing a city issue that needs attention."
-    
-    return context
+        return f"{AGENT_311_PERSONALITY}\n\nUser: {user_message}"
 
 # ============================================================================
-# FLASK ROUTES
+# GEOCODING & LOCATION EXTRACTION
+# ============================================================================
+
+geolocator = Nominatim(user_agent="toronto-311-app/2.0")
+
+def extract_location(description):
+    """
+    Enhanced location extraction supporting:
+    - Intersections: "Crescent Road and South Drive"
+    - Numbered addresses: "123 Main Street"
+    """
+    if not description:
+        return None
+    
+    description_lower = description.lower()
+    
+    # Pattern 1: Intersections (e.g., "Crescent Road and South Drive")
+    intersection_pattern = r'(?:at |near )?([A-Z][a-zA-Z\s]+(?:road|street|avenue|blvd|drive|lane|way|court|place))\s+(?:and|&|at)\s+([A-Z][a-zA-Z\s]+(?:road|street|avenue|blvd|drive|lane|way|court|place))'
+    match = re.search(intersection_pattern, description, re.IGNORECASE)
+    if match:
+        street1 = match.group(1).strip()
+        street2 = match.group(2).strip()
+        location = f"{street1} and {street2}, Toronto, ON"
+        logger.info(f"✅ Extracted intersection: {location}")
+        return location
+    
+    # Pattern 2: Numbered addresses (e.g., "123 Main Street")
+    address_pattern = r'\b(\d+)\s+([A-Z][a-zA-Z\s]+(?:road|street|avenue|blvd|drive|lane|way|court|place))\b'
+    match = re.search(address_pattern, description, re.IGNORECASE)
+    if match:
+        number = match.group(1)
+        street = match.group(2).strip()
+        location = f"{number} {street}, Toronto, ON"
+        logger.info(f"✅ Extracted address: {location}")
+        return location
+    
+    # Pattern 3: Street names without numbers (fallback)
+    street_pattern = r'\b([A-Z][a-zA-Z\s]+(?:road|street|avenue|blvd|drive|lane|way|court|place))\b'
+    match = re.search(street_pattern, description, re.IGNORECASE)
+    if match:
+        street = match.group(1).strip()
+        location = f"{street}, Toronto, ON"
+        logger.info(f"✅ Extracted street: {location}")
+        return location
+    
+    logger.warning(f"⚠️ Could not extract location from: {description[:100]}")
+    return None
+
+def geocode_address(address):
+    """Convert address to lat/long coordinates"""
+    try:
+        location = geolocator.geocode(address, timeout=5)
+        if location:
+            logger.info(f"✅ Geocoded: {address} → ({location.latitude}, {location.longitude})")
+            return {
+                'latitude': location.latitude,
+                'longitude': location.longitude,
+                'address': location.address
+            }
+        else:
+            logger.warning(f"⚠️ No geocoding results for: {address}")
+            return None
+    except (GeocoderTimedOut, GeocoderServiceError) as e:
+        logger.warning(f"⚠️ Geocoding error for {address}: {e}")
+        return None
+
+# ============================================================================
+# ROUTES
 # ============================================================================
 
 @app.route('/')
 def index():
-    """Serve the main chat interface"""
+    """Serve the chat interface"""
     return render_template('index.html')
 
 @app.route('/map')
@@ -638,7 +590,7 @@ def get_cases():
         
         query = """
             SELECT Id, CaseNumber, Subject, Description, Complaint_Type__c, 
-                   Status, CreatedDate, Latitude__c, Longitude__c, Street_Address__c
+                   Status, CreatedDate, Latitude__c, Longitude__c, Location_Address__c
             FROM Case
             WHERE Latitude__c != null 
             AND Longitude__c != null
@@ -661,7 +613,7 @@ def get_cases():
                 'createdDate': record.get('CreatedDate', ''),
                 'latitude': float(record.get('Latitude__c', 0)),
                 'longitude': float(record.get('Longitude__c', 0)),
-                'address': sanitize_input(record.get('Street_Address__c', ''))
+                'address': sanitize_input(record.get('Location_Address__c', ''))
             })
         
         logger.info(f"📍 Retrieved {len(cases)} cases for map")
