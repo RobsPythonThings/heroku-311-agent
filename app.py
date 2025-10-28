@@ -462,26 +462,22 @@ def chat():
             
             messages.append({"role": role, "content": content})
         
-        is_first_message = len(conversation) == 0
+        # ALWAYS inject 311 personality context to maintain agent behavior across conversation
+        context_message = build_311_context_message(user_message, has_photo)
         
-        if is_first_message or has_photo:
-            context_message = build_311_context_message(user_message, has_photo)
-            
-            if has_photo:
-                current_content = [
-                    {"type": "text", "text": context_message},
-                    {
-                        "type": "image_url",
-                        "image_url": {"url": f"data:{photo_media_type};base64,{photo_base64}"}
-                    }
-                ]
-                messages.append({"role": "user", "content": current_content})
-            else:
-                messages.append({"role": "user", "content": context_message})
-            
-            logger.info(f"🎯 Added 311 context (first={is_first_message}, photo={has_photo})")
+        if has_photo:
+            current_content = [
+                {"type": "text", "text": context_message},
+                {
+                    "type": "image_url",
+                    "image_url": {"url": f"data:{photo_media_type};base64,{photo_base64}"}
+                }
+            ]
+            messages.append({"role": "user", "content": current_content})
         else:
-            messages.append({"role": "user", "content": user_message})
+            messages.append({"role": "user", "content": context_message})
+        
+        logger.info(f"🎯 Added 311 context (photo={has_photo})")
         
         logger.info(f"📊 Total messages: {len(messages)}")
         
