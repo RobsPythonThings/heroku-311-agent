@@ -487,13 +487,25 @@ def chat():
             max_tokens=1024
         )
         
+        # Detect if the agent has decided to create a case
+        # Look for agent saying it's creating/created a case
         should_create_case = False
-        if user_message:
-            trigger_phrases = ['create', 'submit', 'yes', 'please do', 'go ahead', 'sounds good']
-            if any(phrase in user_message.lower() for phrase in trigger_phrases):
-                confirmation_phrases = ['create', 'submit', 'service request', 'case number']
-                if any(phrase in assistant_response.lower() for phrase in confirmation_phrases):
-                    should_create_case = True
+        if assistant_response:
+            creation_indicators = [
+                'creating your service request',
+                'service request created',
+                'case created',
+                'reference number',
+                'service request #',
+                'case #',
+                'case number',
+                'created successfully',
+                "i'll create",
+                "i've created"
+            ]
+            if any(indicator in assistant_response.lower() for indicator in creation_indicators):
+                should_create_case = True
+                logger.info("🎯 Agent decided to create case - triggering Salesforce")
         
         if should_create_case:
             case_info = extract_case_info_from_conversation(messages)
@@ -507,10 +519,17 @@ def chat():
                     case_result = create_salesforce_case(case_info, case_photo)
                     
                     if case_result['success']:
+                        # Replace any hallucinated response with the real case number
                         assistant_response = (
-                            f"✅ Perfect! I've created service request **#{case_result['caseNumber']}** for you. "
-                            f"You'll receive updates at the email address you provided. {case_result['message']}"
+                            f"✅ Service request created successfully!\n\n"
+                            f"**Reference Number:** {case_result['caseNumber']}\n\n"
+                            f"**Details:**\n"
+                            f"- Issue: {case_info.get('complaintType')}\n"
+                            f"- Location: {case_info.get('description', 'See case details')}\n"
                         )
+                        if case_info.get('citizenEmail'):
+                            assistant_response += f"- Email: {case_info.get('citizenEmail')}\n"
+                        assistant_response += f"\n{case_result['message']}\n\nIs there anything else I can help you report today?"
                     else:
                         assistant_response = f"I apologize, but there was an issue creating your case: {case_result['message']}"
                 except Exception as e:
