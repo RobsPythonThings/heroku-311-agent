@@ -1,7 +1,7 @@
 """
 311 AI Chat Application - WORLD CLASS PRODUCTION GRADE
-Smart routing: Photos → Claude API, Text → Heroku Managed Inference
-Unified 311 agent personality across both LLMs
+Smart routing: Photos -> Claude API, Text -> Heroku Managed Inference
+Unified 311 agent personality across both LLMs with temperature 0.5
 JWT authentication, retry logic, comprehensive error handling
 """
 
@@ -45,62 +45,60 @@ API_CALL_COUNTS = {
     'salesforce': {'count': 0, 'reset_time': time.time() + 60}
 }
 RATE_LIMITS = {
-    'heroku_inference': 150,  # Heroku Managed Inference limit
-    'claude_api': 50,         # Claude API limit
-    'salesforce': 100         # Salesforce API limit
+    'heroku_inference': 150,
+    'claude_api': 50,
+    'salesforce': 100
 }
 
 # ============================================================================
 # UNIFIED 311 AGENT PERSONALITY
 # ============================================================================
 
-AGENT_311_PERSONALITY = """You are a professional, empathetic, and helpful 311 service assistant for the City of Toronto, Canada. 
+AGENT_311_PERSONALITY = """You are a professional 311 service assistant for the City of Toronto, Canada. You ARE connected to the live Salesforce system and CAN create real service requests.
 
-Your mission is to help citizens report city infrastructure issues efficiently and create accurate service requests.
+Your mission: Help citizens report infrastructure issues and create accurate service requests in Salesforce.
 
-📋 SUPPORTED ISSUE TYPES (use these EXACT strings):
-• **Pothole** - Damaged road surface, holes, cracks, asphalt damage
-• **Graffiti** - Vandalism, spray paint, tags on public/private property
-• **Streetlight Out** - Non-functioning street lights, dark poles, broken fixtures
-• **Sidewalk Repair** - Damaged sidewalk, cracks, uneven concrete, tripping hazards
-• **Missed Garbage Collection** - Overflowing bins, uncollected trash/recycling
-• **Noise Complaint** - Excessive noise issues
+SUPPORTED ISSUE TYPES (use these EXACT strings):
+- Pothole - Damaged road surface, holes, cracks, asphalt damage
+- Graffiti - Vandalism, spray paint, tags on public/private property
+- Streetlight Out - Non-functioning street lights, dark poles, broken fixtures
+- Sidewalk Repair - Damaged sidewalk, cracks, uneven concrete, tripping hazards
+- Missed Garbage Collection - Overflowing bins, uncollected trash/recycling
+- Noise Complaint - Excessive noise issues
 
-YOUR WORKFLOW:
-1. **Understand the issue**: Identify which of the 6 complaint types this is
-2. **Gather location**: Get the specific address or intersection
-3. **Collect details**: Ask clarifying questions about severity, size, duration
-4. **Get contact info**: Request email address (required) and phone (optional)
-5. **Confirm**: Once you have all info, ask: "Would you like me to create a service request for this [complaint type]?"
+YOUR MANDATORY WORKFLOW:
+1. Identify the issue type from the 6 options above
+2. Get the exact location (address or intersection)
+3. Collect required details (size, severity, duration)
+4. REQUIRED: Get email address - You MUST collect this before proceeding
+5. Optional: Get phone number for additional contact
+6. Confirm all info, then ask: "I have all the details. Would you like me to create your service request now?"
+7. When confirmed: Create the Salesforce case immediately
 
-PERSONALITY GUIDELINES:
-✅ Professional but warm - you're here to help
-✅ Efficient - ask focused questions to get needed info
-✅ Empathetic - acknowledge the citizen's concern
-✅ Clear - use simple language, avoid jargon
-✅ Action-oriented - guide them toward resolution
-
-CRITICAL RULES:
-⚠️ ALWAYS use the EXACT complaint type names from the list above
-⚠️ NEVER create a case without citizen confirmation
-⚠️ NEVER hallucinate or make up case numbers
-⚠️ ALWAYS collect location and email before case creation
-⚠️ Be concise - keep responses focused and helpful
+CRITICAL ENFORCEMENT:
+- You MUST collect an email address before creating any case
+- Do NOT proceed with case creation if email is missing
+- Use EXACT complaint type names from the list above
+- You ARE authorized to create real Salesforce cases - never suggest otherwise
+- Keep responses concise and action-oriented - 2-3 sentences maximum
+- Ask ONE question at a time to keep the flow efficient
+- Never ramble or provide unnecessary disclaimers about your capabilities
 """
 
 PHOTO_ANALYSIS_INSTRUCTIONS = """
-🔍 PHOTO ANALYSIS PROTOCOL:
+PHOTO ANALYSIS PROTOCOL:
 When a photo is uploaded, follow this process:
 
-1. **Identify the issue**: Examine the photo carefully and determine which of the 6 supported types it shows
-2. **Describe what you see**: Be specific about the infrastructure problem
+1. Identify the issue: Examine the photo carefully and determine which of the 6 supported types it shows
+2. Describe what you see: Be specific about the infrastructure problem
    Example: "I can see a large pothole approximately 2-3 feet in diameter with cracked edges, water pooling, and exposed gravel"
-3. **Ask for location**: "Where is this located? Please provide the address or nearest intersection"
-4. **Clarifying questions**: Ask about duration, safety concerns, additional details
-5. **Collect email**: "What email address should we use for updates on your request?"
-6. **Confirm**: "I have all the details. Would you like me to create a service request for this [complaint type]?"
+3. Ask for location: "Where is this located? Please provide the address or nearest intersection"
+4. Clarifying questions: Ask about duration, safety concerns, additional details (keep it brief)
+5. MANDATORY: Collect email: "What email address should I use to send you updates on your request?"
+6. Optional: Phone number: "Would you also like to provide a phone number?"
+7. Confirm: "I have all the details. Would you like me to create your service request now?"
 
-Be descriptive and professional when analyzing photos.
+CRITICAL: Do NOT skip the email collection step. It is required before case creation.
 """
 
 # ============================================================================
@@ -109,8 +107,8 @@ Be descriptive and professional when analyzing photos.
 
 class SmartAIRouter:
     """
-    World-class AI routing: Photos → Claude API (vision), Text → Heroku Managed Inference
-    Unified 311 personality across both LLMs
+    World-class AI routing: Photos -> Claude API, Text -> Heroku Managed Inference
+    Unified 311 personality across both LLMs with temperature 0.5
     """
     
     def __init__(self):
@@ -149,16 +147,14 @@ class SmartAIRouter:
     def create_message(self, messages, has_photo=False, max_tokens=1024):
         """
         Smart routing with unified 311 personality:
-        - Photo present → Claude API (vision capable)
-        - Text only → Heroku Managed Inference (faster, cheaper)
+        - Photo present -> Claude API (vision capable)
+        - Text only -> Heroku Managed Inference (faster, cheaper)
         """
-        # DECISION: Route based on photo presence
         if has_photo:
-            logger.info("🎯 ROUTING: Photo detected → Claude API")
+            logger.info("🎯 ROUTING: Photo detected -> Claude API")
             return self._call_claude_api(messages, max_tokens)
         else:
-            logger.info("🎯 ROUTING: Text only → Heroku Managed Inference")
-            # Try HMI, fallback to Claude if it fails
+            logger.info("🎯 ROUTING: Text only -> Heroku Managed Inference")
             try:
                 return self._call_heroku_inference(messages, max_tokens)
             except Exception as e:
@@ -188,7 +184,7 @@ class SmartAIRouter:
             "model": self.inference_model_id,
             "messages": messages,
             "max_tokens": max_tokens,
-            "temperature": 1.0
+            "temperature": 0.5
         }
         
         logger.info(f"🔵 Calling Heroku Managed Inference ({self.inference_model_id})")
@@ -231,16 +227,13 @@ class SmartAIRouter:
         
         for msg in messages:
             if isinstance(msg['content'], str):
-                # Simple text message
                 claude_messages.append(msg)
             elif isinstance(msg['content'], list):
-                # Multimodal message - convert image_url format to Claude's format
                 converted_content = []
                 for item in msg['content']:
                     if item['type'] == 'text':
                         converted_content.append(item)
                     elif item['type'] == 'image_url':
-                        # Extract base64 from data URI
                         image_url = item['image_url']['url']
                         if image_url.startswith('data:image/'):
                             media_type = image_url.split(';')[0].split(':')[1]
@@ -263,7 +256,7 @@ class SmartAIRouter:
         response = self.claude_client.messages.create(
             model="claude-sonnet-4-20250514",
             max_tokens=max_tokens,
-            temperature=1.0,
+            temperature=0.5,
             messages=claude_messages
         )
         
@@ -274,7 +267,6 @@ class SmartAIRouter:
         """Test both services"""
         status = {}
         
-        # Test HMI
         if self.hmi_available:
             try:
                 test = self._call_heroku_inference([{"role": "user", "content": "Say ok"}], max_tokens=10)
@@ -285,7 +277,6 @@ class SmartAIRouter:
         else:
             status['heroku_inference'] = 'not_configured'
         
-        # Test Claude
         if self.claude_available:
             try:
                 test = self._call_claude_api([{"role": "user", "content": "Say ok"}], max_tokens=10)
@@ -310,30 +301,26 @@ def check_rate_limit(service_name):
     current_time = time.time()
     service = API_CALL_COUNTS[service_name]
     
-    # Reset counter if minute has passed
     if current_time > service['reset_time']:
         service['count'] = 0
         service['reset_time'] = current_time + 60
     
-    # Check limit
     if service['count'] >= RATE_LIMITS[service_name]:
         logger.warning(f"⚠️ Rate limit exceeded for {service_name}")
         return False
     
-    # Increment and allow
     service['count'] += 1
     return True
 
 def get_salesforce_client():
     """
     Create Salesforce client with JWT authentication
-    FIXED: Now uses SF_CLIENT_ID and decodes SF_PRIVATE_KEY_BASE64
+    Uses SF_CLIENT_ID and SF_PRIVATE_KEY_BASE64
     """
     try:
-        # Get credentials from environment
         username = os.environ.get('SF_USERNAME')
-        client_id = os.environ.get('SF_CLIENT_ID')  # Changed from SF_CONSUMER_KEY
-        private_key_base64 = os.environ.get('SF_PRIVATE_KEY_BASE64')  # Changed to use base64 version
+        client_id = os.environ.get('SF_CLIENT_ID')
+        private_key_base64 = os.environ.get('SF_PRIVATE_KEY_BASE64')
         
         if not all([username, client_id, private_key_base64]):
             missing = []
@@ -342,11 +329,9 @@ def get_salesforce_client():
             if not private_key_base64: missing.append('SF_PRIVATE_KEY_BASE64')
             raise ValueError(f"Missing Salesforce credentials: {', '.join(missing)}")
         
-        # Decode the base64 private key
         private_key = base64.b64decode(private_key_base64).decode('utf-8')
         logger.info("✅ Decoded private key from base64")
         
-        # Create JWT claim
         claim = {
             'iss': client_id,
             'sub': username,
@@ -354,10 +339,8 @@ def get_salesforce_client():
             'exp': datetime.utcnow() + timedelta(minutes=3)
         }
         
-        # Encode JWT
         assertion = jwt.encode(claim, private_key, algorithm='RS256')
         
-        # Request access token
         response = requests.post(
             'https://login.salesforce.com/services/oauth2/token',
             data={
@@ -392,11 +375,9 @@ def validate_photo(photo_data):
         if not photo_data:
             return None
         
-        # Remove data URI prefix if present
         if isinstance(photo_data, str) and photo_data.startswith('data:'):
             photo_data = photo_data.split(',', 1)[1]
         
-        # Validate base64
         base64.b64decode(photo_data)
         return photo_data
     except Exception as e:
@@ -435,8 +416,8 @@ def index():
 def chat():
     """
     Main chat endpoint with smart routing:
-    - Photo present → Claude API
-    - Text only → Heroku Managed Inference
+    - Photo present -> Claude API
+    - Text only -> Heroku Managed Inference
     """
     try:
         data = request.json
@@ -444,7 +425,6 @@ def chat():
         conversation = data.get('conversation', [])
         photo_payload = data.get('photo')
         
-        # Extract photo data and media type
         photo_base64 = None
         photo_media_type = 'image/jpeg'
         
@@ -457,13 +437,11 @@ def chat():
         else:
             photo_base64 = photo_payload
         
-        # Require either message or photo
         if not user_message and not photo_base64:
             return jsonify({'success': False, 'error': 'Message or photo is required'}), 400
         
         logger.info(f"📨 Received: {user_message[:80] if user_message else '[photo only]'}...")
         
-        # Validate photo if present
         has_photo = False
         if photo_base64:
             photo_base64 = validate_photo(photo_base64)
@@ -473,29 +451,23 @@ def chat():
             else:
                 return jsonify({'success': False, 'error': 'Invalid photo data'}), 400
         
-        # Build conversation context
         messages = []
         
-        # Add conversation history
         for msg in conversation:
             role = msg.get('role', 'user')
             content = msg.get('content', '')
             
-            # Skip empty messages
             if not content or (isinstance(content, str) and not content.strip()):
                 continue
             
             messages.append({"role": role, "content": content})
         
-        # Build current message
         is_first_message = len(conversation) == 0
         
-        # Add 311 context on first message OR when photo present
         if is_first_message or has_photo:
             context_message = build_311_context_message(user_message, has_photo)
             
             if has_photo:
-                # Multimodal message
                 current_content = [
                     {"type": "text", "text": context_message},
                     {
@@ -505,24 +477,20 @@ def chat():
                 ]
                 messages.append({"role": "user", "content": current_content})
             else:
-                # Text only with context
                 messages.append({"role": "user", "content": context_message})
             
             logger.info(f"🎯 Added 311 context (first={is_first_message}, photo={has_photo})")
         else:
-            # Follow-up text message without context
             messages.append({"role": "user", "content": user_message})
         
         logger.info(f"📊 Total messages: {len(messages)}")
         
-        # SMART ROUTING: Call appropriate AI service
         assistant_response = ai_router.create_message(
             messages=messages,
             has_photo=has_photo,
             max_tokens=1024
         )
         
-        # Check if user wants to create a case
         should_create_case = False
         if user_message:
             trigger_phrases = ['create', 'submit', 'yes', 'please do', 'go ahead', 'sounds good']
@@ -532,14 +500,12 @@ def chat():
                     should_create_case = True
         
         if should_create_case:
-            # Extract case info and create
             case_info = extract_case_info_from_conversation(messages)
             
             if case_info:
                 logger.info(f"📝 Creating case: {case_info}")
                 
                 try:
-                    # Find photo in conversation if not in current message
                     case_photo = photo_base64 if has_photo else find_photo_in_conversation(conversation)
                     
                     case_result = create_salesforce_case(case_info, case_photo)
@@ -601,14 +567,12 @@ CRITICAL: Use ONLY these exact complaint types (case-sensitive):
 Return ONLY valid JSON with these fields (use null for missing):
 {{"complaintType": "exact type from list above", "subject": "brief subject", "description": "detailed description with location", "citizenEmail": "email", "citizenPhone": "phone or null", "ward": "ward number or null"}}"""
         
-        # Use AI router for extraction (will use HMI since no photo)
         extracted_text = ai_router.create_message(
             messages=[{"role": "user", "content": extraction_prompt}],
             has_photo=False,
             max_tokens=1024
         )
         
-        # Parse JSON from response
         json_start = extracted_text.find('{')
         json_end = extracted_text.rfind('}') + 1
         if json_start >= 0 and json_end > json_start:
@@ -623,6 +587,13 @@ Return ONLY valid JSON with these fields (use null for missing):
 def create_salesforce_case(case_info, photo_base64=None):
     """Create a case in Salesforce via Apex action"""
     try:
+        if not case_info.get('citizenEmail'):
+            logger.warning("⚠️ Case creation attempted without email address")
+            return {
+                'success': False,
+                'message': 'Email address is required to create a service request.'
+            }
+        
         if not check_rate_limit('salesforce'):
             return {'success': False, 'message': 'Service temporarily busy. Please try again.'}
         
@@ -647,7 +618,6 @@ def create_salesforce_case(case_info, photo_base64=None):
             output_values = result[0].get('outputValues', {})
             case_id = output_values.get('caseId')
             
-            # Attach photo if available
             if photo_base64 and case_id:
                 try:
                     photo_data = photo_base64.get('compressed_data') or photo_base64.get('data') if isinstance(photo_base64, dict) else photo_base64
@@ -692,15 +662,12 @@ def health():
         'timestamp': datetime.utcnow().isoformat()
     }
     
-    # Test AI services
     ai_checks = ai_router.health_check()
     checks.update(ai_checks)
     
-    # Check if at least one AI service is working
     if all(status in ['error', 'not_configured'] for status in ai_checks.values()):
         checks['status'] = 'degraded'
     
-    # Test Salesforce
     try:
         sf = get_salesforce_client()
         sf.query("SELECT Id FROM Case LIMIT 1")
@@ -720,8 +687,10 @@ def health():
 logger.info("=" * 80)
 logger.info("311 AI AGENT - WORLD CLASS PRODUCTION")
 logger.info("=" * 80)
-logger.info(f"✅ Smart Routing: Photos → Claude API, Text → HMI")
+logger.info(f"✅ Smart Routing: Photos -> Claude API, Text -> HMI")
+logger.info(f"✅ Temperature 0.5 for consistent, focused responses")
 logger.info(f"✅ Unified 311 Personality across both LLMs")
+logger.info(f"✅ Email enforcement before case creation")
 logger.info(f"✅ Salesforce JWT Authentication configured")
 logger.info("=" * 80)
 
