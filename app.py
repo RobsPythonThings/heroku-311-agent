@@ -5,6 +5,7 @@
 🔒 Security: Input sanitization, rate limiting, CSRF protection, secure headers
 💎 Delightful UX: Warm personality, clear messaging, celebration of success
 🚀 World-class: Monitoring, analytics, comprehensive error handling
+🗺️ Enhanced geocoding: Handles intersections AND numbered addresses
 """
 
 import os
@@ -482,8 +483,48 @@ def get_salesforce_client():
         logger.error(f"❌ Salesforce authentication failed: {str(e)}")
         raise
 
+def extract_location(text):
+    """Enhanced location extraction supporting intersections and numbered addresses"""
+    if not text:
+        return None
+    
+    text = text.lower()
+    
+    # Pattern 1: Intersections (e.g., "Carlton and Jarvis", "Main St & King Ave")
+    intersection_patterns = [
+        r'(?:at |on |near )?([a-z0-9\s]+(?:street|st|avenue|ave|road|rd|blvd|boulevard))\s+(?:and|&|at)\s+([a-z0-9\s]+(?:street|st|avenue|ave|road|rd|blvd|boulevard))',
+        r'(?:at |on |near )?([a-z0-9\s]+(?:st|ave|rd|blvd))\s+(?:and|&|at)\s+([a-z0-9\s]+(?:st|ave|rd|blvd))',
+    ]
+    
+    for pattern in intersection_patterns:
+        match = re.search(pattern, text)
+        if match:
+            street1 = match.group(1).strip()
+            street2 = match.group(2).strip()
+            location = f"{street1} and {street2}"
+            logger.info(f"🗺️ Extracted intersection: {location}")
+            return location
+    
+    # Pattern 2: Numbered addresses (e.g., "123 Main St")
+    numbered_patterns = [
+        r'\b(\d+[a-z]?)\s+([a-z0-9\s]+(?:street|st|avenue|ave|road|rd|drive|dr|blvd|boulevard))',
+        r'\b(\d+[a-z]?)\s+([a-z0-9\s]+(?:st|ave|rd|dr|blvd))',
+    ]
+    
+    for pattern in numbered_patterns:
+        match = re.search(pattern, text)
+        if match:
+            number = match.group(1)
+            street = match.group(2).strip()
+            location = f"{number} {street}"
+            logger.info(f"🗺️ Extracted numbered address: {location}")
+            return location
+    
+    logger.warning(f"⚠️ Could not extract location from: {text[:100]}")
+    return None
+
 def geocode_address(address):
-    """Convert address to latitude/longitude coordinates"""
+    """Convert address to latitude/longitude coordinates with retry logic"""
     try:
         address = sanitize_input(address, 200)
         
@@ -503,6 +544,17 @@ def geocode_address(address):
                 'formatted_address': location.address
             }
         else:
+            # Try without "Toronto" suffix
+            logger.info(f"⚠️ Retrying geocode without city suffix")
+            location = geolocator.geocode(address, timeout=5)
+            if location:
+                logger.info(f"📍 Geocoded '{address}' to ({location.latitude}, {location.longitude})")
+                return {
+                    'latitude': location.latitude,
+                    'longitude': location.longitude,
+                    'formatted_address': location.address
+                }
+            
             logger.warning(f"⚠️ Could not geocode address: {address}")
             return None
             
@@ -718,9 +770,9 @@ def chat():
         )
         
         should_create_case = False
-        case_announce_phrases = ['creating your service request', 'service request now', 'case created', 'reference #', 'SR-']
+        case_announce_phrases = ['creating your service request', 'service request now', 'case created', 'reference #', 'SR-', 'service request **#']
         if any(phrase in assistant_response.lower() for phrase in case_announce_phrases):
-          should_create_case = True
+            should_create_case = True
         
         if should_create_case:
             case_info = extract_case_info_from_conversation(messages)
@@ -820,7 +872,7 @@ Return ONLY valid JSON with these fields (use null for missing):
         return None
 
 def create_salesforce_case(case_info, photo_base64=None):
-    """Create a case in Salesforce via Apex action"""
+    """Create a case in Salesforce via Apex action with enhanced geocoding"""
     try:
         if not check_rate_limit('salesforce'):
             return {
@@ -831,20 +883,20 @@ def create_salesforce_case(case_info, photo_base64=None):
         sf = get_salesforce_client()
         
         description = case_info.get('description', '')
-        address_match = re.search(r'\b\d+[^,\n]*(?:street|st|avenue|ave|road|rd|drive|dr|blvd|boulevard)[^,\n]*', 
-                                  description, re.IGNORECASE)
         
-        street_address = None
+        # Try to extract location using enhanced extraction
+        street_address = extract_location(description)
         latitude = None
         longitude = None
         
-        if address_match:
-            street_address = address_match.group(0).strip()
+        if street_address:
             geo_result = geocode_address(street_address)
             if geo_result:
                 latitude = geo_result['latitude']
                 longitude = geo_result['longitude']
-                logger.info(f"✅ Geocoded address for case: {latitude}, {longitude}")
+                logger.info(f"✅ Geocoded for case: {street_address} → ({latitude}, {longitude})")
+        else:
+            logger.warning(f"⚠️ No location extracted from description")
         
         apex_request = {
             "inputs": [{
@@ -957,6 +1009,7 @@ logger.info("✅ Unified 311 Personality with delightful UX")
 logger.info("✅ Enhanced Security: Input sanitization, rate limiting, CSRF protection")
 logger.info("✅ Comprehensive Error Handling & Monitoring")
 logger.info("✅ Map Integration with Geocoding")
+logger.info("✅ Enhanced Location Extraction: Intersections + Numbered Addresses")
 logger.info("✅ Analytics & Performance Tracking")
 logger.info("=" * 80)
 
