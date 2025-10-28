@@ -718,12 +718,9 @@ def chat():
         )
         
         should_create_case = False
-        if user_message:
-            trigger_phrases = ['create', 'submit', 'yes', 'please do', 'go ahead', 'sounds good', 'do it']
-            if any(phrase in user_message.lower() for phrase in trigger_phrases):
-                confirmation_phrases = ['create', 'submit', 'service request', 'case number']
-                if any(phrase in assistant_response.lower() for phrase in confirmation_phrases):
-                    should_create_case = True
+        case_announce_phrases = ['creating your service request', 'service request now', 'case created', 'reference #', 'SR-']
+        if any(phrase in assistant_response.lower() for phrase in case_announce_phrases):
+          should_create_case = True
         
         if should_create_case:
             case_info = extract_case_info_from_conversation(messages)
