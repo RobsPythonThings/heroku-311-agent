@@ -565,6 +565,18 @@ def index():
     """Serve the chat interface"""
     return render_template('index.html')
 
+def get_complaint_color(complaint_type):
+    """Get color for complaint type to match frontend expectations"""
+    color_map = {
+        'Pothole': '#FF8C00',
+        'Graffiti': '#DC143C',
+        'Streetlight Out': '#FFD700',
+        'Sidewalk Repair': '#4169E1',
+        'Missed Garbage Collection': '#32CD32',
+        'Noise Complaint': '#9370DB'
+    }
+    return color_map.get(complaint_type, '#808080')
+
 @app.route('/map')
 def map_view():
     """Serve the interactive map view"""
@@ -602,18 +614,27 @@ def get_cases():
         results = sf.query(query)
         
         cases = []
+        type_counts = {}
+        
         for record in results['records']:
+            complaint_type = sanitize_input(record.get('Complaint_Type__c', ''))
+            
+            # Count by type
+            if complaint_type:
+                type_counts[complaint_type] = type_counts.get(complaint_type, 0) + 1
+            
             cases.append({
                 'id': sanitize_input(record.get('Id', '')),
                 'caseNumber': sanitize_input(record.get('CaseNumber', '')),
                 'subject': sanitize_input(record.get('Subject', '')),
                 'description': sanitize_input(record.get('Description', ''), MAX_DESCRIPTION_LENGTH),
-                'complaintType': sanitize_input(record.get('Complaint_Type__c', '')),
+                'complaintType': complaint_type,
                 'status': sanitize_input(record.get('Status', '')),
                 'createdDate': record.get('CreatedDate', ''),
                 'latitude': float(record.get('Latitude__c', 0)),
                 'longitude': float(record.get('Longitude__c', 0)),
-                'address': sanitize_input(record.get('Location_Address__c', ''))
+                'streetAddress': sanitize_input(record.get('Location_Address__c', '')),
+                'color': get_complaint_color(complaint_type)
             })
         
         logger.info(f"📍 Retrieved {len(cases)} cases for map")
@@ -621,7 +642,8 @@ def get_cases():
         return jsonify({
             'success': True,
             'cases': cases,
-            'count': len(cases)
+            'total': len(cases),
+            'typeCounts': type_counts
         })
         
     except Exception as e:
