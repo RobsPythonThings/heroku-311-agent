@@ -603,7 +603,7 @@ def get_cases():
         
         query = """
             SELECT Id, CaseNumber, Subject, Description, Complaint_Type__c, 
-                   Status, CreatedDate, Latitude__c, Longitude__c, Location_Address__c
+                   Status, CreatedDate, Latitude__c, Longitude__c, Street_Address__c
             FROM Case
             WHERE Latitude__c != null 
             AND Longitude__c != null
@@ -634,7 +634,7 @@ def get_cases():
                 'createdDate': record.get('CreatedDate', ''),
                 'latitude': float(record.get('Latitude__c', 0)),
                 'longitude': float(record.get('Longitude__c', 0)),
-                'streetAddress': sanitize_input(record.get('Location_Address__c', '')),
+                'streetAddress': sanitize_input(record.get('Street_Address__c', '')),
                 'color': get_complaint_color(complaint_type)
             })
         
