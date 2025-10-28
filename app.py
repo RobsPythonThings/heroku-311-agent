@@ -430,7 +430,8 @@ def get_salesforce_client():
     """Create Salesforce client with JWT authentication"""
     username = os.environ.get('SF_USERNAME')
     consumer_key = os.environ.get('SF_CONSUMER_KEY')
-    private_key_base64 = os.environ.get('SF_PRIVATE_KEY')
+    private_key_base64 = os.environ.get('SF_PRIVATE_KEY') or os.environ.get('SF_PRIVATE_KEY_BASE64')
+
     domain = os.environ.get('SF_DOMAIN', 'login')
     
     if not all([username, consumer_key, private_key_base64]):
