@@ -744,7 +744,19 @@ def chat():
         
         should_create_case = False
         # Detect if AI wants to create a case (look for XML tags or trigger phrases)
-        if '<create_case>' in assistant_response or any(phrase in assistant_response.lower() for phrase in ['creating your service request', 'service request now', 'case created', "i've submitted", "i've created", "report has been submitted"]):
+        trigger_phrases = [
+            'creating your service request',
+            'service request now',
+            'case created',
+            "i've submitted",
+            "i've created",
+            "report has been submitted",
+            "has been submitted as case",
+            "submitted as case",
+            "service request **#",
+            "case **#"
+        ]
+        if '<create_case>' in assistant_response or any(phrase in assistant_response.lower() for phrase in trigger_phrases):
             should_create_case = True
         
         if should_create_case:
