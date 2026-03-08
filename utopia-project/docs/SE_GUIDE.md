@@ -23,7 +23,7 @@ AIRFX (Agentforce RFP Flagging Engine) is a deterministic security-flagging engi
 Question arrives
   -> Gate 1: Pre-filter (~160 functional terms, ~84 security terms)
      Functional terms only -> GREEN (auto-classified as Functional)
-  -> Gate 2: 84-rule deterministic engine (first match wins)
+  -> Gate 2: 90+-rule deterministic engine (first match wins)
      Rule match -> flag per rule type
   -> Gate 3: NO_MATCH split
      No security terms -> GREEN "Functional"
@@ -135,4 +135,6 @@ Data residency flags depend on `GPS_Project__c.Country__c`. If the country is bl
 ## Performance
 
 - **Capacity:** ~650 questions per invocation (within 10,000ms CPU governor limit)
-- **P-0042 benchmark (348 questions):** ~6.5 seconds, 278 Green / 70 Yellow / 0 Red
+- **P-0042 benchmark (348 questions):** ~6.5 seconds, 288 Green / 60 Yellow / 0 Red
+- **Unit tests:** 170/170 passing
+- **Adversarial tests:** 20/20 correct (trick questions, negation traps, compound queries)

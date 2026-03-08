@@ -1776,9 +1776,21 @@ private class AIRFX_ResponseFlagInvocableTest {
     // =========================================================================
 
     @IsTest
-    static void maintenanceWindow_shouldBeYellowCanDiff() {
+    static void maintenanceWindow_shouldSoftened_shouldBeGreen() {
+        // "should" triggers obligation softening: CAN_DIFFERENTLY Yellow → Green
         AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
             'Planned unavailability should only be carried out outside of core productive hours.',
+            '', '', ''
+        );
+        System.assertEquals('Green', d.flag);
+        System.assertEquals('MAINTENANCE_WINDOW', d.ruleId);
+    }
+
+    @IsTest
+    static void maintenanceWindow_must_shouldBeYellow() {
+        // "must" = mandatory obligation, stays Yellow
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Planned unavailability must only be carried out outside of core productive hours.',
             '', '', ''
         );
         System.assertEquals('Yellow', d.flag);
@@ -1874,5 +1886,61 @@ private class AIRFX_ResponseFlagInvocableTest {
         System.assertEquals('Yellow', d.flag);
         System.assertEquals('CIA_TRIAD', d.ruleId,
             'Should match CIA_TRIAD, not UPTIME_PARSE_FAIL');
+    }
+
+    // =========================================================================
+    // 21. YELLOW MINING ROUND 2 — additional fixable rules
+    // =========================================================================
+
+    @IsTest
+    static void calendarScheduling_shouldBeGreen() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Contain viewable, interactive calendars with role-based functionality. Calendar functionality must include event scheduling capabilities.',
+            '', '', ''
+        );
+        System.assertEquals('Green', d.flag, 'Calendar scheduling is a functional capability');
+        System.assertEquals('CALENDAR_SCHEDULING', d.ruleId);
+    }
+
+    @IsTest
+    static void adminConsole_shouldBeGreen() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Including a dedicated administration website for use by staff to provide a comprehensive level of control over aspects of system operation, parameters, and security.',
+            '', '', ''
+        );
+        System.assertEquals('Green', d.flag, 'Salesforce Setup is an admin console');
+        System.assertEquals('ADMIN_CONSOLE', d.ruleId);
+    }
+
+    @IsTest
+    static void securityPostureDescribe_shouldBeYellow() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Describe the security system used by your proposed Solution, including: Authentication, Session Management, Access Control, Malicious Input Handling, Error Handling and Logging.',
+            '', '', ''
+        );
+        System.assertEquals('Yellow', d.flag, 'Security posture description is CAN_DIFFERENTLY');
+        System.assertEquals('SECURITY_POSTURE_DESCRIBE', d.ruleId);
+    }
+
+    @IsTest
+    static void securityPostureDescribe_should_softensToGreen() {
+        // "should" softens CAN_DIFFERENTLY to Green
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'The vendor should describe the security system including Authentication, Session Management, and Access Control.',
+            '', '', ''
+        );
+        System.assertEquals('Green', d.flag, 'Optional language softens to Green');
+        System.assertEquals('SECURITY_POSTURE_DESCRIBE', d.ruleId);
+    }
+
+    @IsTest
+    static void adminConsole_doesNotMatchDedicatedHardware() {
+        // "dedicated administration website" must NOT match DEDICATED_HARDWARE
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Including a dedicated administration website for use by staff.',
+            '', '', ''
+        );
+        System.assertNotEquals('DEDICATED_HARDWARE', d.ruleId,
+            'Dedicated admin website must not match DEDICATED_HARDWARE rule');
     }
 }

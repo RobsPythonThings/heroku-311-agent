@@ -1267,8 +1267,36 @@ public with sharing class AIRFX_ResponseFlagInvocable {
             + 'Data protection obligations are covered under the Salesforce DPA and MSA.'));
 
         // =================================================================
-        // NEW RULES — from P-0042 YELLOW mining (2026-03-08)
+        // YELLOW MINING RULES — from P-0042 analysis (2026-03-08)
         // =================================================================
+
+        // CALENDAR/SCHEDULING — functional questions with "role-based" in scheduling context
+        // These pass through pre-filter because "role-based" is a security term,
+        // but they're really asking about calendar/scheduling features, not security.
+        rules.add(binaryCan('CALENDAR_SCHEDULING',
+            new List<String>{'calendar.*role-based', 'calendar.*role based', 'role-based.*calendar',
+                'calendar.*scheduling', 'event scheduling.*role'},
+            'Salesforce provides calendar and event scheduling functionality with role-based access. '
+            + 'Lightning Experience includes shared calendars, event management, and resource scheduling. '
+            + 'Access is controlled through profiles, permission sets, and sharing rules.'));
+
+        // ADMIN CONSOLE — Salesforce Setup is a comprehensive admin interface
+        rules.add(binaryCan('ADMIN_CONSOLE',
+            new List<String>{'administration website', 'admin.*website', 'administration.*portal',
+                'admin.*console', 'admin.*control.*system', 'administration.*control.*system'},
+            'Salesforce Setup provides a comprehensive administration interface for system configuration, '
+            + 'security settings, user management, data management, and platform customization. '
+            + 'Accessible via web browser with role-based administrative access.'));
+
+        // SECURITY POSTURE — broad "describe your security" questions
+        rules.add(binaryCanDifferently('SECURITY_POSTURE_DESCRIBE',
+            new List<String>{'describe.*security system', 'describe.*security.*solution',
+                'describe.*security.*proposed', 'security system.*authentication.*access control',
+                'authentication.*session management.*access control'},
+            'Salesforce provides comprehensive security: SAML/OAuth authentication, configurable session management, '
+            + 'RBAC with profiles and permission sets, input validation and CSRF protection, audit logging via '
+            + 'Setup Audit Trail and Shield Event Monitoring, platform monitoring via trust.salesforce.com, '
+            + 'and mandatory security awareness training for all employees.'));
 
         rules.add(binaryCanDifferently('RESPONSE_RECOVERY_TIME',
             new List<String>{'response.*recovery.*time', 'recovery time.*disruption',

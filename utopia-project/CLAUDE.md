@@ -29,8 +29,8 @@ genAiPlannerBundles/
 |-------|---------|
 | `AIRFX_AgentAction` | Invocable entry point. Resolves project, calls flagging + content routing. Writes `Security_Flag__c`, `Response_Flag_Reason__c`, `Question_Classification__c`. |
 | `AIRFX_SecurityPreFilter` | Keyword pre-filter. ~160 FUNCTIONAL_TERMS, ~84 SECURITY_TERMS. Word-boundary matching. Classifies questions as functional (auto-Green) or security (pass to rules). |
-| `AIRFX_ResponseFlagInvocable` | Core 74-rule deterministic flag engine. First match wins. NO_MATCH split: no security terms → Green (functional), security terms → Yellow (needs review). |
-| `AIRFX_ResponseFlagInvocableTest` | 97 tests. Covers all rule types, NO_MATCH split, classification, and edge cases. |
+| `AIRFX_ResponseFlagInvocable` | Core 90+-rule deterministic flag engine. First match wins. NO_MATCH split: no security terms → Green (functional), security terms → Yellow (needs review). |
+| `AIRFX_ResponseFlagInvocableTest` | 170 tests. Covers all rule types, NO_MATCH split, classification, obligation, product dimensions, adversarial, and YELLOW mining. |
 | `AIRFX_GenerateAnswer` | Single answer via `ConnectApi.EinsteinLLM.generateMessagesForPromptTemplate('DataCloud_RFP_Answer', ...)` |
 | `AIRFX_GenerateBatchAnswers` | Batch answer generation for multiple questions |
 | `AIRFX_CheckAnswerProgress` | Polls batch job status |
@@ -134,9 +134,10 @@ Country_Capability__mdt
 
 ## Performance
 
-- **CPU time**: ~5,354ms for 348 records (53.5% of 10,000ms governor limit)
-- **Estimated max capacity**: ~650 records per invocation
-- **Live validation**: Engine confirmed on P-0042 (348 questions), P-0014 (66 questions), P-4331 (471 questions)
+- **CPU time**: ~6,500ms for 348 records (65% of 10,000ms governor limit)
+- **Estimated max capacity**: ~530 records per invocation
+- **Live validation**: Engine confirmed on P-0042 (348 questions, 288G/60Y/0R), P-0014 (66 questions), P-4331 (471 questions)
+- **CSV validation**: 6,539 historical questions processed (262 batches, 0 failures)
 
 ## Deployment
 

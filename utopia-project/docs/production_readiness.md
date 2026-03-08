@@ -8,7 +8,7 @@
 
 AIRFX is a deterministic security-flagging engine for RFP/RFx responses, integrated with Salesforce Agentforce. It triages security questions, auto-flags them Red/Yellow/Green, classifies them as Functional or Security, and generates answers using Data Cloud RAG retrieval.
 
-The engine has been validated on 3 production projects (P-0042: 348 questions, P-0014: 66 questions, P-4331: 471 questions) with 154 unit tests passing at 100%.
+The engine has been validated on 3 production projects (P-0042: 348 questions, P-0014: 66 questions, P-4331: 471 questions) with 170 unit tests passing at 100%. CSV validation against 6,539 historical questions complete.
 
 ## Readiness Checklist
 
@@ -16,8 +16,9 @@ The engine has been validated on 3 production projects (P-0042: 348 questions, P
 
 | Item | Status | Notes |
 |------|--------|-------|
-| Unit tests | 154/154 passing | Covers all rule types, edge cases, obligation, product dimensions |
+| Unit tests | 170/170 passing | Covers all rule types, edge cases, obligation, product dimensions, YELLOW mining |
 | Adversarial tests | 25/25 passing | Negation, compound questions, product filters, obligation softening |
+| CSV validation | 6,539 questions | 26.1% match rate vs historical flags; 73.9% are downgrades (conservative → appropriate) |
 | Code review | Complete | All Apex classes reviewed |
 | Governor limits | Within bounds | ~6.5s CPU for 348 records (65% of 10,000ms limit) |
 | Error handling | Implemented | Blank questions, parse failures, missing context all handled gracefully |
@@ -28,7 +29,7 @@ The engine has been validated on 3 production projects (P-0042: 348 questions, P
 | Feature | Status | Notes |
 |---------|--------|-------|
 | Security pre-filter | Complete | ~160 functional terms, ~84 security terms, word-boundary matching |
-| Rule engine | Complete | 84 rules across 7 rule types, first-match-wins |
+| Rule engine | Complete | 90+ rules across 7 rule types, first-match-wins |
 | Obligation parsing | Complete | must/shall vs should/may softening |
 | Product dimensions | Complete | MuleSoft and Tableau product-aware rules |
 | Data residency | Complete | 18 Hyperforce regions, country validation |
@@ -41,7 +42,7 @@ The engine has been validated on 3 production projects (P-0042: 348 questions, P
 
 | Project | Questions | Green | Yellow | Red | CPU Time |
 |---------|-----------|-------|--------|-----|----------|
-| P-0042 | 348 | 278 (80%) | 70 (20%) | 0 | ~6.5s |
+| P-0042 | 348 | 288 (83%) | 60 (17%) | 0 | ~6.5s |
 | P-0014 | 66 | — | — | — | ~1.2s |
 | P-4331 | 471 | — | — | — | ~8.5s |
 
@@ -50,8 +51,8 @@ The engine has been validated on 3 production projects (P-0042: 348 questions, P
 | # | Limitation | Impact | Mitigation |
 |---|-----------|--------|------------|
 | 1 | Max ~650 questions per invocation | Large RFPs may need batching | Split into multiple triage calls |
-| 2 | 43 NO_MATCH_SECURITY Yellows per P-0042 | Security questions without rules need manual review | RAG answer provides draft; add more rules over time |
-| 3 | 11 UPTIME_PARSE_FAIL per P-0042 | "Zero RPO", "no data loss" not parsed as numbers | Improve numeric parser for text-based numbers |
+| 2 | 21 NO_MATCH_SECURITY Yellows per P-0042 | Security questions without rules need manual review | RAG answer provides draft; add more rules over time |
+| 3 | 4 UPTIME_PARSE_FAIL per P-0042 | "Zero RPO", "no data loss" not parsed as numbers | Improve numeric parser for text-based numbers |
 | 4 | No flag override mechanism | SEs cannot override engine flags | Planned feature; edit Security_Flag__c directly |
 | 5 | CDN data transit caveat | Akamai/CloudFront/Cloudflare/Fastly route globally | Included in CMDT context; always flagged in reasons |
 | 6 | Einstein AI features US-only | AI data residency not guaranteed outside US | Noted in CMDT context |
@@ -101,7 +102,7 @@ sf project deploy start --source-dir force-app/main/default/customMetadata -o <o
 
 | Risk | Probability | Impact | Mitigation |
 |------|-------------|--------|------------|
-| False Red (engine says Red, should be Green) | Low | High | 84 rules carefully tuned; adversarial testing passed |
+| False Red (engine says Red, should be Green) | Low | High | 90+ rules carefully tuned; adversarial testing passed |
 | False Green (engine says Green, should be Red) | Medium | High | Conservative NO_MATCH defaults to Yellow; pre-filter catches most functional |
 | Governor limit exceeded | Low | Medium | Capacity tested at 471 questions; batching available |
 | Rule conflict (wrong rule fires first) | Low | Medium | First-match-wins with careful ordering; product filters isolate rules |
@@ -111,8 +112,8 @@ sf project deploy start --source-dir force-app/main/default/customMetadata -o <o
 
 1. **Add flag override** — let SEs override engine flags with justification, logged in Response_Flag_Reason__c
 2. **Improve numeric parser** — handle "zero RPO", "no data loss", "within N minutes"
-3. **Add more CAN_DIFFERENTLY rules** — target remaining NO_MATCH_SECURITY topics
-4. **Country CMDT build** — full country x product x capability matrix
+3. **Add more CAN_DIFFERENTLY rules** — target remaining 21 NO_MATCH_SECURITY topics
+4. **Country CMDT build** — full country x product x capability matrix (complete — 5 objects, 195 records)
 5. **Batch answer progress** — show real-time progress to agent for large projects
 6. **Audit trail** — log engine version, rule count, and timestamp with each triage run
 
