@@ -206,6 +206,9 @@ public with sharing class AIRFX_ResponseFlagInvocable {
                 }
                 fr.CMDTCapabilityContext = cmdtContextCache.get(cacheKey);
 
+                // Inject per-question RAG constraints based on rule outcome
+                fr.CMDTCapabilityContext = appendUptimeConstraint(fr.CMDTCapabilityContext, decision);
+
                 // Calculate confidence score
                 decision.confidenceScore = calculateConfidence(decision, country, productType, scoreCache);
                 fr.confidenceScore = decision.confidenceScore;
@@ -275,10 +278,6 @@ public with sharing class AIRFX_ResponseFlagInvocable {
      * are Active__c = false (expected until activation).
      */
     public static String buildCMDTCapabilityContext(String country, String productType) {
-        if (String.isBlank(country) && String.isBlank(productType)) {
-            return '';
-        }
-
         List<String> lines = new List<String>();
         String countryUpper = String.isNotBlank(country) ? country.toUpperCase() : '';
 
@@ -513,7 +512,7 @@ public with sharing class AIRFX_ResponseFlagInvocable {
                     return decision;
                 }
                 when 'NUMERIC_TIERED_MIN' {
-                    // 3-tier: < threshold = GREEN, threshold..upper = YELLOW, > upper = RED
+                    // 3-tier: <= threshold = GREEN, threshold..upper = YELLOW, > upper = RED
                     Decimal reqValue = extractNumber(qLower, rule.numericUnit);
                     if (reqValue == null) {
                         decision.flag = FLAG_YELLOW;
@@ -527,7 +526,7 @@ public with sharing class AIRFX_ResponseFlagInvocable {
                             + '. Salesforce maximum achievable: ' + rule.numericUpperThreshold + rule.numericUnit
                             + '. ' + rule.reason;
                         decision.ruleId = rule.id;
-                    } else if (reqValue >= rule.numericThreshold) {
+                    } else if (reqValue > rule.numericThreshold) {
                         decision.flag = FLAG_YELLOW;
                         decision.reason = 'Requirement: ' + reqValue + rule.numericUnit
                             + '. ' + rule.alternativeReason;
@@ -770,6 +769,45 @@ public with sharing class AIRFX_ResponseFlagInvocable {
             }
         }
         return count;
+    }
+
+    // =========================================================================
+    // PER-QUESTION RAG CONSTRAINTS
+    // =========================================================================
+
+    /**
+     * Appends SLA-specific guardrails to the CMDT context when an uptime rule fired.
+     * RAG still answers monitoring, status page, incident response, maintenance —
+     * this only constrains the specific SLA percentage claim.
+     */
+    @TestVisible
+    private static String appendUptimeConstraint(String context, FlagDecision decision) {
+        if (decision == null || String.isBlank(decision.ruleId)) return context;
+
+        String ruleId = decision.ruleId;
+        String suffix = '';
+
+        if (ruleId == 'UPTIME' && (decision.flag == 'Yellow' || decision.flag == 'Red')) {
+            // Engine parsed a specific SLA % that exceeds Salesforce standard
+            // Extract the requested percentage from the reason string
+            String requestedPct = '';
+            if (decision.reason != null && decision.reason.startsWith('Requirement: ')) {
+                Integer pctIdx = decision.reason.indexOf('%');
+                if (pctIdx > 13) {
+                    requestedPct = decision.reason.substring(13, pctIdx).trim();
+                }
+            }
+            if (String.isNotBlank(requestedPct)) {
+                suffix = '\n\nNOTE: Do not confirm ' + requestedPct + '% as guaranteed. Standard SLA is 99.9% contractual minimum. Defer to AE for contract-specific terms.';
+            } else {
+                suffix = '\n\nNOTE: Do not confirm the requested uptime percentage as guaranteed. Standard SLA is 99.9% contractual minimum. Defer to AE for contract-specific terms.';
+            }
+        } else if (ruleId == 'UPTIME_PARSE_FAIL') {
+            suffix = '\n\nNOTE: Uptime SLA could not be verified from question. Do not state any specific percentage as a guaranteed SLA. Reference Trust status page and advise SE to confirm with AE for contract terms.';
+        }
+
+        if (String.isBlank(suffix)) return context;
+        return (String.isNotBlank(context) ? context : '') + suffix;
     }
 
     // =========================================================================
@@ -1127,14 +1165,14 @@ public with sharing class AIRFX_ResponseFlagInvocable {
             + 'typically outside peak business hours. Customers cannot choose or override maintenance windows. '
             + 'Major releases are scheduled 3 times per year (Spring, Summer, Winter) and cannot be deferred.'));
 
-        // UPTIME / AVAILABILITY — 3-tier: <99.7 GREEN, 99.7-100 YELLOW, >100 RED (impossible)
-        // 100% uptime is aspirational — CAN_DIFFERENTLY (we offer 99.9% max), not a hard no.
+        // UPTIME / AVAILABILITY — 2-tier: <=99.9 GREEN, >99.9 YELLOW, >100 RED (impossible)
+        // Standard SLA is 99.9% contractual minimum. Anything at or below that is safe to confirm.
         CapabilityRule uptimeRule = new CapabilityRule('UPTIME',
             new List<String>{'uptime', 'availability', '% sla', 'percent sla', 'percent uptime', 'percent availability'},
-            'NUMERIC_TIERED_MIN', 99.7, '%', null,
-            'Salesforce maximum achievable uptime is 99.9%. Requirements above 99.9% cannot be guaranteed but Salesforce can discuss SLA options with your AE.');
+            'NUMERIC_TIERED_MIN', 99.9, '%', null,
+            'Salesforce standard SLA is 99.9% uptime. Requirements above 99.9% cannot be guaranteed — engage your AE for contract-specific terms.');
         uptimeRule.numericUpperThreshold = 100.0;
-        uptimeRule.alternativeReason = 'Salesforce standard SLA commits to 99.7% uptime. Requirements up to 99.9% may be achievable with explicit approval \u2014 please engage your AE.';
+        uptimeRule.alternativeReason = 'Salesforce standard SLA is 99.9% uptime. This requirement exceeds the standard guarantee \u2014 engage your AE for contract-specific terms.';
         uptimeRule.excludeKeywords = new List<String>{
             'register availability', 'filter by availability', 'filter availability',
             'check availability', 'volunteer availability', 'schedule availability',

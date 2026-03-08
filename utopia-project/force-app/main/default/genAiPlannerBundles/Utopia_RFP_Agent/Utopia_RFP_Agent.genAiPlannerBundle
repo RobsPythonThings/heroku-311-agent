@@ -7,6 +7,9 @@
     <localTopicLinks>
         <genAiPluginName>RFP_Project_Management_16j7x000000ISdl</genAiPluginName>
     </localTopicLinks>
+    <localTopicLinks>
+        <genAiPluginName>Conversational_Security_QA_16j7x000000ISdl</genAiPluginName>
+    </localTopicLinks>
     <localTopics>
         <fullName>RFP_Project_Management_16j7x000000ISdl</fullName>
         <aiPluginUtterances>
@@ -223,7 +226,114 @@ When the user asks about yellows, distinguish between these two types.</descript
         <localDeveloperName>RFP_Project_Management</localDeveloperName>
         <masterLabel>RFP Project Management</masterLabel>
         <pluginType>Topic</pluginType>
-        <scope>Your job is only to triage RFP projects and generate grounded answers for RFP requirements. You work with GPS_Project__c records and their child GPS_ResponseNew__c requirement records. You do not handle general Salesforce administration, report building, or tasks outside the RFP response workflow.</scope>
+        <scope>Use this topic ONLY when the user references a specific project (by name like P-0014, by ID, or says &quot;this project&quot;/&quot;this RFP&quot;). You work with GPS_Project__c records and their child GPS_ResponseNew__c requirement records. If the user asks a standalone security, compliance, or platform question WITHOUT referencing a project, do NOT use this topic — use the Conversational Security Q&amp;A topic instead.</scope>
+    </localTopics>
+    <localTopics>
+        <fullName>Conversational_Security_QA_16j7x000000ISdl</fullName>
+        <aiPluginUtterances>
+            <developerName>conv_utterance_1</developerName>
+            <language xsi:nil="true"/>
+            <masterLabel>Conv Utterance 1</masterLabel>
+            <utterance>Is our data used to train Salesforce AI models?</utterance>
+        </aiPluginUtterances>
+        <aiPluginUtterances>
+            <developerName>conv_utterance_2</developerName>
+            <language xsi:nil="true"/>
+            <masterLabel>Conv Utterance 2</masterLabel>
+            <utterance>How does the Einstein Trust Layer work?</utterance>
+        </aiPluginUtterances>
+        <aiPluginUtterances>
+            <developerName>conv_utterance_3</developerName>
+            <language xsi:nil="true"/>
+            <masterLabel>Conv Utterance 3</masterLabel>
+            <utterance>Can Agentforce access data outside our org?</utterance>
+        </aiPluginUtterances>
+        <aiPluginUtterances>
+            <developerName>conv_utterance_4</developerName>
+            <language xsi:nil="true"/>
+            <masterLabel>Conv Utterance 4</masterLabel>
+            <utterance>What are the data residency options for AI features?</utterance>
+        </aiPluginUtterances>
+        <aiPluginUtterances>
+            <developerName>conv_utterance_5</developerName>
+            <language xsi:nil="true"/>
+            <masterLabel>Conv Utterance 5</masterLabel>
+            <utterance>Does Agentforce store conversation history?</utterance>
+        </aiPluginUtterances>
+        <aiPluginUtterances>
+            <developerName>conv_utterance_6</developerName>
+            <language xsi:nil="true"/>
+            <masterLabel>Conv Utterance 6</masterLabel>
+            <utterance>What certifications does Salesforce have?</utterance>
+        </aiPluginUtterances>
+        <aiPluginUtterances>
+            <developerName>conv_utterance_7</developerName>
+            <language xsi:nil="true"/>
+            <masterLabel>Conv Utterance 7</masterLabel>
+            <utterance>Does Salesforce support FedRAMP High?</utterance>
+        </aiPluginUtterances>
+        <aiPluginUtterances>
+            <developerName>conv_utterance_8</developerName>
+            <language xsi:nil="true"/>
+            <masterLabel>Conv Utterance 8</masterLabel>
+            <utterance>What encryption does Salesforce use?</utterance>
+        </aiPluginUtterances>
+        <aiPluginUtterances>
+            <developerName>conv_utterance_9</developerName>
+            <language xsi:nil="true"/>
+            <masterLabel>Conv Utterance 9</masterLabel>
+            <utterance>Where is Salesforce data stored?</utterance>
+        </aiPluginUtterances>
+        <canEscalate>false</canEscalate>
+        <description>Use this topic when the user asks a standalone question about Salesforce security, compliance, certifications, data residency, AI privacy, encryption, or platform capabilities WITHOUT referencing a specific RFP project. This handles conversational questions that do not require a GPS_Project__c or GPS_ResponseNew__c record lookup.</description>
+        <developerName>Conversational_Security_QA_16j7x000000ISdl</developerName>
+        <genAiPluginInstructions>
+            <description>You answer standalone security, compliance, and platform capability questions using CMDT facts and retrieved HECVAT/SPARC documentation. No project context is needed.
+
+ACTION: AIRFX_ConversationalAnswer (Answer Conversational Question)
+Use when the user asks ANY security, compliance, AI, data residency, certification, or platform question WITHOUT referencing a specific project.
+Input: question (the user&apos;s question text). Optional: countryCode (2-letter code like US, DE), product (e.g. Sales Cloud).
+Returns: grounded answer from CMDT + ADL retrieval, status, sources used.
+
+ROUTING RULES:
+- If the user mentions a project name (P-0014, P-6360) or project ID, do NOT use this topic. Route to RFP Project Management instead.
+- If the user says &quot;triage&quot;, &quot;flag&quot;, &quot;yellow questions&quot;, or &quot;check progress&quot;, route to RFP Project Management.
+- If the user asks a general question like &quot;Does Salesforce support FIPS?&quot; or &quot;How does encryption work?&quot; — use THIS topic.
+- If the user provides a country context (&quot;in Germany&quot;, &quot;for our EU deployment&quot;), pass the country code to get region-specific CMDT context.
+
+ANSWER QUALITY RULES:
+- Always cite specific sources when possible (HECVAT, SPARC, Trust documentation).
+- Lead with the direct answer, then provide supporting detail.
+- If the answer references certifications, state the specific cert name and status.
+- If the answer involves data residency, state which Hyperforce regions are available.
+- NEVER say &quot;Record not found&quot; — this action does not look up records.
+- NEVER expose internal field names, IDs, or error messages to the user.
+- Keep answers conversational but factual — an SE should be able to use this in a live call.</description>
+            <developerName>conv_instructions_0</developerName>
+            <language>en_US</language>
+            <masterLabel>conv_instructions_0</masterLabel>
+            <sortOrder>0</sortOrder>
+        </genAiPluginInstructions>
+        <language>en_US</language>
+        <localActionLinks>
+            <functionName>Utopia_Conversational_Answer_1797x000000MzZV</functionName>
+        </localActionLinks>
+        <localActions>
+            <fullName>Utopia_Conversational_Answer_1797x000000MzZV</fullName>
+            <description>Use this action to answer a standalone security or compliance question. Does NOT require a project or record ID. Queries CMDT for certifications, features, hard nos, and regulatory frameworks, then retrieves from ADL (HECVAT, SPARC, compliance docs) to generate a grounded answer.</description>
+            <developerName>Utopia_Conversational_Answer_1797x000000MzZV</developerName>
+            <invocationTarget>AIRFX_ConversationalAnswer</invocationTarget>
+            <invocationTargetType>apex</invocationTargetType>
+            <isConfirmationRequired>false</isConfirmationRequired>
+            <isIncludeInProgressIndicator>true</isIncludeInProgressIndicator>
+            <localDeveloperName>Utopia_Conversational_Answer</localDeveloperName>
+            <masterLabel>Utopia: Answer Conversational Question</masterLabel>
+            <progressIndicatorMessage>Looking up Salesforce security and compliance data...</progressIndicatorMessage>
+        </localActions>
+        <localDeveloperName>Conversational_Security_QA</localDeveloperName>
+        <masterLabel>Conversational Security Q&amp;A</masterLabel>
+        <pluginType>Topic</pluginType>
+        <scope>Use this topic when the user asks a standalone question about Salesforce security, compliance, data privacy, AI capabilities, certifications, encryption, data residency, or platform features WITHOUT referencing a specific RFP project or record. Examples: &quot;Is our data used to train AI models?&quot;, &quot;What certifications does Salesforce have?&quot;, &quot;How does encryption at rest work?&quot;</scope>
     </localTopics>
     <masterLabel>Utopia RFP Agent</masterLabel>
     <plannerActions>

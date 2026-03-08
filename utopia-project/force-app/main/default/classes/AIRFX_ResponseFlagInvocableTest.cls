@@ -35,6 +35,10 @@ private class AIRFX_ResponseFlagInvocableTest {
         );
     }
 
+    private static AIRFX_ResponseFlagInvocable.CMDTScoreCache getScoreCache() {
+        return AIRFX_ResponseFlagInvocable.buildCMDTScoreCache();
+    }
+
     // =========================================================================
     // 1. NUMERIC RULES — UPTIME
     // =========================================================================
@@ -60,22 +64,23 @@ private class AIRFX_ResponseFlagInvocableTest {
     }
 
     @IsTest
-    static void uptime_999_shouldBeYellow() {
+    static void uptime_999_shouldBeGreen() {
         AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
             'The system must maintain 99.9% uptime as measured monthly.',
             '', '', ''
         );
-        System.assertEquals('Yellow', d.flag, '99.9% is in the 99.7-99.9 approval zone = Yellow');
-        System.assert(d.reason.contains('engage your AE'), 'Should advise engaging AE');
+        System.assertEquals('Green', d.flag, '99.9% is at the standard SLA = Green');
+        System.assertEquals('UPTIME', d.ruleId);
     }
 
     @IsTest
-    static void uptime_997_shouldBeYellow() {
+    static void uptime_997_shouldBeGreen() {
         AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
             'Minimum 99.7% uptime required.',
             '', '', ''
         );
-        System.assertEquals('Yellow', d.flag, '99.7% is at the threshold = Yellow (needs approval)');
+        System.assertEquals('Green', d.flag, '99.7% is within standard SLA = Green');
+        System.assertEquals('UPTIME', d.ruleId);
     }
 
     @IsTest
@@ -85,7 +90,7 @@ private class AIRFX_ResponseFlagInvocableTest {
             'Platform must maintain 98.5% availability.',
             '', '', ''
         );
-        System.assertEquals('Green', d.flag, '98.5% < 99.7% = Green');
+        System.assertEquals('Green', d.flag, '98.5% <= 99.9% = Green');
     }
 
     @IsTest
@@ -94,7 +99,7 @@ private class AIRFX_ResponseFlagInvocableTest {
             'Service availability of at least 95%.',
             '', '', ''
         );
-        System.assertEquals('Green', d.flag, '95% < 99.7% = Green');
+        System.assertEquals('Green', d.flag, '95% <= 99.9% = Green');
     }
 
     @IsTest
@@ -103,7 +108,7 @@ private class AIRFX_ResponseFlagInvocableTest {
             'Platform must maintain 99.6% availability.',
             '', '', ''
         );
-        System.assertEquals('Green', d.flag, '99.6% < 99.7% = Green');
+        System.assertEquals('Green', d.flag, '99.6% <= 99.9% = Green');
     }
 
     @IsTest
@@ -112,7 +117,7 @@ private class AIRFX_ResponseFlagInvocableTest {
             'Minimum 99.5% availability required.',
             '', '', ''
         );
-        System.assertEquals('Green', d.flag, '99.5% < 99.7% = Green');
+        System.assertEquals('Green', d.flag, '99.5% <= 99.9% = Green');
     }
 
     @IsTest
@@ -121,16 +126,17 @@ private class AIRFX_ResponseFlagInvocableTest {
             'System must provide 99% availability.',
             '', '', ''
         );
-        System.assertEquals('Green', d.flag, '99% < 99.7% = Green');
+        System.assertEquals('Green', d.flag, '99% <= 99.9% = Green');
     }
 
     @IsTest
-    static void uptime_998_shouldBeYellow() {
+    static void uptime_998_shouldBeGreen() {
         AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
             'The system must maintain 99.8% uptime.',
             '', '', ''
         );
-        System.assertEquals('Yellow', d.flag, '99.8% is in the 99.7-99.9 approval zone = Yellow');
+        System.assertEquals('Green', d.flag, '99.8% is within standard SLA = Green');
+        System.assertEquals('UPTIME', d.ruleId);
     }
 
     @IsTest
@@ -149,6 +155,52 @@ private class AIRFX_ResponseFlagInvocableTest {
             '', '', ''
         );
         System.assertEquals('Yellow', d.flag, '99.99% is Yellow — above standard SLA');
+    }
+
+    @IsTest
+    static void uptime_999_exactBoundary_shouldBeGreen() {
+        // 99.9% is the exact standard SLA — should be Green, not Yellow
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Vendor must guarantee at least 99.9% uptime for all production services.',
+            '', '', 'US'
+        );
+        System.assertEquals('Green', d.flag, '99.9% is the standard SLA boundary = Green');
+        System.assertEquals('UPTIME', d.ruleId);
+        System.assert(d.reason.contains('Requirement met'), 'Should confirm requirement met');
+    }
+
+    @IsTest
+    static void uptime_9991_justAboveBoundary_shouldBeYellow() {
+        // 99.91% is just above the standard SLA — should be Yellow
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'The platform must provide 99.91% uptime availability.',
+            '', '', ''
+        );
+        System.assertEquals('Yellow', d.flag, '99.91% exceeds standard 99.9% SLA = Yellow');
+        System.assertEquals('UPTIME', d.ruleId);
+        System.assert(d.reason.contains('AE'), 'Should advise engaging AE');
+    }
+
+    @IsTest
+    static void uptime_fiveNines_shouldBeYellow() {
+        // 99.999% (five nines) — well above standard, needs AE
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'The vendor shall provide five nines (99.999%) availability.',
+            '', '', ''
+        );
+        System.assertEquals('Yellow', d.flag, '99.999% (five nines) exceeds standard SLA = Yellow');
+        System.assertEquals('UPTIME', d.ruleId);
+    }
+
+    @IsTest
+    static void uptime_noPercentage_shouldBeYellowParseFail() {
+        // "What is your uptime SLA?" — no percentage to parse
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'What is the vendor uptime SLA commitment?',
+            '', '', ''
+        );
+        System.assertEquals('Yellow', d.flag, 'No percentage = PARSE_FAIL = Yellow');
+        System.assertEquals('UPTIME_PARSE_FAIL', d.ruleId);
     }
 
     // =========================================================================
@@ -1960,7 +2012,7 @@ private class AIRFX_ResponseFlagInvocableTest {
             'Does the vendor provide encryption at rest for all stored data?',
             '', '', 'US'
         );
-        Integer score = AIRFX_ResponseFlagInvocable.calculateConfidence(d, 'US', '');
+        Integer score = AIRFX_ResponseFlagInvocable.calculateConfidence(d, 'US', '', getScoreCache());
         System.assert(score >= 55, 'BINARY_CAN + US CMDT should yield high confidence, got: ' + score);
         System.assertEquals('Green', d.flag);
     }
@@ -1972,7 +2024,7 @@ private class AIRFX_ResponseFlagInvocableTest {
             'The vendor must provide source code escrow to the customer.',
             '', '', 'US'
         );
-        Integer score = AIRFX_ResponseFlagInvocable.calculateConfidence(d, 'US', '');
+        Integer score = AIRFX_ResponseFlagInvocable.calculateConfidence(d, 'US', '', getScoreCache());
         System.assert(score >= 55, 'BINARY_CANNOT + US CMDT should yield high confidence, got: ' + score);
         System.assertEquals('Red', d.flag);
     }
@@ -1984,7 +2036,7 @@ private class AIRFX_ResponseFlagInvocableTest {
             'The vendor must provide a web application firewall (WAF) for all traffic.',
             '', '', 'US'
         );
-        Integer score = AIRFX_ResponseFlagInvocable.calculateConfidence(d, 'US', '');
+        Integer score = AIRFX_ResponseFlagInvocable.calculateConfidence(d, 'US', '', getScoreCache());
         System.assert(score >= 35, 'CAN_DIFFERENTLY + US CMDT should yield medium confidence, got: ' + score);
         System.assert(score <= 100, 'Score should be capped at 100, got: ' + score);
     }
@@ -1996,7 +2048,7 @@ private class AIRFX_ResponseFlagInvocableTest {
             'Describe your zero-trust architecture implementation for compliance.',
             '', '', ''
         );
-        Integer score = AIRFX_ResponseFlagInvocable.calculateConfidence(d, '', '');
+        Integer score = AIRFX_ResponseFlagInvocable.calculateConfidence(d, '', '', getScoreCache());
         System.assert(score <= 20, 'NO_MATCH_SECURITY without CMDT should yield low confidence, got: ' + score);
         System.assertEquals('Yellow', d.flag);
     }
@@ -2008,7 +2060,7 @@ private class AIRFX_ResponseFlagInvocableTest {
             'Does the system support dashboard creation and report scheduling?',
             '', '', ''
         );
-        Integer score = AIRFX_ResponseFlagInvocable.calculateConfidence(d, '', '');
+        Integer score = AIRFX_ResponseFlagInvocable.calculateConfidence(d, '', '', getScoreCache());
         System.assert(score <= 10, 'Pre-filter GREEN should yield low confidence score, got: ' + score);
         System.assertEquals('PREFILTER_NON_SECURITY', d.ruleId);
         System.assert(d.preFilterTriggered, 'Pre-filter should be marked as triggered');
@@ -2021,7 +2073,7 @@ private class AIRFX_ResponseFlagInvocableTest {
             'What color options are available for the interface theme?',
             '', '', ''
         );
-        Integer score = AIRFX_ResponseFlagInvocable.calculateConfidence(d, '', '');
+        Integer score = AIRFX_ResponseFlagInvocable.calculateConfidence(d, '', '', getScoreCache());
         System.assert(score <= 10, 'NO_MATCH_FUNCTIONAL should yield near-zero confidence, got: ' + score);
         System.assertEquals('Green', d.flag);
     }
@@ -2033,13 +2085,13 @@ private class AIRFX_ResponseFlagInvocableTest {
             'Does the vendor provide encryption at rest?',
             '', '', 'US'
         );
-        Integer scoreWithCMDT = AIRFX_ResponseFlagInvocable.calculateConfidence(d1, 'US', '');
+        Integer scoreWithCMDT = AIRFX_ResponseFlagInvocable.calculateConfidence(d1, 'US', '', getScoreCache());
 
         AIRFX_ResponseFlagInvocable.FlagDecision d2 = eval(
             'Does the vendor provide encryption at rest?',
             '', '', ''
         );
-        Integer scoreWithoutCMDT = AIRFX_ResponseFlagInvocable.calculateConfidence(d2, '', '');
+        Integer scoreWithoutCMDT = AIRFX_ResponseFlagInvocable.calculateConfidence(d2, '', '', getScoreCache());
 
         System.assert(scoreWithCMDT > scoreWithoutCMDT,
             'CMDT country should boost score: with=' + scoreWithCMDT + ' without=' + scoreWithoutCMDT);
@@ -2052,7 +2104,7 @@ private class AIRFX_ResponseFlagInvocableTest {
             'Describe encryption at rest and encryption in transit and TLS and BYOK and key management.',
             '', '', 'US'
         );
-        Integer score = AIRFX_ResponseFlagInvocable.calculateConfidence(d, 'US', '');
+        Integer score = AIRFX_ResponseFlagInvocable.calculateConfidence(d, 'US', '', getScoreCache());
         // BYOK is now CAN_DIFFERENTLY (Yellow), keyword cap 30 + base+rule 25 + CMDT 35 = 90
         System.assert(score <= 100, 'Score should not exceed 100, got: ' + score);
         System.assert(score >= 40, 'Multiple keywords should boost score, got: ' + score);
@@ -2065,7 +2117,7 @@ private class AIRFX_ResponseFlagInvocableTest {
             'Describe your quantum-resistant cryptography compliance posture.',
             '', '', ''
         );
-        Integer score = AIRFX_ResponseFlagInvocable.calculateConfidence(d, '', '');
+        Integer score = AIRFX_ResponseFlagInvocable.calculateConfidence(d, '', '', getScoreCache());
         System.assert(score >= 0, 'Confidence score must never be negative, got: ' + score);
     }
 
@@ -2076,7 +2128,7 @@ private class AIRFX_ResponseFlagInvocableTest {
             'The vendor must provide SSO integration via SAML 2.0.',
             '', '', 'US'
         );
-        d.confidenceScore = AIRFX_ResponseFlagInvocable.calculateConfidence(d, 'US', '');
+        d.confidenceScore = AIRFX_ResponseFlagInvocable.calculateConfidence(d, 'US', '', getScoreCache());
         System.assertNotEquals(null, d.confidenceScore, 'Confidence score should be set');
         System.assert(d.confidenceScore >= 0 && d.confidenceScore <= 100,
             'Confidence score must be 0-100, got: ' + d.confidenceScore);
