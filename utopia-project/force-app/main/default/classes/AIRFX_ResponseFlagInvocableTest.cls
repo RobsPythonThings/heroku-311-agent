@@ -1943,4 +1943,137 @@ private class AIRFX_ResponseFlagInvocableTest {
         System.assertNotEquals('DEDICATED_HARDWARE', d.ruleId,
             'Dedicated admin website must not match DEDICATED_HARDWARE rule');
     }
+
+    // =========================================================================
+    // CONFIDENCE SCORING TESTS
+    // =========================================================================
+
+    @IsTest
+    static void confidence_highScore_binaryCanWithCMDT() {
+        // BINARY_CAN rule (encryption at rest) + US country with VERIFIED CMDT = high confidence
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Does the vendor provide encryption at rest for all stored data?',
+            '', '', 'US'
+        );
+        Integer score = AIRFX_ResponseFlagInvocable.calculateConfidence(d, 'US', '');
+        System.assert(score >= 55, 'BINARY_CAN + US CMDT should yield high confidence, got: ' + score);
+        System.assertEquals('Green', d.flag);
+    }
+
+    @IsTest
+    static void confidence_highScore_binaryCannotWithCMDT() {
+        // BINARY_CANNOT rule (source code escrow) + US country = high confidence
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'The vendor must provide source code escrow to the customer.',
+            '', '', 'US'
+        );
+        Integer score = AIRFX_ResponseFlagInvocable.calculateConfidence(d, 'US', '');
+        System.assert(score >= 55, 'BINARY_CANNOT + US CMDT should yield high confidence, got: ' + score);
+        System.assertEquals('Red', d.flag);
+    }
+
+    @IsTest
+    static void confidence_mediumScore_canDifferently() {
+        // BINARY_CAN_DIFFERENTLY (WAF) + US country = medium confidence
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'The vendor must provide a web application firewall (WAF) for all traffic.',
+            '', '', 'US'
+        );
+        Integer score = AIRFX_ResponseFlagInvocable.calculateConfidence(d, 'US', '');
+        System.assert(score >= 35, 'CAN_DIFFERENTLY + US CMDT should yield medium confidence, got: ' + score);
+        System.assert(score <= 80, 'CAN_DIFFERENTLY should not be very high confidence, got: ' + score);
+    }
+
+    @IsTest
+    static void confidence_lowScore_noMatchSecurity() {
+        // NO_MATCH_SECURITY = -10 rule type, no CMDT = low score
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Describe your zero-trust architecture implementation for compliance.',
+            '', '', ''
+        );
+        Integer score = AIRFX_ResponseFlagInvocable.calculateConfidence(d, '', '');
+        System.assert(score <= 20, 'NO_MATCH_SECURITY without CMDT should yield low confidence, got: ' + score);
+        System.assertEquals('Yellow', d.flag);
+    }
+
+    @IsTest
+    static void confidence_prefilterGreen_lowScore() {
+        // Pre-filter functional question = preFilterTriggered = -10
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Does the system support dashboard creation and report scheduling?',
+            '', '', ''
+        );
+        Integer score = AIRFX_ResponseFlagInvocable.calculateConfidence(d, '', '');
+        System.assert(score <= 10, 'Pre-filter GREEN should yield low confidence score, got: ' + score);
+        System.assertEquals('PREFILTER_NON_SECURITY', d.ruleId);
+        System.assert(d.preFilterTriggered, 'Pre-filter should be marked as triggered');
+    }
+
+    @IsTest
+    static void confidence_noMatchFunctional_zeroScore() {
+        // NO_MATCH_FUNCTIONAL: no keywords, no CMDT, rule type = 0
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'What color options are available for the interface theme?',
+            '', '', ''
+        );
+        Integer score = AIRFX_ResponseFlagInvocable.calculateConfidence(d, '', '');
+        System.assert(score <= 10, 'NO_MATCH_FUNCTIONAL should yield near-zero confidence, got: ' + score);
+        System.assertEquals('Green', d.flag);
+    }
+
+    @IsTest
+    static void confidence_cmdtBoost_verifiedCountry() {
+        // Same rule but with vs without CMDT country should show score difference
+        AIRFX_ResponseFlagInvocable.FlagDecision d1 = eval(
+            'Does the vendor provide encryption at rest?',
+            '', '', 'US'
+        );
+        Integer scoreWithCMDT = AIRFX_ResponseFlagInvocable.calculateConfidence(d1, 'US', '');
+
+        AIRFX_ResponseFlagInvocable.FlagDecision d2 = eval(
+            'Does the vendor provide encryption at rest?',
+            '', '', ''
+        );
+        Integer scoreWithoutCMDT = AIRFX_ResponseFlagInvocable.calculateConfidence(d2, '', '');
+
+        System.assert(scoreWithCMDT > scoreWithoutCMDT,
+            'CMDT country should boost score: with=' + scoreWithCMDT + ' without=' + scoreWithoutCMDT);
+    }
+
+    @IsTest
+    static void confidence_multipleKeywords_cappedAt30() {
+        // A question matching many keywords should cap keyword bonus at 30
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Describe encryption at rest and encryption in transit and TLS and BYOK and key management.',
+            '', '', 'US'
+        );
+        Integer score = AIRFX_ResponseFlagInvocable.calculateConfidence(d, 'US', '');
+        // keyword cap 30 + rule type 20 + CMDT 20 + VERIFIED 15 = 85 max
+        System.assert(score <= 85, 'Score should not exceed theoretical max, got: ' + score);
+        System.assert(score >= 30, 'Multiple keywords should boost score, got: ' + score);
+    }
+
+    @IsTest
+    static void confidence_clampedAtZero() {
+        // NO_MATCH_SECURITY (-10) with no CMDT should clamp to 0, not go negative
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Describe your quantum-resistant cryptography compliance posture.',
+            '', '', ''
+        );
+        Integer score = AIRFX_ResponseFlagInvocable.calculateConfidence(d, '', '');
+        System.assert(score >= 0, 'Confidence score must never be negative, got: ' + score);
+    }
+
+    @IsTest
+    static void confidence_storedOnDecision() {
+        // Verify confidence score is set on FlagDecision after evaluate + calculateConfidence
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'The vendor must provide SSO integration via SAML 2.0.',
+            '', '', 'US'
+        );
+        d.confidenceScore = AIRFX_ResponseFlagInvocable.calculateConfidence(d, 'US', '');
+        System.assertNotEquals(null, d.confidenceScore, 'Confidence score should be set');
+        System.assert(d.confidenceScore >= 0 && d.confidenceScore <= 100,
+            'Confidence score must be 0-100, got: ' + d.confidenceScore);
+    }
 }

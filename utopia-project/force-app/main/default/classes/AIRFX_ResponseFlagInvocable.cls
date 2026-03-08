@@ -82,6 +82,9 @@ public with sharing class AIRFX_ResponseFlagInvocable {
 
         @InvocableVariable(label='CMDT Capability Context' description='Plain-English capability summary from CMDT for prompt template grounding')
         public String CMDTCapabilityContext;
+
+        @InvocableVariable(label='Confidence Score' description='0-100 confidence score for the flag decision')
+        public Integer confidenceScore;
     }
 
     @InvocableMethod(
@@ -200,6 +203,10 @@ public with sharing class AIRFX_ResponseFlagInvocable {
                 }
                 fr.CMDTCapabilityContext = cmdtContextCache.get(cacheKey);
 
+                // Calculate confidence score
+                decision.confidenceScore = calculateConfidence(decision, country, productType);
+                fr.confidenceScore = decision.confidenceScore;
+
                 // Stage the update
                 GPS_ResponseNew__c upd = new GPS_ResponseNew__c(
                     Id = rec.Id,
@@ -209,6 +216,7 @@ public with sharing class AIRFX_ResponseFlagInvocable {
                 if (decision.classification != null) {
                     upd.Question_Classification__c = decision.classification;
                 }
+                upd.Confidence_Score__c = decision.confidenceScore;
                 toUpdate.add(upd);
 
             } catch (Exception e) {
@@ -400,6 +408,7 @@ public with sharing class AIRFX_ResponseFlagInvocable {
             }
             decision.ruleId = 'PREFILTER_NON_SECURITY';
             decision.classification = 'Functional';
+            decision.preFilterTriggered = true;
             return decision;
         }
 
@@ -437,6 +446,9 @@ public with sharing class AIRFX_ResponseFlagInvocable {
             if (rule.productFilter == 'TABLEAU' && !isTableau) continue;
             if (rule.productFilter == 'NOT_MULESOFT' && isMuleSoft) continue;
             if (rule.productFilter == 'NOT_TABLEAU' && isTableau) continue;
+
+            // Count how many keywords from this rule matched
+            decision.keywordsMatched = countMatchedKeywords(qLower, rule.keywords);
 
             // Apply rule based on type
             switch on rule.ruleType {
@@ -711,6 +723,97 @@ public with sharing class AIRFX_ResponseFlagInvocable {
             }
         }
         return false;
+    }
+
+    @TestVisible
+    private static Integer countMatchedKeywords(String text, List<String> keywords) {
+        Integer count = 0;
+        for (String kw : keywords) {
+            if (kw.contains('.*') || kw.contains('\\b')) {
+                try {
+                    Pattern p = Pattern.compile(kw);
+                    Matcher m = p.matcher(text);
+                    if (m.find()) count++;
+                } catch (Exception e) {
+                    if (text.contains(kw)) count++;
+                }
+            } else {
+                if (text.contains(kw)) count++;
+            }
+        }
+        return count;
+    }
+
+    // =========================================================================
+    // CONFIDENCE SCORING
+    // =========================================================================
+
+    @TestVisible
+    private static Integer calculateConfidence(FlagDecision decision, String country, String productType) {
+        Integer score = 0;
+
+        // 1. Keywords matched: +10 each, max 30
+        score += Math.min(decision.keywordsMatched * 10, 30);
+
+        // 2. Rule type bonus
+        String ruleId = decision.ruleId != null ? decision.ruleId : '';
+        if (ruleId == 'NO_MATCH_SECURITY') {
+            score += -10;
+        } else if (ruleId == 'NO_MATCH_FUNCTIONAL' || ruleId == 'NO_QUESTION') {
+            score += 0;
+        } else if (ruleId.endsWith('_PARSE_FAIL')) {
+            score += 0;
+        } else {
+            // Determine rule type from the flag + ruleId
+            // BINARY_CAN → GREEN with a rule match
+            // BINARY_CANNOT → RED with a rule match
+            // BINARY_CAN_DIFFERENTLY → YELLOW with a rule match (or GREEN if optional)
+            if (ruleId == 'PREFILTER_NON_SECURITY') {
+                // Pre-filter handled below
+                score += 0;
+            } else if (decision.flag == 'Red' || (decision.flag == 'Yellow' && !ruleId.startsWith('NO_MATCH'))) {
+                // BINARY_CAN or BINARY_CANNOT (both get +20), or CAN_DIFFERENTLY with mandatory (+10)
+                // For simplicity: Red = CANNOT (+20), Green with rule = CAN (+20),
+                // Yellow with rule = CAN_DIFFERENTLY (+10)
+                if (decision.flag == 'Red') {
+                    score += 20; // BINARY_CANNOT
+                } else {
+                    score += 10; // BINARY_CAN_DIFFERENTLY
+                }
+            } else if (decision.flag == 'Green' && !ruleId.startsWith('NO_MATCH') && ruleId != 'PREFILTER_NON_SECURITY') {
+                score += 20; // BINARY_CAN (or CAN_DIFFERENTLY softened by optional language, or numeric met)
+            }
+        }
+
+        // 3. Pre-filter triggered = -10
+        if (decision.preFilterTriggered) {
+            score += -10;
+        }
+
+        // 4. CMDT record exists for country/product = +20
+        // 5. CMDT Confidence__c: VERIFIED +15, INFERRED +5, NEEDS_REVIEW 0
+        if (String.isNotBlank(country)) {
+            String countryUpper = country.toUpperCase();
+            List<Hyperforce_Region__mdt> hfRegions = [
+                SELECT Confidence__c
+                FROM Hyperforce_Region__mdt
+                WHERE Active__c = true AND Country_Code__c = :countryUpper
+                LIMIT 1
+            ];
+            if (!hfRegions.isEmpty()) {
+                score += 20; // CMDT record exists
+                String conf = hfRegions[0].Confidence__c;
+                if (conf == 'VERIFIED') {
+                    score += 15;
+                } else if (conf == 'INFERRED') {
+                    score += 5;
+                }
+                // NEEDS_REVIEW = 0
+            }
+        }
+
+        // Clamp 0-100
+        return Math.max(0, Math.min(100, score));
     }
 
     // =========================================================================
@@ -1428,11 +1531,17 @@ public with sharing class AIRFX_ResponseFlagInvocable {
         public String reason;
         public String ruleId;
         public String classification; // 'Functional' or 'Security'
+        public Integer keywordsMatched;
+        public Boolean preFilterTriggered;
+        public Integer confidenceScore;
 
         public FlagDecision() {
             this.flag = FLAG_YELLOW;
             this.reason = '';
             this.ruleId = '';
+            this.keywordsMatched = 0;
+            this.preFilterTriggered = false;
+            this.confidenceScore = 0;
         }
     }
 }
