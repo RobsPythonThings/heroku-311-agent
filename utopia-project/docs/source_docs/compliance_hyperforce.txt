@@ -1,0 +1,52 @@
+# Salesforce Services (Hyperforce) — Compliance
+# Source: https://compliance.salesforce.com/en/services/salesforce-services-hyperforce
+# Fetched: 2026-03-08
+
+## Service Overview
+
+Salesforce Services (Hyperforce) encompasses a broad range of cloud-based products including Sales Cloud, Service Cloud, Experience Cloud, Lightning Platform, Marketing Cloud, and numerous specialized solutions. The service applies to core offerings and Salesforce.org LLC services focused on nonprofit and education sectors.
+
+## Certifications & Compliance Standards
+
+### Security & Privacy Standards
+- ISO/IEC 27001:2022
+- ISO/IEC 27017:2015
+- ISO/IEC 27018:2019
+- SOC 1, SOC 2, and SOC 3 reports
+- ISO 22301:2019 (Business Continuity Management)
+- ISO 42001:2023 (AI Management System)
+
+### Government & Regulatory
+- FedRAMP High certification
+- DoD IL2, IL4, and IL5 impact levels
+- HIPAA compliance
+- GDPR compliance
+- PCI DSS compliance
+- HITRUST certification
+- CJIS (Criminal Justice Information Services)
+
+### Regional Frameworks
+- IRAP (Australian Government security assessment)
+- Spain's Esquema Nacional de Seguridad (ENS) High
+- C5 (ISAE 3000) certification
+- TISAX assessment
+- TX-RAMP certification
+- ISMAP (Japan)
+- NEN 7510 (healthcare, Netherlands)
+
+## Infrastructure Regions
+
+Hyperforce deployment spans multiple geographic areas with PCI ASV network scans covering:
+
+Americas: US East 1 (N. Virginia), US East 2 (Ohio), US West 2 (Oregon)
+Europe, Middle East, Africa: Germany, UK, France, Sweden, Italy, Switzerland, Israel, UAE
+Asia-Pacific: Tokyo, Seoul, Mumbai, Hyderabad, Singapore, Sydney, Indonesia
+Latin America & Canada: Brazil, Canada Central
+
+## Security Assessments
+
+Documentation includes regular vulnerability and penetration testing reports, ransomware mitigation summaries, and DDoS risk mitigation overviews. Annual disaster recovery and business continuity testing validates operational resilience across all regions.
+
+## Key Documents Available
+
+Security, Privacy, and Architecture (SPARC) documentation provides technical details on encryption, data handling, and infrastructure security across Hyperforce deployments.

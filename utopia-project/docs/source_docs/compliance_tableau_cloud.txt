@@ -1,0 +1,42 @@
+# Tableau Cloud — Compliance
+# Source: https://compliance.salesforce.com/en/services/tableau-cloud
+# Fetched: 2026-03-08
+
+## Service Overview
+
+Tableau Cloud is a Salesforce service for data visualization and business intelligence available on multiple infrastructure platforms.
+
+## Key Compliance Certifications & Standards
+
+### Security & Privacy Frameworks
+- ISO/IEC 27001:2022
+- ISO 27017 & 27018 (cloud-specific controls)
+- SOC 2 Type II reports available
+- PCI DSS compliance with attestation documents
+
+### Government & Regulatory
+- FedRAMP authorization available
+- IRAP assessment for Australian deployments
+- ISMAP certification for Japanese services
+
+### Industry-Specific
+- HIPAA compliance ("Tableau Cloud and the HIPAA Security Rule")
+- GDPR alignment with data protection documentation
+
+### Infrastructure Deployments
+Documents available for:
+- Hyperforce deployments (AWS-managed)
+- First-party infrastructure
+- Region-specific PCI scans across AMER, EMEA, APAC, Canada, and other zones
+
+## Available Documentation
+
+The Salesforce Trust portal provides:
+- Vulnerability and penetration test summaries
+- Security, Privacy & Architecture (SPARC) documentation
+- Data processing agreements
+- Infrastructure and sub-processor details
+- Disaster recovery and business continuity summaries
+- White papers on security architecture
+
+All documents emphasize shared responsibility models between Salesforce and customers for security implementation.

@@ -1,0 +1,26 @@
+# Salesforce Services (First Party) — Compliance
+# Source: https://compliance.salesforce.com/en/services/salesforce-services-first-party
+# Fetched: 2026-03-08
+
+## Service Overview
+
+This page documents compliance certifications and security assessments for Salesforce's core services branded under various product lines including Sales Cloud, Service Cloud, Experience Cloud, Financial Services Cloud, Health Cloud, and numerous other solutions. It also covers Salesforce.org LLC services like Nonprofit Cloud and Grants Management.
+
+## Key Compliance Categories
+
+The service maintains certifications across multiple security and compliance frameworks:
+
+- ISO Standards: ISO 27001, 27017, 27018, 9001, and 22301 certifications
+- SOC Reports: SOC 1, 2, and 3 audit reports available
+- Government Certifications: FedRAMP, DoD IL2/IL4/IL5, and NIST SP 800-171 attestations
+- International Standards: GDPR documentation, HITRUST, IRAP (Australian), and ISMAP (Japan)
+- Industry-Specific: HIPAA, PCI DSS, CJIS, and financial services compliance materials
+- Privacy Frameworks: Data Privacy Framework registration and Binding Corporate Rules
+
+## Infrastructure Details
+
+Services operate on First Party (AWS) infrastructure, with separate Hyperforce deployment options available for some offerings. The documentation indicates regular security testing including penetration assessments and vulnerability scans across multiple service components.
+
+## Document Access
+
+The compliance repository contains 134+ documents covering infrastructure assessments, disaster recovery summaries, security architecture papers, and regulatory mapping documents. Users can filter by certification type, service offering, or infrastructure deployment model.

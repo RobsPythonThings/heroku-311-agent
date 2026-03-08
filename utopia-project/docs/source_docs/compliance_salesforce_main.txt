@@ -1,0 +1,54 @@
+# Salesforce Compliance — Main Page
+# Source: https://compliance.salesforce.com
+# Fetched: 2026-03-08
+
+## Overview
+
+Salesforce maintains comprehensive compliance certifications and attestations across its cloud services portfolio to support enterprise trust and security requirements.
+
+## Compliance Categories
+
+### Certifications & Standards
+- APEC Certification (Processors and Controllers)
+- C5 (ISAE 3000)
+- CCCS Assessment - Protected B
+- CJIS
+- CSA STAR
+- Digital Operational Resilience Act (DORA)
+- DoD IL2, IL4, IL5
+- EU Cloud Code of Conduct
+- FedRAMP High and Moderate
+- GDPR
+- HIPAA
+- HITRUST
+- IRAP
+- ISMAP
+- ISO 22301, 27001, 27017, 27018, 42001, 9001
+- NEN 7510
+- NIST SP 800-171
+- PCI DSS
+- PrivacyMark
+- SOC 1, SOC 2, SOC 3
+- Spain ENS (Esquema Nacional de Seguridad)
+- TISAX
+- TX-RAMP
+- U.S. Data Privacy Framework
+- WCAG 2.2 AA
+
+## Service Coverage
+
+Products with documented compliance include:
+- Agentforce & Einstein Platform
+- B2C Commerce / Commerce Cloud
+- Data Cloud
+- Government Cloud Plus
+- Heroku
+- Marketing Cloud (multiple modules)
+- MuleSoft (including Government Cloud)
+- Salesforce Services (First Party and Hyperforce)
+- Slack
+- Tableau Cloud
+
+## Documentation Types
+
+Materials provided include security assessments, penetration test summaries, disaster recovery documentation, data processing addendums, infrastructure details, and responsibility matrices across jurisdictions.

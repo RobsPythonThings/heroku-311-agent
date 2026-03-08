@@ -1,0 +1,38 @@
+# Salesforce Privacy Policy
+# Source: https://www.salesforce.com/company/privacy/
+# Fetched: 2026-03-08
+
+## Core Privacy Principles
+
+Salesforce states that "trust is our #1 value" and emphasizes commitment to protecting personal data. The company processes information across multiple contexts: website interactions, event attendance, service usage, and office visits.
+
+## Data Collection Practices
+
+### Direct Collection
+Salesforce gathers contact details, professional information, financial data, and visual content through various channels. When visitors register, purchase services, or attend events, the company collects relevant identifiers and transaction information.
+
+### Indirect Collection
+The organization obtains data from third-party providers for advertising purposes, including business contact details, employment titles, behavioral insights, and social media profiles. Information from GitHub and other platforms may be associated with community accounts when users participate in development projects.
+
+### Device and Usage Information
+The company collects technical data including IP addresses, device identifiers, browser information, and interaction patterns through cookies and similar tracking technologies.
+
+## Legal Bases for Processing
+
+Salesforce relies on multiple legal grounds including:
+- Contractual necessity for service delivery
+- Legitimate business interests (marketing, security, analytics)
+- Explicit consent (particularly for sensitive data processing)
+- Legal compliance obligations
+
+## International Data Transfers
+
+Personal data may be processed in the United States and transferred internationally. Salesforce commits to the EU-U.S. Data Privacy Framework and implements standard contractual clauses for adequate protection.
+
+## User Rights
+
+Individuals can exercise rights including data access, correction, deletion, portability, and objection to processing. The company provides a privacy request form and dedicated email (privacy@salesforce.com) for inquiries.
+
+## Data Sharing
+
+Salesforce shares information with service providers, affiliates, event sponsors, partners, and public authorities as necessary for stated business purposes.

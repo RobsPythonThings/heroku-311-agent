@@ -1,0 +1,56 @@
+# Slack — Compliance and Certifications
+# Source: https://compliance.salesforce.com/en/services/slack + https://slack.com/trust/compliance
+# Fetched: 2026-03-08
+
+## Service Overview
+
+Slack maintains comprehensive security and compliance certifications. Documentation available via the Salesforce Compliance Site.
+
+## ISO Certifications
+- ISO/IEC 27001:2022 — Information Security Management System (ISMS)
+- ISO/IEC 27017:2015 — Security Controls for Cloud Services Provision and Use
+- ISO/IEC 27018:2019 — Protection of Personally Identifiable Information (PII)
+- ISO/IEC 27701:2019 — Privacy Information Management System (PIMS)
+- ISO/IEC 42001 — Information Technology — Artificial Intelligence — Management System
+
+## SOC Attestations
+- SOC 2 (Type II) — Trust Services Principles
+- SOC 2 HITRUST — Comprehensive security and compliance assessment
+- SOC 3 — Service Organization Controls
+- GovSlack SOC 2 (Type II) — Trust Services Principles
+- GovSlack SOC 3 — Service Organization Controls
+
+## Privacy Recognition Programs
+- Global PRP Certification — Global Privacy Recognition for Processors
+- Global CBPR Certification — Global Cross Border Privacy Rules
+- APEC Controller/Processor Certifications
+
+## Cloud Security Standards
+- CSA STAR Registry — Cloud Security Alliance listing
+- C5 (ISAE 3000) — German/Austrian cloud security framework
+
+## Government & Regulatory
+- FedRAMP — Moderate authorization; GovSlack JAB High authorized
+- DoD IL2 — Department of Defense security level certification
+- IRAP Assessment — Australian information security assessment
+- ISMAP — Japanese government cloud security program
+
+## Industry-Specific Compliance
+- HIPAA — Configurable for electronically protected health information (e-PHI)
+- FINRA — 17a-4 configurable for financial regulatory compliance
+- FERPA — Federal Education Rights and Privacy Act support
+- TISAX — German information security assessment framework
+- South Korea CSP Safety Assessment — K-FSI cybersecurity evaluation
+- Spain ENS — Esquema Nacional de Seguridad High accreditation
+
+## Data Protection & Privacy
+- GDPR compliance documentation
+- Data Privacy Framework (DPF) registration
+
+## Key Document
+Slack — Security, Privacy, and Architecture (SPARC) document, updated January 30, 2026.
+
+## Security Assessments
+- Vulnerability/Penetration testing reports — Latest assessment completed January 2026
+- Disaster recovery and business continuity documentation
+- Infrastructure security assessments

@@ -1,0 +1,35 @@
+# Data Cloud — Compliance
+# Source: https://compliance.salesforce.com/en/services/data-cloud
+# Fetched: 2026-03-08
+
+## Service Overview
+
+Data Cloud (also branded as Customer Data Cloud or Salesforce Data Cloud) is a Salesforce platform service with comprehensive compliance documentation available through the Salesforce Trust site.
+
+## Key Compliance Documents
+
+### Security & Architecture
+The service maintains a Security, Privacy, and Architecture (SPARC) document detailing technical safeguards and operational practices.
+
+### Certifications & Assessments
+- C5 (ISAE 3000) audit report
+- HITRUST certification
+- PCI DSS compliance with attestation of compliance documents
+- SOC 1 and SOC 2 audit reports
+- IRAP Cloud Security Assessment Letter
+- ISO/IEC 27001:2022 certification
+
+### Government & Regulatory
+- Spain ENS High assessment
+- CCCS Assessment (Canada - Protected B)
+- FedRAMP authorization status
+- CJIS compliance documentation
+
+### Data Transfer & Privacy
+- Data Privacy Framework (DPF) registration documentation
+- GDPR Data Protection Impact Assessment materials
+- International data transfer guidance
+
+## Additional Resources
+
+Compliance documentation references connectors, security considerations, model cards for AI features, and incident notification procedures. Organizations should consult specific service documentation and legal counsel regarding their particular compliance requirements.

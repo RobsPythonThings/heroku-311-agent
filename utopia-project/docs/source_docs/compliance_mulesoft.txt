@@ -1,0 +1,45 @@
+# MuleSoft — Compliance and Certifications
+# Source: https://compliance.salesforce.com/en/services/mulesoft
+# Fetched: 2026-03-08
+
+## Service Overview
+
+MuleSoft (branded as MuleSoft or the Anypoint Platform) maintains comprehensive security and compliance certifications across multiple standards and frameworks.
+
+## Key Certifications and Standards
+
+### International Standards
+- ISO 9001:2015: Salesforce, Inc. holds certification for quality management
+- ISO/IEC 27001: Information security management certification
+- ISO/IEC 27017: Cloud-specific security controls
+- ISO/IEC 27018: Personal data protection in cloud environments
+
+### Government & Compliance Frameworks
+- HITRUST: Certified for healthcare and sensitive data protection
+- IRAP: Australian Information Security Registered Assessor Program certification
+- PCI DSS: Payment Card Industry Data Security Standard compliance with attestation documents and responsibility matrices
+- CJIS: Criminal Justice Information Services compliance (MuleSoft Government Cloud)
+- FedRAMP: Federal Risk and Authorization Management Program (MuleSoft Government Cloud)
+- SOC 1, SOC 2, SOC 3: Service organization control reports demonstrating operational security
+
+### Cloud Infrastructure Certifications
+- C5 (ISAE 3000): German cloud security standard
+- ISMAP: Japanese cloud service security assessment
+- NIST SP 800-171: Defense contractor security requirements
+- CSA CAIQ: Cloud Security Alliance questionnaire responses
+
+### Data Protection & Privacy
+- GDPR: Data processing compliance documentation available
+- NEN 7510: Dutch healthcare information security standard
+
+## Infrastructure Locations
+
+MuleSoft operates on multiple cloud infrastructures including AWS, Hyperforce, and first-party data centers with compliance coverage varying by deployment location.
+
+## Document Availability
+
+Comprehensive compliance documentation including audit reports, responsibility matrices, and white papers are available through the Salesforce Trust portal for organizations requiring detailed security assessments.
+
+## SPARC Documentation
+
+MuleSoft publishes Security, Privacy, and Architecture documentation detailing audits and certifications received.

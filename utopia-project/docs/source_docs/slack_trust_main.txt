@@ -1,0 +1,31 @@
+# Slack Trust Center — Main Page
+# Source: https://slack.com/trust
+# Fetched: 2026-03-08
+
+## Core Commitment
+
+Slack is "committed to the security and privacy of your data," with a Trust Center designed to connect users to privacy, security, and compliance programs.
+
+## Key Trust Pillars
+
+### AI Principles
+Slack documents how data privacy and security serve as foundations for its artificial intelligence and machine learning initiatives.
+
+### Privacy
+The company provides policies, tools, and procedures intended to protect user data and help organizations meet their privacy obligations.
+
+### Security
+Enterprise-grade security is described as built into every aspect of user collaboration and work processes within the platform.
+
+### Compliance
+Slack maintains a compliance program addressing major regulations including GDPR and CCPA, offering guidance for organizations navigating their own compliance requirements.
+
+### Data Management
+The company commits to providing transparency regarding policies and tools affecting how users manage their data.
+
+### Data Requests
+A Data Request Policy and Transparency Report offer insights into how third-party and law enforcement data requests are handled.
+
+## Additional Resources
+
+The Trust Center directs users to supplementary materials covering international data transfers, FedRAMP authorization, and Data Processing Addendum updates through the Slack blog.

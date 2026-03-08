@@ -1,0 +1,45 @@
+# Salesforce Trust — Main Page
+# Source: https://trust.salesforce.com
+# Fetched: 2026-03-08
+
+## Core Value Proposition
+
+Salesforce emphasizes trust as their "#1 value," stating they "earn the trust of our customers, employees, and extended family through transparency, security, compliance, privacy, and performance."
+
+## Trust Components
+
+The platform organizes trust information across four main pillars:
+
+- Status: Real-time service availability and performance transparency
+- Security: Built-in security throughout operations
+- Compliance: Cloud-engineered compliance frameworks
+- Availability: Shared responsibility between Salesforce and customers
+
+## Current System Status
+
+### Sales & Service Products
+- Salesforce Services: 1 incident, 48 maintenance windows
+- Agentforce: Available
+- Spiff: Available
+
+### Other Product Categories (All Available)
+- Integration: MuleSoft
+- Analytics: Tableau
+- Commerce: B2C Commerce Cloud
+- Marketing: Engagement, Intelligence, Personalization, Account Engagement
+- Platform: Heroku, Own from Salesforce
+- Bundled: Experience Cloud
+
+## Active Security Advisories
+
+Experience Cloud Guest User Configurations: Salesforce reports monitoring threats targeting misconfigured public-facing sites, noting "we have not identified any vulnerability inherent to the Salesforce platform."
+
+Phishing Campaign Alert: Active warnings about fraudulent emails impersonating Salesforce promoting Remote Monitoring & Management software installation.
+
+Social Engineering Threats: Ongoing monitoring of credential theft campaigns targeting third-party identity providers, with emphasis that issues "do not stem from a vulnerability inherent to Salesforce."
+
+Third-Party App Incident: Drift app (Salesloft) experienced compromise; Salesforce has re-enabled Salesloft integrations except Drift, pending further notice.
+
+## Compliance Notice
+
+Salesforce prohibits software provision to Russia under U.S., EU, and UK sanctions regulations without legal authorization.
