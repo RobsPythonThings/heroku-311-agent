@@ -810,7 +810,7 @@ public with sharing class AIRFX_ResponseFlagInvocable {
             'Shield Platform Encryption (add-on) provides AES-256 encryption at rest with customer key management. Hyperforce infrastructure provides disk-level encryption via AWS. Not all field types can be encrypted at the application layer even with Shield, but substantial coverage is achievable.'));
 
         rules.add(binaryCanDifferently('FILE_SCANNING',
-            new List<String>{'virus scan', 'malware scan', 'antivirus', 'anti-virus', 'file scan.*upload', 'scan.*uploaded file', 'scan.*attachment'},
+            new List<String>{'virus', 'malware', 'antivirus', 'anti-virus', 'file scan.*upload', 'scan.*uploaded file', 'scan.*attachment'},
             'Salesforce does not natively scan customer-uploaded files. File scanning is available via AppExchange partners (e.g., WithSecure/F-Secure). Salesforce scans files attached to support cases via WithSecure as a sub-processor. Custom Apex triggers can also call external scanning APIs on file upload.'));
 
         rules.add(binaryCanDifferently('LOG_RETENTION_LONG',

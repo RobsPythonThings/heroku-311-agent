@@ -655,7 +655,7 @@ private class AIRFX_ResponseFlagInvocableTest {
     @IsTest
     static void logRetention_shouldBeYellowCanDifferently() {
         AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
-            'Vendor must retain audit logs for a minimum of 7 years.',
+            'Vendor must retain security logs for a minimum of 7 years to meet regulatory requirements.',
             '', '', ''
         );
         System.assertEquals('Yellow', d.flag, 'Long retention via Shield + export');
