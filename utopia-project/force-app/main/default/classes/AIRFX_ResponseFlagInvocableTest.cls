@@ -575,13 +575,27 @@ private class AIRFX_ResponseFlagInvocableTest {
     }
 
     @IsTest
-    static void noRuleMatch_shouldBeYellow() {
+    static void noRuleMatch_functional_shouldBeGreen() {
+        // No security terms, no functional terms, no rule match → auto-Green (functional)
         AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
             'What is your corporate social responsibility program?',
             '', '', ''
         );
-        System.assertEquals('Yellow', d.flag);
-        System.assertEquals('NO_MATCH', d.ruleId);
+        System.assertEquals('Green', d.flag, 'No security terms + no rule match = functional Green');
+        System.assertEquals('NO_MATCH_FUNCTIONAL', d.ruleId);
+        System.assertEquals('Functional', d.classification);
+    }
+
+    @IsTest
+    static void noRuleMatch_security_shouldBeYellow() {
+        // Has security terms but no rule matches — real security question needing review
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Describe your data processing safeguards for cross-border transfers.',
+            '', '', ''
+        );
+        System.assertEquals('Yellow', d.flag, 'Security terms present + no rule match = Yellow');
+        System.assertEquals('NO_MATCH_SECURITY', d.ruleId);
+        System.assertEquals('Security', d.classification);
     }
 
     @IsTest
@@ -948,9 +962,10 @@ private class AIRFX_ResponseFlagInvocableTest {
     }
 
     @IsTest(SeeAllData=true)
-    static void fullInvocable_noMatchYellow() {
+    static void fullInvocable_noMatchFunctionalGreen() {
         GPS_Project__c proj = getExistingProject();
 
+        // No security terms → NO_MATCH_FUNCTIONAL → Green
         GPS_ResponseNew__c resp = new GPS_ResponseNew__c(
             GPS_Projects__c = proj.Id,
             Question__c = 'Describe your approach to change management.',
@@ -968,7 +983,7 @@ private class AIRFX_ResponseFlagInvocableTest {
             );
         Test.stopTest();
 
-        System.assertEquals('Yellow', results[0].flag);
+        System.assertEquals('Green', results[0].flag, 'No security terms = functional Green');
     }
 
     @IsTest
@@ -1026,7 +1041,7 @@ private class AIRFX_ResponseFlagInvocableTest {
             } else if (Math.mod(i, 3) == 1) {
                 q = 'Data must be encrypted at rest.';              // Green
             } else {
-                q = 'Describe your change management process.';     // Yellow
+                q = 'Describe your data processing safeguards.';     // Yellow (has security term 'data processing')
             }
 
             resps.add(new GPS_ResponseNew__c(
@@ -1078,6 +1093,29 @@ private class AIRFX_ResponseFlagInvocableTest {
     // =========================================================================
     // 8. PREFILTER — "support" must not auto-green security questions
     // =========================================================================
+
+    @IsTest
+    static void classification_ruleMatch_shouldBeSecurity() {
+        // Any question that matches a rule is classified as Security
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'All data must be encrypted at rest.',
+            '', '', ''
+        );
+        System.assertEquals('Green', d.flag);
+        System.assertEquals('Security', d.classification);
+    }
+
+    @IsTest
+    static void classification_preFilter_shouldBeFunctional() {
+        // Pre-filtered questions are classified as Functional
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'How do you customize the dashboard layouts?',
+            '', '', ''
+        );
+        System.assertEquals('Green', d.flag);
+        System.assertEquals('Functional', d.classification);
+        System.assertEquals('PREFILTER_NON_SECURITY', d.ruleId);
+    }
 
     @IsTest
     static void preFilter_euDataProcessing_shouldNotBeAutoGreened() {

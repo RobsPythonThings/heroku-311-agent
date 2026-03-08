@@ -96,7 +96,6 @@ public with sharing class AIRFX_AgentAction {
                 AIRFX_ContentRouter.RoutingResult routing = routeResults[0];
                 matchedConfigs = routing.matchedConfigs != null ? routing.matchedConfigs : '';
                 sourceFilter = routing.sourceConfigFilter != null ? routing.sourceConfigFilter : '';
-                if (routing.useKnowledge == true)    lanes.add('Knowledge Base');
                 if (routing.useStructured == true)   lanes.add('HECVAT Assessments');
                 if (routing.useUnstructured == true)  lanes.add('Whitepapers');
             }
@@ -154,7 +153,7 @@ public with sharing class AIRFX_AgentAction {
         // Flag breakdown
         lines.add('🔴 Red (cannot meet): ' + redCount);
         lines.add('🟢 Green (auto-verified): ' + greenCount);
-        lines.add('🟡 Yellow (need AI answers): ' + yellowCount);
+        lines.add('🟡 Yellow (security — need AI answers): ' + yellowCount);
         if (unflagged > 0) {
             lines.add('Unflagged: ' + unflagged);
         }

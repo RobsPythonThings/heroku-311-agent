@@ -188,11 +188,15 @@ public with sharing class AIRFX_ResponseFlagInvocable {
                 fr.success = true;
 
                 // Stage the update
-                toUpdate.add(new GPS_ResponseNew__c(
+                GPS_ResponseNew__c upd = new GPS_ResponseNew__c(
                     Id = rec.Id,
                     Security_Flag__c = decision.flag,
                     Response_Flag_Reason__c = decision.reason
-                ));
+                );
+                if (decision.classification != null) {
+                    upd.Question_Classification__c = decision.classification;
+                }
+                toUpdate.add(upd);
 
             } catch (Exception e) {
                 fr.success = false;
@@ -250,12 +254,21 @@ public with sharing class AIRFX_ResponseFlagInvocable {
                 decision.reason += ' Functional terms: ' + String.join(preFilter.matchedFunctionalTerms, ', ');
             }
             decision.ruleId = 'PREFILTER_NON_SECURITY';
+            decision.classification = 'Functional';
             return decision;
         }
+
+        // Determine classification for use at NO_MATCH
+        Boolean hasSecurityTerms = preFilter != null
+            && preFilter.matchedSecurityTerms != null
+            && !preFilter.matchedSecurityTerms.isEmpty();
 
         String qLower = question.toLowerCase();
         String aLower = String.isNotBlank(aiAnswer) ? aiAnswer.toLowerCase() : '';
         Boolean isGovCloud = isGovCloudDeal(productType);
+
+        // Any question reaching the rules passed the security pre-filter
+        decision.classification = 'Security';
 
         // Iterate rules in priority order — first match wins
         for (CapabilityRule rule : rules) {
@@ -376,10 +389,20 @@ public with sharing class AIRFX_ResponseFlagInvocable {
             }
         }
 
-        // No rule matched — Yellow
-        decision.flag = FLAG_YELLOW;
-        decision.reason = 'No deterministic rule matched this requirement. Human review required.';
-        decision.ruleId = 'NO_MATCH';
+        // No rule matched — split by security classification
+        if (hasSecurityTerms) {
+            // Real security question with no rule — needs human review
+            decision.flag = FLAG_YELLOW;
+            decision.reason = 'No deterministic rule matched this security requirement. Human review required.';
+            decision.ruleId = 'NO_MATCH_SECURITY';
+            decision.classification = 'Security';
+        } else {
+            // Functional question that passed pre-filter but matched no rule — safe to auto-Green
+            decision.flag = FLAG_GREEN;
+            decision.reason = 'No security terms detected and no rule matched. Auto-classified as functional.';
+            decision.ruleId = 'NO_MATCH_FUNCTIONAL';
+            decision.classification = 'Functional';
+        }
         return decision;
     }
 
@@ -960,6 +983,7 @@ public with sharing class AIRFX_ResponseFlagInvocable {
         public String flag;
         public String reason;
         public String ruleId;
+        public String classification; // 'Functional' or 'Security'
 
         public FlagDecision() {
             this.flag = FLAG_YELLOW;

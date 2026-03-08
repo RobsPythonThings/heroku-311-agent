@@ -102,7 +102,8 @@ public with sharing class AIRFX_SecurityPreFilter {
         'intrusion prevention','ips',
         'scan result','scan report',
         'citizen','citizens','us citizen','us citizens','citizenship',
-        'reside','jurisdiction','data must reside'
+        'reside','jurisdiction','data must reside',
+        'data processing','data transfer','data transferred','transferred outside'
     };
 
     public static Result evaluate(String question) {

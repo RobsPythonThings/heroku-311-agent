@@ -188,7 +188,6 @@ public with sharing class AIRFX_GenerateAnswer {
             if (!routeResults.isEmpty()) {
                 AIRFX_ContentRouter.RoutingResult r = routeResults[0];
                 List<String> lanes = new List<String>();
-                if (r.useKnowledge) lanes.add('Knowledge Articles');
                 if (r.useStructured) lanes.add('HECVAT (' + r.sourceConfigFilter + ')');
                 if (r.useUnstructured) lanes.add('Security Documentation');
                 return String.join(lanes, ', ');
