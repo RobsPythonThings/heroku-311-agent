@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Confidence_Score__c</fullName>
+    <label>Confidence Score</label>
+    <type>Number</type>
+    <precision>3</precision>
+    <scale>0</scale>
+    <required>false</required>
+    <description>AIRFX engine confidence score (0-100) for the flag decision. Higher = more confident.</description>
+    <externalId>false</externalId>
+    <unique>false</unique>
+</CustomField>
