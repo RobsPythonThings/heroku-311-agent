@@ -233,7 +233,7 @@ private class AIRFX_ResponseFlagInvocableTest {
             '', '', ''
         );
         System.assertEquals('Yellow', d.flag, 'Breach notification is CAN_DIFFERENTLY — timeline varies');
-        System.assertEquals('BREACH_NOTIFICATION', d.ruleId);
+        System.assertEquals('BREACH_NOTIFY_TIMELINE', d.ruleId);
     }
 
     @IsTest
@@ -243,7 +243,7 @@ private class AIRFX_ResponseFlagInvocableTest {
             '', '', ''
         );
         System.assertEquals('Yellow', d.flag, 'Breach notification is CAN_DIFFERENTLY — timeline varies');
-        System.assertEquals('BREACH_NOTIFICATION', d.ruleId);
+        System.assertEquals('BREACH_NOTIFY_TIMELINE', d.ruleId);
     }
 
     @IsTest
@@ -253,7 +253,7 @@ private class AIRFX_ResponseFlagInvocableTest {
             '', '', ''
         );
         System.assertEquals('Yellow', d.flag, 'Breach notification is CAN_DIFFERENTLY — timeline varies');
-        System.assertEquals('BREACH_NOTIFICATION', d.ruleId);
+        System.assertEquals('BREACH_NOTIFY_TIMELINE', d.ruleId);
     }
 
     // =========================================================================
@@ -1923,7 +1923,7 @@ private class AIRFX_ResponseFlagInvocableTest {
             'Describe the security system used by your proposed Solution, including: Authentication, Session Management, Access Control, Malicious Input Handling, Error Handling and Logging.',
             '', '', ''
         );
-        System.assertEquals('Yellow', d.flag, 'Security posture description is CAN_DIFFERENTLY');
+        System.assertEquals('Green', d.flag, 'Security posture description is BINARY_CAN');
         System.assertEquals('SECURITY_POSTURE_DESCRIBE', d.ruleId);
     }
 
@@ -2164,7 +2164,7 @@ private class AIRFX_ResponseFlagInvocableTest {
             '', '', 'US'
         );
         System.assertEquals('Yellow', d.flag, 'Breach notification timeline varies');
-        System.assertEquals('BREACH_NOTIFICATION', d.ruleId);
+        System.assertEquals('BREACH_NOTIFY_TIMELINE', d.ruleId);
     }
 
     @IsTest
@@ -2224,5 +2224,84 @@ private class AIRFX_ResponseFlagInvocableTest {
             System.assert(ctx.contains('United States') || ctx.contains('US'), 'US context should reference United States');
             System.assert(ctx.contains('Cross-border transfer mechanism:'), 'Should include transfer mechanism');
         }
+    }
+
+    // =========================================================================
+    // Section 24 — Morning fixes: SOURCE_CODE, CUI, CUSTOMER_VM, BREACH_TIMELINE
+    // =========================================================================
+
+    @IsTest
+    static void sourceCode_configNotHardcoded_shouldNotTrigger() {
+        // "not hard-coded in source code" is about config management, not requesting source code
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'System parameters and security settings must be maintainable via configuration files and not hard-coded in the source code.',
+            '', '', ''
+        );
+        System.assertNotEquals('SOURCE_CODE', d.ruleId,
+            'SOURCE_CODE rule should not fire when question is about config not being hardcoded');
+        System.assertNotEquals('Red', d.flag, 'Config management question should not be Red');
+    }
+
+    @IsTest
+    static void cui_controlledUnclassified_shouldBeYellow() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Does your platform support handling of Controlled Unclassified Information (CUI)?',
+            '', '', ''
+        );
+        System.assertEquals('Yellow', d.flag, 'CUI is not classified — should be Yellow, not Red');
+        System.assertEquals('CUI_CONTROLLED', d.ruleId);
+    }
+
+    @IsTest
+    static void cui_acronym_shouldBeYellow() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Can your system store and process CUI data per NIST 800-171?',
+            '', '', ''
+        );
+        System.assertEquals('Yellow', d.flag, 'CUI acronym should match CUI_CONTROLLED');
+        System.assertEquals('CUI_CONTROLLED', d.ruleId);
+    }
+
+    @IsTest
+    static void classifiedData_stillRed() {
+        // Ensure actual classified data questions still trigger CLASSIFIED_DATA as Red
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Can your platform store classified information at the Secret level?',
+            '', '', ''
+        );
+        System.assertEquals('Red', d.flag, 'Classified data must remain Red');
+        System.assertEquals('CLASSIFIED_DATA', d.ruleId);
+    }
+
+    @IsTest
+    static void customerVm_cisaOwasp_shouldNotTrigger() {
+        // CISA/OWASP compliance questions should not trigger CUSTOMER_VM even if "azure tenant" appears
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Does the vendor utilize system development and data security best practices as recommended by CISA, NIST, and OWASP for securing azure tenant environments?',
+            '', '', ''
+        );
+        System.assertNotEquals('CUSTOMER_VM', d.ruleId,
+            'CUSTOMER_VM rule should not fire for CISA/OWASP compliance questions');
+        System.assertNotEquals('Red', d.flag, 'Compliance standards question should not be Red');
+    }
+
+    @IsTest
+    static void breachNotifyTimeline_24hour_shouldBeYellow() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Does the vendor notify customers within 24 hours of a confirmed data breach?',
+            '', '', ''
+        );
+        System.assertEquals('Yellow', d.flag, '24-hour breach notification should be Yellow');
+        System.assertEquals('BREACH_NOTIFY_TIMELINE', d.ruleId);
+    }
+
+    @IsTest
+    static void breachNotifyTimeline_72hour_shouldBeYellow() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Can you provide 72-hour breach notification in compliance with GDPR requirements?',
+            '', '', ''
+        );
+        System.assertEquals('Yellow', d.flag, '72-hour breach notification should be Yellow');
+        System.assertEquals('BREACH_NOTIFY_TIMELINE', d.ruleId);
     }
 }

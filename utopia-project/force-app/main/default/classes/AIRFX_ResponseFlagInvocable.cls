@@ -963,6 +963,17 @@ public with sharing class AIRFX_ResponseFlagInvocable {
             12, ' hours',
             'Salesforce RTO is 12 hours. Requirements demanding shorter RTO cannot be met.'));
 
+        // BREACH NOTIFICATION TIMELINE — specific hour requirements
+        rules.add(binaryCanDifferently('BREACH_NOTIFY_TIMELINE',
+            new List<String>{'24 hour', '24-hour', 'within 24', '48 hour', '48-hour',
+                '72 hour', '72-hour', 'within 72',
+                'breach notification', 'notify within', 'notification within'},
+            'Salesforce commits to timely notification of confirmed security incidents. '
+            + '72-hour notification aligns with GDPR requirements and is generally achievable. '
+            + '24-hour notification may be accommodated via Data Security Rider negotiation. '
+            + 'Immediate (1-2 hour) notification is not contractually committal except for '
+            + 'GovCloud Plus FedRAMP customers (1-hour US-CERT notification).'));
+
         // BREACH NOTIFICATION — timeline varies by product and jurisdiction
         rules.add(binaryCanDifferently('BREACH_NOTIFICATION',
             new List<String>{'breach notification', 'breach notice', 'notify.*breach', 'security breach.*notif',
@@ -980,8 +991,9 @@ public with sharing class AIRFX_ResponseFlagInvocable {
             new List<String>{'escrow', 'source code escrow'},
             'Salesforce cannot provide escrow services. Source code escrow is inapplicable to SaaS delivered through multitenant architecture.'));
 
-        rules.add(binaryCannot('SOURCE_CODE',
+        rules.add(binaryCannotWithExclusions('SOURCE_CODE',
             new List<String>{'source code', 'source-code', 'codebase access'},
+            new List<String>{'hard-coded', 'hard coded', 'hardcoded', 'configuration file', 'config file', 'not in source code', 'not in source-code'},
             'Salesforce cannot provide source code. Inapplicable to SaaS subscription through multitenant architecture.'));
 
         // =================================================================
@@ -1128,12 +1140,13 @@ public with sharing class AIRFX_ResponseFlagInvocable {
             new List<String>{'secnumcloud'},
             'Salesforce does not meet SecNumCloud requirements.'));
 
-        rules.add(binaryCannot('CUSTOMER_VM',
+        rules.add(binaryCannotWithExclusions('CUSTOMER_VM',
             new List<String>{'customer vm', 'customer virtual machine', 'deploy to our vm', 'deploy to agency vm',
                 'customer-owned infrastructure', 'our own vm', 'our own virtual machine', 'own virtual machine',
                 'deploy.*virtual machine', 'deploy.*our.*vm', 'our.*vm',
                 'our azure', 'azure tenant', 'our tenant', 'customer tenant',
                 'our aws', 'our gcp', 'deploy.*in our', 'our.*infrastructure'},
+            new List<String>{'cisa', 'owasp', 'nist', 'best practices', 'compliance standards', 'compliance framework'},
             'Salesforce cannot be deployed to a customer VM or tenant. Salesforce runs on AWS infrastructure managed by Salesforce.'));
 
         rules.add(binaryCannot('CUSTOMER_APPROVAL_CHANGES',
@@ -1203,6 +1216,14 @@ public with sharing class AIRFX_ResponseFlagInvocable {
         rules.add(binaryCannot('ISO_45001',
             new List<String>{'iso 45001', 'iso45001'},
             'Salesforce does not have ISO 45001 certification.'));
+
+        // CUI is NOT classified — GovCloud Plus can handle CUI with appropriate controls
+        rules.add(binaryCanDifferently('CUI_CONTROLLED',
+            new List<String>{'controlled unclassified information', '\\bcui\\b'},
+            'Controlled Unclassified Information (CUI) is not classified data. Salesforce Government Cloud Plus '
+            + '(FedRAMP High authorized) supports CUI handling with appropriate administrative and technical controls '
+            + 'including FIPS 140-2 encryption, US-based data residency, and NIST 800-171 aligned security controls. '
+            + 'A Data Security Rider and GovCloud Plus subscription are required.'));
 
         rules.add(binaryCannot('CLASSIFIED_DATA',
             new List<String>{'classified data', 'classified information', 'top secret', 'secret clearance'},
@@ -1496,14 +1517,15 @@ public with sharing class AIRFX_ResponseFlagInvocable {
             + 'Accessible via web browser with role-based administrative access.'));
 
         // SECURITY POSTURE — broad "describe your security" questions
-        rules.add(binaryCanDifferently('SECURITY_POSTURE_DESCRIBE',
+        rules.add(binaryCan('SECURITY_POSTURE_DESCRIBE',
             new List<String>{'describe.*security system', 'describe.*security.*solution',
                 'describe.*security.*proposed', 'security system.*authentication.*access control',
                 'authentication.*session management.*access control'},
-            'Salesforce provides comprehensive security: SAML/OAuth authentication, configurable session management, '
-            + 'RBAC with profiles and permission sets, input validation and CSRF protection, audit logging via '
-            + 'Setup Audit Trail and Shield Event Monitoring, platform monitoring via trust.salesforce.com, '
-            + 'and mandatory security awareness training for all employees.'));
+            'Salesforce provides comprehensive security (Spring \'26): MFA enforcement and SSO via SAML 2.0/OAuth 2.0, '
+            + 'configurable session management with timeout and IP restrictions, role-based access control via profiles '
+            + 'and permission sets, input validation and CSRF/XSS protection, audit logging via Setup Audit Trail '
+            + 'and Shield Event Monitoring (add-on), platform monitoring via trust.salesforce.com, and mandatory '
+            + 'security awareness training for all employees.'));
 
         rules.add(binaryCanDifferently('RESPONSE_RECOVERY_TIME',
             new List<String>{'response.*recovery.*time', 'recovery time.*disruption',
