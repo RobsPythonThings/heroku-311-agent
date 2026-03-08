@@ -41,6 +41,24 @@ Flowing through `AIRFX_ResponseFlagInvocable.buildCMDTCapabilityContext()`:
 - Hard Nos: 17 items (dedicated HW, on-prem, SBOM, etc.)
 - CDN caveat included on all region records
 
+### Country/Product End-to-End Verification
+
+Tested `buildCMDTCapabilityContext()` with 5 countries:
+
+| Country | Context Length | Hyperforce |
+|---------|--------------|------------|
+| AU | 3,478 chars | yes (ap-southeast-2) |
+| DE | 3,518 chars | yes (eu-central-1) |
+| JP | 3,466 chars | yes (ap-northeast-1) |
+| US | 3,395 chars | yes (us-east-1) |
+| NO | 2,852 chars | **no** |
+
+Country and product flow confirmed: Agent → AIRFX_AgentAction → AIRFX_ResponseFlagInvocable → buildCMDTCapabilityContext → FlagResult.CMDTCapabilityContext → AIRFX_GenerateAnswer → Prompt Template.
+
+### MuleSoft/Tableau Rule Ordering Fix
+
+Product-specific rules (MuleSoft on-prem, Tableau on-prem, etc.) moved before generic BINARY_CANNOT rules. First-match-wins requires product exceptions to fire before generic blocks. 134/134 tests passing after fix.
+
 ### Conclusion
 
 68 fewer Yellows means 68 fewer questions requiring human review per P-0042. The engine is now classifying correctly and the CMDT context provides deterministic grounding for prompt template answers. No false Reds introduced.

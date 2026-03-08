@@ -838,6 +838,58 @@ public with sharing class AIRFX_ResponseFlagInvocable {
             new List<String>{'source code', 'source-code', 'codebase access'},
             'Salesforce cannot provide source code. Inapplicable to SaaS subscription through multitenant architecture.'));
 
+        // =================================================================
+        // MULESOFT PRODUCT RULES — must fire before generic BINARY_CANNOT
+        // =================================================================
+
+        rules.add(new CapabilityRule('MULESOFT_ON_PREM',
+            new List<String>{'on-premise', 'on premise', 'on-prem', 'self-hosted'},
+            'BINARY_CAN', null, null, 'MULESOFT',
+            'MuleSoft Anypoint Runtime can be deployed on-premises, in customer-managed infrastructure, or in Salesforce-managed cloud (CloudHub). Anypoint Platform control plane is cloud-hosted.'));
+
+        rules.add(new CapabilityRule('MULESOFT_DEDICATED',
+            new List<String>{'dedicated hardware', 'dedicated instance', 'dedicated infrastructure', 'dedicated server'},
+            'BINARY_CAN', null, null, 'MULESOFT',
+            'MuleSoft Anypoint Runtime can run on dedicated customer infrastructure. CloudHub 2.0 also supports dedicated VPCs.'));
+
+        rules.add(new CapabilityRule('MULESOFT_PRIVATE_CLOUD',
+            new List<String>{'private cloud', 'customer-hosted cloud'},
+            'BINARY_CAN', null, null, 'MULESOFT',
+            'MuleSoft Anypoint Runtime can be deployed in a customer\'s private cloud environment. Anypoint Platform control plane remains cloud-hosted.'));
+
+        rules.add(new CapabilityRule('MULESOFT_CUSTOMER_VM',
+            new List<String>{'customer vm', 'customer virtual machine', 'deploy to our vm', 'deploy to agency vm'},
+            'BINARY_CAN', null, null, 'MULESOFT',
+            'MuleSoft Anypoint Runtime can be deployed on customer-managed VMs running supported operating systems.'));
+
+        // =================================================================
+        // TABLEAU PRODUCT RULES — must fire before generic BINARY_CANNOT
+        // =================================================================
+
+        rules.add(new CapabilityRule('TABLEAU_ON_PREM',
+            new List<String>{'on-premise', 'on premise', 'on-prem', 'self-hosted'},
+            'BINARY_CAN', null, null, 'TABLEAU',
+            'Tableau Server can be deployed on-premises. Tableau Desktop is a local application. Tableau Cloud is the SaaS option.'));
+
+        rules.add(new CapabilityRule('TABLEAU_DEDICATED',
+            new List<String>{'dedicated hardware', 'dedicated instance', 'dedicated infrastructure', 'dedicated server'},
+            'BINARY_CAN', null, null, 'TABLEAU',
+            'Tableau Server can run on dedicated customer hardware. Tableau Cloud runs on Salesforce-managed infrastructure.'));
+
+        rules.add(new CapabilityRule('TABLEAU_PRIVATE_CLOUD',
+            new List<String>{'private cloud', 'customer-hosted cloud'},
+            'BINARY_CAN', null, null, 'TABLEAU',
+            'Tableau Server can be deployed in a customer\'s private cloud. Tableau Cloud is multi-tenant SaaS.'));
+
+        rules.add(new CapabilityRule('TABLEAU_CUSTOMER_VM',
+            new List<String>{'customer vm', 'customer virtual machine', 'deploy to our vm'},
+            'BINARY_CAN', null, null, 'TABLEAU',
+            'Tableau Server can be deployed on customer-managed VMs. Tableau Desktop runs locally on user machines.'));
+
+        // =================================================================
+        // GENERIC BINARY_CANNOT — these fire after product-specific rules
+        // =================================================================
+
         rules.add(binaryCannot('DEDICATED_HARDWARE',
             new List<String>{'dedicated hardware', 'dedicated instance', 'dedicated equipment', 'dedicated server', 'dedicated infrastructure', 'private hardware'},
             'Salesforce cannot offer dedicated hardware. Salesforce is a multitenant SaaS platform.'));
@@ -1081,63 +1133,6 @@ public with sharing class AIRFX_ResponseFlagInvocable {
             new List<String>{'us citizen', 'citizen.*support', 'cleared.*support', 'citizenship of support'},
             'BINARY_CANNOT', null, null, 'COMMERCIAL',
             'Only US Government Cloud guarantees citizenship of support. Commercial environments have a global support model.'));
-
-        // =================================================================
-        // MULESOFT PRODUCT RULES
-        // =================================================================
-
-        // MuleSoft on-prem: Anypoint Runtime CAN be deployed on-premises
-        // Must fire before ON_PREM_GENERAL (BINARY_CANNOT) to prevent false Red
-        rules.add(new CapabilityRule('MULESOFT_ON_PREM',
-            new List<String>{'on-premise', 'on premise', 'on-prem', 'self-hosted'},
-            'BINARY_CAN', null, null, 'MULESOFT',
-            'MuleSoft Anypoint Runtime can be deployed on-premises, in customer-managed infrastructure, or in Salesforce-managed cloud (CloudHub). Anypoint Platform control plane is cloud-hosted.'));
-
-        // MuleSoft dedicated: Anypoint Runtime CAN run on dedicated infrastructure
-        rules.add(new CapabilityRule('MULESOFT_DEDICATED',
-            new List<String>{'dedicated hardware', 'dedicated instance', 'dedicated infrastructure', 'dedicated server'},
-            'BINARY_CAN', null, null, 'MULESOFT',
-            'MuleSoft Anypoint Runtime can run on dedicated customer infrastructure. CloudHub 2.0 also supports dedicated VPCs.'));
-
-        // MuleSoft private cloud
-        rules.add(new CapabilityRule('MULESOFT_PRIVATE_CLOUD',
-            new List<String>{'private cloud', 'customer-hosted cloud'},
-            'BINARY_CAN', null, null, 'MULESOFT',
-            'MuleSoft Anypoint Runtime can be deployed in a customer\'s private cloud environment. Anypoint Platform control plane remains cloud-hosted.'));
-
-        // MuleSoft customer VM
-        rules.add(new CapabilityRule('MULESOFT_CUSTOMER_VM',
-            new List<String>{'customer vm', 'customer virtual machine', 'deploy to our vm', 'deploy to agency vm'},
-            'BINARY_CAN', null, null, 'MULESOFT',
-            'MuleSoft Anypoint Runtime can be deployed on customer-managed VMs running supported operating systems.'));
-
-        // =================================================================
-        // TABLEAU PRODUCT RULES
-        // =================================================================
-
-        // Tableau on-prem: Tableau Server CAN be deployed on-premises
-        rules.add(new CapabilityRule('TABLEAU_ON_PREM',
-            new List<String>{'on-premise', 'on premise', 'on-prem', 'self-hosted'},
-            'BINARY_CAN', null, null, 'TABLEAU',
-            'Tableau Server can be deployed on-premises. Tableau Desktop is a local application. Tableau Cloud is the SaaS option.'));
-
-        // Tableau dedicated
-        rules.add(new CapabilityRule('TABLEAU_DEDICATED',
-            new List<String>{'dedicated hardware', 'dedicated instance', 'dedicated infrastructure', 'dedicated server'},
-            'BINARY_CAN', null, null, 'TABLEAU',
-            'Tableau Server can run on dedicated customer hardware. Tableau Cloud runs on Salesforce-managed infrastructure.'));
-
-        // Tableau private cloud
-        rules.add(new CapabilityRule('TABLEAU_PRIVATE_CLOUD',
-            new List<String>{'private cloud', 'customer-hosted cloud'},
-            'BINARY_CAN', null, null, 'TABLEAU',
-            'Tableau Server can be deployed in a customer\'s private cloud. Tableau Cloud is multi-tenant SaaS.'));
-
-        // Tableau customer VM
-        rules.add(new CapabilityRule('TABLEAU_CUSTOMER_VM',
-            new List<String>{'customer vm', 'customer virtual machine', 'deploy to our vm'},
-            'BINARY_CAN', null, null, 'TABLEAU',
-            'Tableau Server can be deployed on customer-managed VMs. Tableau Desktop runs locally on user machines.'));
 
         // DATA RESIDENCY — conditional on country
         rules.add(new CapabilityRule(
