@@ -773,6 +773,156 @@ private class AIRFX_ResponseFlagInvocableTest {
         System.assertEquals('ENCRYPT_ALL_DATA', d.ruleId);
     }
 
+    // =========================================================================
+    // 10b. NEW RULES — KB Analysis (2026-03-08)
+    // =========================================================================
+
+    @IsTest
+    static void rightToAudit_shouldBeYellowCanDifferently() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'The agency reserves the right to audit the contractor\'s security practices at any time.',
+            '', '', ''
+        );
+        System.assertEquals('Yellow', d.flag, 'Right to audit = CAN_DIFFERENTLY');
+        System.assertEquals('RIGHT_TO_AUDIT', d.ruleId);
+        System.assert(d.reason.contains('SOC 2'), 'Should mention SOC 2 attestations');
+    }
+
+    @IsTest
+    static void securityAuditCompliance_shouldBeYellowCanDifferently() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'The vendor must allow security audit of their systems for compliance verification.',
+            '', '', ''
+        );
+        System.assertEquals('Yellow', d.flag);
+        System.assertEquals('RIGHT_TO_AUDIT', d.ruleId);
+    }
+
+    @IsTest
+    static void securityAssessment_shouldBeYellowCanDifferently() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'The organisation shall comply to the customer\'s request for ongoing Information Security Assessments.',
+            '', '', ''
+        );
+        System.assertEquals('Yellow', d.flag, 'Security assessment = CAN_DIFFERENTLY');
+        System.assertEquals('SECURITY_ASSESSMENT_ACCESS', d.ruleId);
+        System.assert(d.reason.contains('Trust & Compliance'), 'Should mention Trust portal');
+    }
+
+    @IsTest
+    static void incidentResponseProcess_shouldBeYellowCanDifferently() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'The vendor shall have a documented incident response plan and incident management procedures.',
+            '', '', ''
+        );
+        System.assertEquals('Yellow', d.flag, 'Incident response = CAN_DIFFERENTLY');
+        System.assertEquals('INCIDENT_RESPONSE_PROCESS', d.ruleId);
+        System.assert(d.reason.contains('trust.salesforce.com'), 'Should mention trust site');
+    }
+
+    @IsTest
+    static void incidentNotification_shouldBeYellowCanDifferently() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'The supplier must provide incident notification to the customer within specified timeframes.',
+            '', '', ''
+        );
+        System.assertEquals('Yellow', d.flag);
+        System.assertEquals('INCIDENT_RESPONSE_PROCESS', d.ruleId);
+    }
+
+    @IsTest
+    static void securityClearancePersonnel_shouldBeYellowCanDifferently() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'All contractor personnel must hold a valid security clearance and pass a police check.',
+            '', '', ''
+        );
+        System.assertEquals('Yellow', d.flag, 'Security clearance = CAN_DIFFERENTLY');
+        System.assertEquals('SECURITY_CLEARANCE_PERSONNEL', d.ruleId);
+    }
+
+    @IsTest
+    static void backgroundInvestigation_shouldBeYellowCanDifferently() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'The vendor must conduct background investigation on all staff with access to agency data.',
+            '', '', ''
+        );
+        System.assertEquals('Yellow', d.flag);
+        System.assertEquals('SECURITY_CLEARANCE_PERSONNEL', d.ruleId);
+    }
+
+    @IsTest
+    static void patchManagement_shouldBeYellowCanDifferently() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'The supplier shall have a patch management process for applying security patches promptly.',
+            '', '', ''
+        );
+        System.assertEquals('Yellow', d.flag, 'Patch management = CAN_DIFFERENTLY');
+        System.assertEquals('PATCH_MGMT_PROCESS', d.ruleId);
+        System.assert(d.reason.contains('cadence'), 'Should mention SF patching cadence');
+    }
+
+    @IsTest
+    static void vulnerabilityRemediation_shouldBeYellowCanDifferently() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'The contractor shall remediate all vulnerabilities discovered through vulnerability assessments.',
+            '', '', ''
+        );
+        System.assertEquals('Yellow', d.flag);
+        System.assertEquals('PATCH_MGMT_PROCESS', d.ruleId);
+    }
+
+    @IsTest
+    static void bcpDrPlan_shouldBeYellowCanDifferently() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'The contractor must develop and deliver a business continuity plan and disaster recovery plan.',
+            '', '', ''
+        );
+        System.assertEquals('Yellow', d.flag, 'BCP/DR plan = CAN_DIFFERENTLY');
+        System.assertEquals('BCP_DR_PLAN', d.ruleId);
+        System.assert(d.reason.contains('SPARC'), 'Should mention SPARC targets');
+    }
+
+    @IsTest
+    static void confidentialityNda_shouldBeYellowCanDifferently() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'All personnel must sign a non-disclosure agreement before accessing agency data.',
+            '', '', ''
+        );
+        System.assertEquals('Yellow', d.flag, 'NDA = CAN_DIFFERENTLY');
+        System.assertEquals('CONFIDENTIALITY_NDA', d.ruleId);
+        System.assert(d.reason.contains('DPA'), 'Should mention DPA coverage');
+    }
+
+    @IsTest
+    static void dataSeg_shouldBeGreen() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'The application must provide method for data segregation between tenants including logical separation.',
+            '', '', ''
+        );
+        System.assertEquals('Green', d.flag, 'Data segregation = CAN');
+        System.assertEquals('DATA_SEGREGATION', d.ruleId);
+    }
+
+    @IsTest
+    static void iso27001_shouldBeGreen() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'The vendor must maintain ISO 27001 certification.',
+            '', '', ''
+        );
+        System.assertEquals('Green', d.flag, 'ISO 27001 = CAN');
+        System.assertEquals('ISO_27001_CERT', d.ruleId);
+    }
+
+    @IsTest
+    static void soc2_shouldBeGreen() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'The vendor must provide SOC 2 Type II attestation reports.',
+            '', '', ''
+        );
+        System.assertEquals('Green', d.flag, 'SOC 2 = CAN');
+        System.assertEquals('SOC2_CERT', d.ruleId);
+    }
+
     @IsTest
     static void escrowBusinessContinuity_shouldBeYellowCanDifferently() {
         AIRFX_ResponseFlagInvocable.FlagDecision d = eval(

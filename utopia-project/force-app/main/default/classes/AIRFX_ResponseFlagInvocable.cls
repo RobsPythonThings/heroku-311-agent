@@ -962,6 +962,18 @@ public with sharing class AIRFX_ResponseFlagInvocable {
             new List<String>{'list of subcontract', 'list of subprocessor', 'subprocessor list', 'subcontractor list'},
             'A list of subcontractors and subprocessors can be provided. Salesforce can notify customers of changes but they cannot approve.'));
 
+        rules.add(binaryCan('DATA_SEGREGATION',
+            new List<String>{'data segregat', 'data separat', 'tenant isolat', 'logical separat', 'logically separat', 'logical isolat', 'multi-tenant.*isolat'},
+            'Salesforce provides logical tenant isolation in multi-tenant architecture. Each org\'s data is separated at the application layer with unique org IDs. Row-level security enforces data isolation.'));
+
+        rules.add(binaryCan('ISO_27001_CERT',
+            new List<String>{'iso 27001', 'iso/iec 27001', 'iso27001'},
+            'Salesforce maintains ISO/IEC 27001 certification for its information security management system. Certificate and scope details available via the Trust & Compliance portal.'));
+
+        rules.add(binaryCan('SOC2_CERT',
+            new List<String>{'soc 2', 'soc2', 'soc ii', 'ssae 18', 'ssae18', 'soc type ii', 'soc type 2'},
+            'Salesforce maintains SOC 2 Type II attestation. Reports are available under NDA via the Trust & Compliance portal at compliance.salesforce.com.'));
+
         // =================================================================
         // CONDITIONAL RULES
         // =================================================================
@@ -1038,6 +1050,67 @@ public with sharing class AIRFX_ResponseFlagInvocable {
         rules.add(binaryCanDifferently('VULN_SCAN_RESULTS',
             new List<String>{'vulnerability.*report', 'penetration test.*report', 'pen test.*report', 'security assessment.*report', 'share.*scan.*result', 'provide.*scan.*result'},
             'Raw vulnerability scan data and audit workpapers are not shared. Executive summary penetration test and vulnerability assessment reports are available via the Salesforce Trust and Compliance portal (compliance.salesforce.com). For Government Cloud Plus customers, FedRAMP POA&M documentation is available.'));
+
+        // =================================================================
+        // NEW RULES — from KB analysis (2026-03-08)
+        // =================================================================
+
+        rules.add(binaryCanDifferently('RIGHT_TO_AUDIT',
+            new List<String>{'right to audit', 'right of audit', 'audit right', 'audit the contractor',
+                'audit the supplier', 'audit the vendor', 'audit the provider',
+                'audit.*compliance', 'security audit'},
+            'Salesforce provides SOC 2 Type II, ISO 27001, and third-party attestation reports in lieu of direct customer audits. '
+            + 'On-site facility or infrastructure audits are not available for multi-tenant SaaS. '
+            + 'Attestation reports are available via the Trust & Compliance portal at compliance.salesforce.com.'));
+
+        rules.add(binaryCanDifferently('SECURITY_ASSESSMENT_ACCESS',
+            new List<String>{'security assessment', 'security review', 'information security assessment',
+                'independent.*security.*assess', 'independent.*security.*review',
+                'security.*audit.*annual', 'annual.*security.*audit'},
+            'Salesforce undergoes independent third-party security assessments annually. '
+            + 'Results are available via the Trust & Compliance portal. '
+            + 'Customer-directed security assessments of Salesforce infrastructure are not permitted.'));
+
+        rules.add(binaryCanDifferently('INCIDENT_RESPONSE_PROCESS',
+            new List<String>{'incident response', 'incident management', 'security incident.*notif',
+                'incident report', 'incident notification', 'incident.*response plan',
+                'incident.*procedure'},
+            'Salesforce maintains a documented incident response program. '
+            + 'Customers are notified of confirmed security incidents via trust.salesforce.com and direct email. '
+            + 'Customer-specific reporting formats or SLA-bound notification timelines are not available.'));
+
+        rules.add(binaryCanDifferently('SECURITY_CLEARANCE_PERSONNEL',
+            new List<String>{'security clearance', 'police check', 'police clearance',
+                'police record', 'personnel.*vetting', 'staff.*vetting',
+                'background investigation', 'criminal.*check', 'criminal.*record',
+                'personnel security', 'staff.*security.*check'},
+            'Salesforce conducts background checks on employees per its global policy and local law requirements. '
+            + 'Customer-specific vetting processes, clearance levels, or sharing of check results cannot be accommodated. '
+            + 'For US federal customers, Government Cloud Plus meets NIST 800-53 personnel security controls.'));
+
+        rules.add(binaryCanDifferently('PATCH_MGMT_PROCESS',
+            new List<String>{'patch management', 'patching.*schedule', 'patching.*process',
+                'security patch.*apply', 'patch.*vulnerabilit', 'vulnerability.*patch',
+                'vulnerability.*remediat', 'remediat.*vulnerabilit'},
+            'Salesforce manages patching on its own cadence aligned to industry standards. '
+            + 'Critical vulnerabilities are prioritized per Salesforce\'s security policy. '
+            + 'Customer-directed patch timelines or approval before patching cannot be accommodated.'));
+
+        rules.add(binaryCanDifferently('BCP_DR_PLAN',
+            new List<String>{'business continuity plan', 'disaster recovery plan',
+                'business continuity.*program', 'disaster recovery.*program',
+                '\\bbcp\\b', '\\bdr plan\\b', 'continuity plan'},
+            'Salesforce maintains its own Business Continuity and Disaster Recovery program tested at least annually. '
+            + 'BCP/DR plans are not shared with customers for review or approval. '
+            + 'Salesforce DR targets: RPO 4 hours, RTO 12 hours (SPARC).'));
+
+        rules.add(binaryCanDifferently('CONFIDENTIALITY_NDA',
+            new List<String>{'non-disclosure agreement', 'non disclosure agreement',
+                '\\bnda\\b', 'confidentiality agreement', 'confidentiality deed',
+                'deed of confidentiality'},
+            'Salesforce employees sign a company-wide confidentiality agreement. '
+            + 'Customer-specific NDAs or non-disclosure deeds cannot be individually executed for all personnel. '
+            + 'Data protection obligations are covered under the Salesforce DPA and MSA.'));
 
         return rules;
     }
