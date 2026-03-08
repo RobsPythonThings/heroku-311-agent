@@ -1,6 +1,6 @@
 # AIRFX Production Readiness Assessment
 
-**Date:** 2026-03-08 (evening update)
+**Date:** 2026-03-09
 **Author:** Robert Smith (Principal SE, GPS)
 **Status:** Ready for production with caveats
 
@@ -8,7 +8,7 @@
 
 AIRFX is a deterministic security-flagging engine for RFP/RFx responses, integrated with Salesforce Agentforce. It triages security questions, auto-flags them Red/Yellow/Green, classifies them as Functional or Security, and generates grounded answers using Data Cloud RAG retrieval (HECVAT + SPARC + compliance docs).
 
-The engine has been validated on 5 production projects and 6,539 historical questions via CSV. 221 unit tests passing at 100%. Conversational fallback path added for standalone questions.
+The engine has been validated on 56 projects (4,680 questions) and 6,539 historical questions via CSV. 241 unit tests passing at 100%. Gate 2.5 conditional commitment detector added. Norway/EEA data residency fixed (Yellow with nearest regions, not Red). Mike Rosa gospel validation: 66/67 (98.5%). 31 test projects scrubbed and ready for SE testing.
 
 ## Readiness Checklist
 
@@ -16,10 +16,11 @@ The engine has been validated on 5 production projects and 6,539 historical ques
 
 | Item | Status | Notes |
 |------|--------|-------|
-| Unit tests | 221/221 passing | 216 flag engine + 5 conversational answer. Covers all rule types, edge cases, obligation, product dimensions, YELLOW mining, uptime tiers, confidence scoring |
+| Unit tests | 241/241 passing | 236 flag engine + 5 conversational answer. Covers all rule types, edge cases, obligation, product dimensions, YELLOW mining, uptime tiers, confidence scoring, Gate 2.5, Norway/EEA data residency |
 | Adversarial tests | 25/25 passing | Negation, compound questions, product filters, obligation softening |
 | CSV validation | 6,539 questions | 26.1% match rate vs historical flags; 73.9% are downgrades (conservative → appropriate) |
-| Mike gospel rows | 79 rows | Certified regression test baseline |
+| Mike gospel rows | 66/67 (98.5%) | Certified regression test baseline. 12 rows excluded as deliberate improvements |
+| Mike full validation | 90.5% agreement | 286/316 reviewed rows match expert judgment (post-Gate 2.5) |
 | Code review | Complete | All Apex classes reviewed |
 | Governor limits | Within bounds | ~6.5s CPU for 348 records (65% of 10,000ms limit) |
 | Error handling | Implemented | Blank questions, parse failures, missing context, conversational fallback all handled |
@@ -29,12 +30,13 @@ The engine has been validated on 5 production projects and 6,539 historical ques
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| Security pre-filter | **Complete** | ~160 functional terms, ~87 security terms (added AI data privacy terms), word-boundary matching |
-| Rule engine | **Complete** | 94+ rules across 7 rule types, first-match-wins |
+| Security pre-filter | **Complete** | ~160 functional terms, ~91 security terms (added insurance, confidentiality, alerting, detection, AI data privacy terms), word-boundary matching |
+| Rule engine | **Complete** | 94+ rules across 7 rule types, first-match-wins. Dedicated database → Red (DEDICATED_HARDWARE) |
+| Gate 2.5 conditional commitment | **Complete** | `detectConditionalCommitment()` at 3 Green decision points. Detects 8 patterns of conditional/open-ended language. Bypasses known standards (HIPAA, FedRAMP, NIST, etc.). Moved Mike agreement from 87% to 90.5% |
 | Uptime SLA logic | **Complete** | ≤99.9% GREEN, >99.9% YELLOW, five nines handled. RAG constrained from freelancing SLA percentages |
 | Obligation parsing | **Complete** | must/shall vs should/may softening |
 | Product dimensions | **Complete** | MuleSoft and Tableau product-aware rules |
-| Data residency | **Complete** | 18 Hyperforce regions via CMDT, country validation |
+| Data residency | **Complete** | 18 Hyperforce regions via CMDT. Norway/FI/PT/BE/NL/ES/TH → Yellow with nearest regions + AE deferral (not Red). China/other unsupported → Red. DATA_RESIDENCY keywords tightened to prevent false matches on non-residency questions |
 | CMDT integration | **Complete** | 8 objects, 200+ records active. Confidence scoring hits all 6 CMDTs (was 1 before this sprint) |
 | Question classification | **Complete** | Functional vs Security on every question |
 | NO_MATCH split | **Complete** | Functional auto-Green, Security Yellow |
@@ -47,9 +49,9 @@ The engine has been validated on 5 production projects and 6,539 historical ques
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| Conversational fallback | **Deployed, needs testing** | AIRFX_ConversationalAnswer.cls deployed, agent topic configured. Apex compiles and deploys. ConnectApi path needs live testing with 5 validation questions |
-| WCAG/ADA fix | **Code deployed, not re-triaged** | ACCESSIBILITY_508 broadened to match bare `\bwcag\b` and `\bada\b.*complian`. P-6360 still shows stale flags |
-| AI data privacy fix | **Code deployed, not re-triaged** | `non-private`, `ai feature`, `shared with other` added to SECURITY_TERMS. P-6360 GPS-3236 still Green |
+| Conversational fallback | **Deployed, needs testing** | AIRFX_ConversationalAnswer.cls deployed, agent topic configured. ConnectApi path needs live testing with 5 validation questions |
+| WCAG/ADA fix | **Deployed and re-triaged** | ACCESSIBILITY_508 broadened. All 56 projects re-triaged with fix |
+| AI data privacy fix | **Deployed and re-triaged** | Security terms added. All 56 projects re-triaged with fix |
 
 ### Not Yet Built
 
@@ -58,8 +60,8 @@ The engine has been validated on 5 production projects and 6,539 historical ques
 | Flag override mechanism | **Not built** | SEs cannot override engine flags. Workaround: edit Security_Flag__c directly |
 | SE feedback loop | **Inactive** | 98.3% of AI answers have no acceptance/rejection. No UI/flow to capture SE verdict |
 | Government RFP pre-filter expansion | **Open** | Proposer, subcontractor, deployment method terms not yet added |
-| Norway country verification | **Open** | P-3333/P-3334 need Hyperforce/Product_Region CMDT verification for NO |
 | safe_to_ingest.csv ingestion | **Pending** | 3,534 rows validated but not yet loaded into Knowledge or Data Cloud |
+| GovCloud bleed-through fix | **Open (P0)** | 52% of Yellow answers cite GovCloud/FedRAMP High/IL4 for non-GovCloud deals. Prompt template needs product-context filtering |
 
 ### Validation Results
 
@@ -138,7 +140,7 @@ The engine has been validated on 5 production projects and 6,539 historical ques
 # Deploy all classes
 sf project deploy start --source-dir force-app/main/default/classes -o <org-alias>
 
-# Run all tests (221)
+# Run all tests (241)
 sf apex run test --class-names AIRFX_ResponseFlagInvocableTest AIRFX_ConversationalAnswerTest --wait 10
 
 # Deploy agent bundle
@@ -167,15 +169,20 @@ sf project deploy start --source-dir force-app/main/default/customMetadata -o <o
 | Weak RAG answers mislead SE | Medium | Medium | Answer quality audited (P-6360: 3/6 STRONG). GovCloud bleed-through identified |
 | Conversational path untested | Medium | Low | Deployed but ConnectApi path needs live validation with 5 test questions |
 
+## SE Testing Status
+
+- **31 test projects scrubbed** — flags and AI answers cleared, ready for fresh triage by SE team
+- **Testing guide distributed** — covers flag accuracy, answer quality, edge cases
+- **241 unit tests passing** — regression suite protects against code changes during testing
+
 ## Recommendations Before GA
 
-1. **Live-test conversational path** — Run 5 validation questions through the agent to confirm AIRFX_ConversationalAnswer works end-to-end
-2. **Re-triage P-6360** — Pick up deployed WCAG and AI data privacy fixes (2 misflags → 1)
+1. **Fix GovCloud bleed-through (P0)** — Add product context to prompt template so non-GovCloud deals don't get FedRAMP/IL references. 52% of Yellow answers affected.
+2. **Live-test conversational path** — Run 5 validation questions through the agent to confirm AIRFX_ConversationalAnswer works end-to-end
 3. **Add flag override** — Let SEs override engine flags with justification, logged in Response_Flag_Reason__c
-4. **Fix GovCloud bleed-through** — Add product context to prompt template so non-GovCloud deals don't get FedRAMP/IL references
-5. **Activate SE feedback loop** — Need UI or flow for SEs to accept/reject AI answers
-6. **Create Confidence_Score__c field** — Persist computed confidence score for auditing
-7. **Ingest safe_to_ingest.csv** — 3,534 validated Q&A pairs into Knowledge or Data Cloud
+4. **Activate SE feedback loop** — Need UI or flow for SEs to accept/reject AI answers
+5. **Create Confidence_Score__c field** — Persist computed confidence score for auditing
+6. **Ingest safe_to_ingest.csv** — 3,534 validated Q&A pairs into Knowledge or Data Cloud
 
 ## Approval
 

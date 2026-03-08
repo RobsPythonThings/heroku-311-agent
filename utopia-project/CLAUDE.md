@@ -2,7 +2,7 @@
 
 Owner: Robert Smith
 Org: Salesforce (internal tooling for SE/RFx team)
-Last updated: 2026-03-08 (evening)
+Last updated: 2026-03-09
 
 ## Project Overview
 
@@ -30,9 +30,9 @@ genAiPlannerBundles/
 | Class | Purpose |
 |-------|---------|
 | `AIRFX_AgentAction` | Invocable entry point. Resolves project, calls flagging + content routing. Writes `Security_Flag__c`, `Response_Flag_Reason__c`, `Question_Classification__c`. |
-| `AIRFX_SecurityPreFilter` | Keyword pre-filter. ~160 FUNCTIONAL_TERMS, ~87 SECURITY_TERMS (added AI data privacy terms 2026-03-08). Word-boundary matching. Classifies questions as functional (auto-Green) or security (pass to rules). |
-| `AIRFX_ResponseFlagInvocable` | Core 94+-rule deterministic flag engine. First match wins. Gate 2.5 conditional commitment detector downgrades Green → Yellow when question contains open-ended compliance language. NO_MATCH split: no security terms → Green (functional), security terms → Yellow (needs review). Confidence scoring hits all 6 CMDTs. |
-| `AIRFX_ResponseFlagInvocableTest` | 236 tests. Covers all rule types, NO_MATCH split, classification, obligation, product dimensions, adversarial, YELLOW mining, uptime tiers, confidence scoring, and Gate 2.5 conditional commitment detection. |
+| `AIRFX_SecurityPreFilter` | Keyword pre-filter. ~160 FUNCTIONAL_TERMS, ~91 SECURITY_TERMS (added insurance, confidentiality, alerting, detection, AI data privacy terms). Word-boundary matching. Classifies questions as functional (auto-Green) or security (pass to rules). |
+| `AIRFX_ResponseFlagInvocable` | Core 94+-rule deterministic flag engine. First match wins. Gate 2.5 conditional commitment detector downgrades Green → Yellow when question contains open-ended compliance language. Norway/EEA countries → Yellow with nearest Hyperforce regions + AE deferral (not Red). DATA_RESIDENCY keywords tightened to prevent false matches. Dedicated database → Red (DEDICATED_HARDWARE). NO_MATCH split: no security terms → Green (functional), security terms → Yellow (needs review). Confidence scoring hits all 6 CMDTs. |
+| `AIRFX_ResponseFlagInvocableTest` | 241 tests. Covers all rule types, NO_MATCH split, classification, obligation, product dimensions, adversarial, YELLOW mining, uptime tiers, confidence scoring, Gate 2.5 conditional commitment detection, and Norway/EEA data residency. |
 | `AIRFX_ConversationalAnswer` | Standalone Q&A — no project/record context needed. Queries all 6 CMDTs for grounding, calls DataCloud_RFP_Answer template with ADL retrievers. Prevents "Record not found" errors on conversational questions. |
 | `AIRFX_ConversationalAnswerTest` | 5 tests. Input validation, CMDT context with/without country/product, null safety. |
 | `AIRFX_GenerateAnswer` | Single answer via `ConnectApi.EinsteinLLM.generateMessagesForPromptTemplate('DataCloud_RFP_Answer', ...)` |
@@ -91,7 +91,7 @@ Question → AIRFX_AgentAction.triageProject()
 - `BINARY_CAN_DIFFERENTLY` — meets intent but not letter → YELLOW (11 rules)
 - `NUMERIC_MIN` / `NUMERIC_MAX` — threshold comparison → GREEN/RED
 - `NUMERIC_TIERED_MIN` — 3-tier (e.g., uptime: ≤99.9% GREEN, >99.9% YELLOW, five nines handled)
-- `CONDITIONAL_DATA_RESIDENCY` — country checks against 18 Hyperforce regions
+- `CONDITIONAL_DATA_RESIDENCY` — country checks against 18 Hyperforce regions. Norway/FI/PT/BE/NL/ES/TH → Yellow with nearby regions + AE deferral. China/other → Red.
 
 ## Salesforce Capabilities (Spring '26)
 
@@ -138,14 +138,13 @@ Functional questions (no security terms) that don't match rules are auto-Green (
 
 ## Roadmap (Priority Order)
 
-1. **Government RFP pre-filter expansion** — Add proposer, subcontractor, deployment method terms to FUNCTIONAL_TERMS/SECURITY_TERMS for better gov RFP classification.
+1. **GovCloud bleed-through fix** — Prompt template answers for non-GovCloud deals cite FedRAMP High / IL4/IL5. Template needs product-context filtering. P0 priority.
 2. **SE feedback loop** — Currently inactive (98.3% of AI answers have no acceptance/rejection). Need UI or flow to capture SE verdict on generated answers.
 3. **Flag override mechanism** — Let SEs override engine flags with justification, logged in Response_Flag_Reason__c. Not yet built.
-4. **Norway country verification** — P-3333/P-3334 have Norway context; verify Hyperforce_Region__mdt and Product_Region__mdt coverage for NO.
-5. **safe_to_ingest.csv ingestion** — 3,534 rows of validated Q&A pairs pending ingestion into Knowledge or Data Cloud.
-6. **More CAN_DIFFERENTLY rules** — product-specific on-prem (MuleSoft, Tableau Server), per-product ACRs, breach notification timeline.
-7. **Bid-specific answer grounding** — inject customer name, industry, region into prompt template.
-8. **GovCloud bleed-through fix** — Prompt template answers for non-GovCloud deals cite FedRAMP High / IL4/IL5. Template needs product-context filtering.
+4. **safe_to_ingest.csv ingestion** — 3,534 rows of validated Q&A pairs pending ingestion into Knowledge or Data Cloud.
+5. **More CAN_DIFFERENTLY rules** — product-specific on-prem (MuleSoft, Tableau Server), per-product ACRs.
+6. **Bid-specific answer grounding** — inject customer name, industry, region into prompt template.
+7. **Government RFP pre-filter expansion** — Add proposer, subcontractor, deployment method terms.
 
 ## Performance
 
@@ -153,8 +152,9 @@ Functional questions (no security terms) that don't match rules are auto-Green (
 - **Estimated max capacity**: ~530 records per invocation
 - **Live validation**: Engine confirmed on P-0042 (348q, 294G/54Y/0R), P-0014 (66q), P-4331 (471q), P-6405 (409q, 360G/49Y/0R), P-6360 (27q, 21G/6Y/0R)
 - **CSV validation**: 6,539 historical questions processed (262 batches, 0 failures)
-- **Mike gospel rows**: 79 certified regression test rows
+- **Mike gospel rows**: 67 certified regression tests (66/67 = 98.5% pass rate). 12 excluded as deliberate improvements.
 - **Mike validation**: 90.5% agreement (286/316) with expert judgment (post-Gate 2.5)
+- **SE testing**: 31 test projects scrubbed (flags + AI answers cleared) for team testing
 
 ## Active Docs (`docs/`)
 
