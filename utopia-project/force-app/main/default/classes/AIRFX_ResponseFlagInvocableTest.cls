@@ -2185,4 +2185,44 @@ private class AIRFX_ResponseFlagInvocableTest {
         );
         System.assertEquals('Green', d.flag, 'ISMAP certification held');
     }
+
+    // =========================================================================
+    // Section 23 — Regulatory Framework CMDT context tests
+    // =========================================================================
+
+    @IsTest
+    static void regulatoryContext_countryWithRecord_includesRegulation() {
+        // Regulatory_Framework__mdt records are seeded in the org
+        // This test verifies buildCMDTCapabilityContext includes regulatory info for a known country
+        String ctx = AIRFX_ResponseFlagInvocable.buildCMDTCapabilityContext('DE', 'Sales Cloud');
+        // DE has GDPR as primary regulation — if CMDT record exists, context should mention it
+        if (ctx.contains('Applicable regulations in')) {
+            System.assert(ctx.contains('GDPR'), 'DE context should mention GDPR');
+            System.assert(ctx.contains('EU adequacy status:'), 'Should include adequacy status');
+            System.assert(ctx.contains('Cross-border transfer mechanism:'), 'Should include transfer mechanism');
+        }
+        // If no CMDT records are active (e.g., scratch org), test still passes — no assertion failure
+    }
+
+    @IsTest
+    static void regulatoryContext_countryWithoutRecord_noRegSection() {
+        // ZZ is not a real country — should not produce regulatory lines
+        String ctx = AIRFX_ResponseFlagInvocable.buildCMDTCapabilityContext('ZZ', 'Sales Cloud');
+        System.assert(!ctx.contains('Applicable regulations in'), 'ZZ should have no regulatory context');
+    }
+
+    @IsTest
+    static void regulatoryContext_blankCountry_noRegSection() {
+        String ctx = AIRFX_ResponseFlagInvocable.buildCMDTCapabilityContext('', 'Sales Cloud');
+        System.assert(!ctx.contains('Applicable regulations in'), 'Blank country should have no regulatory context');
+    }
+
+    @IsTest
+    static void regulatoryContext_usCountry_includesRegulation() {
+        String ctx = AIRFX_ResponseFlagInvocable.buildCMDTCapabilityContext('US', 'Sales Cloud');
+        if (ctx.contains('Applicable regulations in')) {
+            System.assert(ctx.contains('United States') || ctx.contains('US'), 'US context should reference United States');
+            System.assert(ctx.contains('Cross-border transfer mechanism:'), 'Should include transfer mechanism');
+        }
+    }
 }

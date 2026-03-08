@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <label>Australia (AU)</label>
+    <protected>false</protected>
+    <values>
+        <field>Active__c</field>
+        <value xsi:type="xsd:boolean">true</value>
+    </values>
+    <values>
+        <field>Confidence__c</field>
+        <value xsi:type="xsd:string">VERIFIED</value>
+    </values>
+    <values>
+        <field>Source_Date__c</field>
+        <value xsi:type="xsd:date">2026-03-08</value>
+    </values>
+    <values>
+        <field>Country_Code__c</field>
+        <value xsi:type="xsd:string">AU</value>
+    </values>
+    <values>
+        <field>Country_Name__c</field>
+        <value xsi:type="xsd:string">Australia</value>
+    </values>
+    <values>
+        <field>Primary_Regulation__c</field>
+        <value xsi:type="xsd:string">Privacy Act 1988 + Australian Privacy Principles (APPs)</value>
+    </values>
+    <values>
+        <field>Secondary_Regulations__c</field>
+        <value xsi:type="xsd:string">Notifiable Data Breaches scheme, Consumer Data Right</value>
+    </values>
+    <values>
+        <field>Adequacy_Decision__c</field>
+        <value xsi:type="xsd:boolean">false</value>
+    </values>
+    <values>
+        <field>Adequacy_Notes__c</field>
+        <value xsi:type="xsd:string">No EU adequacy decision. APP 8 requires comparable protection for overseas transfers.</value>
+    </values>
+    <values>
+        <field>Cross_Border_Transfer__c</field>
+        <value xsi:type="xsd:string">APP 8 requires reasonable steps to ensure recipient handles data per APPs</value>
+    </values>
+    <values>
+        <field>Government_Certification__c</field>
+        <value xsi:type="xsd:string">IRAP</value>
+    </values>
+    <values>
+        <field>Notes__c</field>
+        <value xsi:type="xsd:string"></value>
+    </values>
+</CustomMetadata>

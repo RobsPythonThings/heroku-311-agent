@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <label>Japan (JP)</label>
+    <protected>false</protected>
+    <values>
+        <field>Active__c</field>
+        <value xsi:type="xsd:boolean">true</value>
+    </values>
+    <values>
+        <field>Confidence__c</field>
+        <value xsi:type="xsd:string">VERIFIED</value>
+    </values>
+    <values>
+        <field>Source_Date__c</field>
+        <value xsi:type="xsd:date">2026-03-08</value>
+    </values>
+    <values>
+        <field>Country_Code__c</field>
+        <value xsi:type="xsd:string">JP</value>
+    </values>
+    <values>
+        <field>Country_Name__c</field>
+        <value xsi:type="xsd:string">Japan</value>
+    </values>
+    <values>
+        <field>Primary_Regulation__c</field>
+        <value xsi:type="xsd:string">APPI (Act on Protection of Personal Information) — 2022 amended</value>
+    </values>
+    <values>
+        <field>Secondary_Regulations__c</field>
+        <value xsi:type="xsd:string">My Number Act, Telecommunications Business Act</value>
+    </values>
+    <values>
+        <field>Adequacy_Decision__c</field>
+        <value xsi:type="xsd:boolean">true</value>
+    </values>
+    <values>
+        <field>Adequacy_Notes__c</field>
+        <value xsi:type="xsd:string">EU adequacy decision 2019. Mutual adequacy with EU.</value>
+    </values>
+    <values>
+        <field>Cross_Border_Transfer__c</field>
+        <value xsi:type="xsd:string">Consent or adequacy basis required. EU-Japan mutual adequacy agreement active.</value>
+    </values>
+    <values>
+        <field>Government_Certification__c</field>
+        <value xsi:type="xsd:string">ISMAP</value>
+    </values>
+    <values>
+        <field>Notes__c</field>
+        <value xsi:type="xsd:string"></value>
+    </values>
+</CustomMetadata>

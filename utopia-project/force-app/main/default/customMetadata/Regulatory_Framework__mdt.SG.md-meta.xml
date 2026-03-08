@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <label>Singapore (SG)</label>
+    <protected>false</protected>
+    <values>
+        <field>Active__c</field>
+        <value xsi:type="xsd:boolean">true</value>
+    </values>
+    <values>
+        <field>Confidence__c</field>
+        <value xsi:type="xsd:string">VERIFIED</value>
+    </values>
+    <values>
+        <field>Source_Date__c</field>
+        <value xsi:type="xsd:date">2026-03-08</value>
+    </values>
+    <values>
+        <field>Country_Code__c</field>
+        <value xsi:type="xsd:string">SG</value>
+    </values>
+    <values>
+        <field>Country_Name__c</field>
+        <value xsi:type="xsd:string">Singapore</value>
+    </values>
+    <values>
+        <field>Primary_Regulation__c</field>
+        <value xsi:type="xsd:string">PDPA 2012 (Personal Data Protection Act)</value>
+    </values>
+    <values>
+        <field>Secondary_Regulations__c</field>
+        <value xsi:type="xsd:string">Cybersecurity Act 2018, Banking Act (MAS TRM)</value>
+    </values>
+    <values>
+        <field>Adequacy_Decision__c</field>
+        <value xsi:type="xsd:boolean">false</value>
+    </values>
+    <values>
+        <field>Adequacy_Notes__c</field>
+        <value xsi:type="xsd:string">No EU adequacy decision. ASEAN Framework on Digital Data Governance.</value>
+    </values>
+    <values>
+        <field>Cross_Border_Transfer__c</field>
+        <value xsi:type="xsd:string">Comparable protection required. PDPA transfer provisions or binding corporate rules.</value>
+    </values>
+    <values>
+        <field>Government_Certification__c</field>
+        <value xsi:type="xsd:string">MTCS (Multi-Tier Cloud Security)</value>
+    </values>
+    <values>
+        <field>Notes__c</field>
+        <value xsi:type="xsd:string"></value>
+    </values>
+</CustomMetadata>

@@ -267,7 +267,7 @@ public with sharing class AIRFX_ResponseFlagInvocable {
     // =========================================================================
 
     /**
-     * Builds a plain-English capability summary from the 5 CMDT objects
+     * Builds a plain-English capability summary from the 6 CMDT objects
      * for a given country and product. Returns empty string if all records
      * are Active__c = false (expected until activation).
      */
@@ -366,6 +366,31 @@ public with sharing class AIRFX_ResponseFlagInvocable {
                 hnList.add(hn.Label__c + ' — ' + hn.Reason__c);
             }
             lines.add('Known hard nos: ' + String.join(hnList, '; ') + '.');
+        }
+
+        // 6. Regulatory Framework
+        if (String.isNotBlank(countryUpper)) {
+            List<Regulatory_Framework__mdt> regs = [
+                SELECT Country_Name__c, Primary_Regulation__c, Secondary_Regulations__c,
+                       Adequacy_Decision__c, Adequacy_Notes__c, Cross_Border_Transfer__c,
+                       Government_Certification__c
+                FROM Regulatory_Framework__mdt
+                WHERE Active__c = true AND Country_Code__c = :countryUpper
+                LIMIT 1
+            ];
+            if (!regs.isEmpty()) {
+                Regulatory_Framework__mdt reg = regs[0];
+                lines.add('Applicable regulations in ' + reg.Country_Name__c + ': ' + reg.Primary_Regulation__c + '.');
+                if (String.isNotBlank(reg.Secondary_Regulations__c)) {
+                    lines.add(reg.Secondary_Regulations__c + '.');
+                }
+                lines.add('EU adequacy status: ' + (reg.Adequacy_Decision__c ? 'yes' : 'no') + '.'
+                    + (String.isNotBlank(reg.Adequacy_Notes__c) ? ' ' + reg.Adequacy_Notes__c : ''));
+                lines.add('Cross-border transfer mechanism: ' + (String.isNotBlank(reg.Cross_Border_Transfer__c) ? reg.Cross_Border_Transfer__c : 'not specified') + '.');
+                if (String.isNotBlank(reg.Government_Certification__c)) {
+                    lines.add('Government certification applicable: ' + reg.Government_Certification__c + '.');
+                }
+            }
         }
 
         if (lines.isEmpty()) {
