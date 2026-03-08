@@ -1,3 +1,4 @@
+// Security pre-filter: classifies questions as functional or security before rule evaluation
 public with sharing class AIRFX_SecurityPreFilter {
 
     public class Result {
@@ -106,7 +107,12 @@ public with sharing class AIRFX_SecurityPreFilter {
         'data processing','data transfer','data transferred','transferred outside',
         'data leave','data transit','data cross border','data never leave','data remain',
         'defer release','defer upgrade','delay release','skip release',
-        'approve change','approve before','approval before'
+        'approve change','approve before','approval before',
+        'on-premises',
+        'azure tenant','our tenant','customer tenant',
+        'dedicated support','dedicated engineer','assigned support','named support',
+        'store all data','data exclusively',
+        'ismap','certified','certification','certifications'
     };
 
     public static Result evaluate(String question) {

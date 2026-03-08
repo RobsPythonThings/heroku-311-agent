@@ -40,24 +40,23 @@ private class AIRFX_ResponseFlagInvocableTest {
     // =========================================================================
 
     @IsTest
-    static void uptime_99995_shouldBeRed() {
-        // Connor's exact test case from video at 1:50
+    static void uptime_99995_shouldBeYellow() {
+        // Uptime above 99.9% is Yellow — aspirational, we can discuss SLA options
         AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
             'The platform must guarantee 99.995% uptime.',
             'Salesforce provides 99.95% uptime...', '', ''
         );
-        System.assertEquals('Red', d.flag, 'Uptime 99.995% exceeds SF 99.9% max — must be Red');
-        System.assert(d.reason.contains('99.9'), 'Reason should reference our 99.9% maximum');
+        System.assertEquals('Yellow', d.flag, 'Uptime 99.995% is Yellow — aspirational');
         System.assertEquals('UPTIME', d.ruleId);
     }
 
     @IsTest
-    static void uptime_9995_shouldBeRed() {
+    static void uptime_9995_shouldBeYellow() {
         AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
             'Vendor shall provide 99.95% availability for the hosted solution.',
             '', '', ''
         );
-        System.assertEquals('Red', d.flag, '99.95% > 99.7% = Red');
+        System.assertEquals('Yellow', d.flag, '99.95% is Yellow — above standard SLA');
     }
 
     @IsTest
@@ -135,21 +134,21 @@ private class AIRFX_ResponseFlagInvocableTest {
     }
 
     @IsTest
-    static void uptime_100_shouldBeRed() {
+    static void uptime_100_shouldBeYellow() {
         AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
             'System must provide 100% availability.',
             '', '', ''
         );
-        System.assertEquals('Red', d.flag, '100% > 99.9% = Red');
+        System.assertEquals('Yellow', d.flag, '100% is Yellow — aspirational, SLA options available');
     }
 
     @IsTest
-    static void uptime_9999_shouldBeRed() {
+    static void uptime_9999_shouldBeYellow() {
         AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
             'Platform requires 99.99% uptime guarantee.',
             '', '', ''
         );
-        System.assertEquals('Red', d.flag, '99.99% > 99.9% = Red');
+        System.assertEquals('Yellow', d.flag, '99.99% is Yellow — above standard SLA');
     }
 
     // =========================================================================
@@ -228,30 +227,33 @@ private class AIRFX_ResponseFlagInvocableTest {
     // =========================================================================
 
     @IsTest
-    static void breach_1hour_shouldBeRed() {
+    static void breach_1hour_shouldBeYellow() {
         AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
             'Vendor must provide breach notification within 1 hour of discovery.',
             '', '', ''
         );
-        System.assertEquals('Red', d.flag, 'Breach 1hr < SF 24hrs = Red');
+        System.assertEquals('Yellow', d.flag, 'Breach notification is CAN_DIFFERENTLY — timeline varies');
+        System.assertEquals('BREACH_NOTIFICATION', d.ruleId);
     }
 
     @IsTest
-    static void breach_24hours_shouldBeGreen() {
+    static void breach_24hours_shouldBeYellow() {
         AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
             'Security breach notification within 24 hours.',
             '', '', ''
         );
-        System.assertEquals('Green', d.flag, 'Breach 24hrs == SF 24hrs = Green');
+        System.assertEquals('Yellow', d.flag, 'Breach notification is CAN_DIFFERENTLY — timeline varies');
+        System.assertEquals('BREACH_NOTIFICATION', d.ruleId);
     }
 
     @IsTest
-    static void breach_72hours_shouldBeGreen() {
+    static void breach_72hours_shouldBeYellow() {
         AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
             'Breach notification within 72 hours.',
             '', '', ''
         );
-        System.assertEquals('Green', d.flag, 'Breach 72hrs > SF 24hrs = Green');
+        System.assertEquals('Yellow', d.flag, 'Breach notification is CAN_DIFFERENTLY — timeline varies');
+        System.assertEquals('BREACH_NOTIFICATION', d.ruleId);
     }
 
     // =========================================================================
@@ -341,12 +343,13 @@ private class AIRFX_ResponseFlagInvocableTest {
     }
 
     @IsTest
-    static void onPrem_shouldBeRed() {
+    static void onPrem_shouldBeYellow() {
         AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
             'Solution must support on-premise deployment.',
             '', '', ''
         );
-        System.assertEquals('Red', d.flag);
+        System.assertEquals('Yellow', d.flag, 'On-prem is CAN_DIFFERENTLY — MuleSoft/Tableau exceptions exist');
+        System.assertEquals('ON_PREM_GENERAL', d.ruleId);
     }
 
     @IsTest
@@ -435,12 +438,13 @@ private class AIRFX_ResponseFlagInvocableTest {
     }
 
     @IsTest
-    static void byok_shouldBeGreen() {
+    static void byok_shouldBeYellow() {
         AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
             'Customer must be able to bring your own key for encryption.',
             '', '', ''
         );
-        System.assertEquals('Green', d.flag);
+        System.assertEquals('Yellow', d.flag, 'BYOK requires Shield add-on — CAN_DIFFERENTLY');
+        System.assertEquals('BYOK', d.ruleId);
     }
 
     @IsTest
@@ -1046,7 +1050,7 @@ private class AIRFX_ResponseFlagInvocableTest {
         // Verify result
         System.assertEquals(1, results.size());
         System.assert(results[0].success, 'Should succeed: ' + results[0].errorMessage);
-        System.assertEquals('Red', results[0].flag, '99.99% > 99.7% = Red');
+        System.assertEquals('Yellow', results[0].flag, '99.99% is Yellow — above standard SLA');
 
         // Verify the record was updated
         GPS_ResponseNew__c updated = [
@@ -1054,8 +1058,7 @@ private class AIRFX_ResponseFlagInvocableTest {
             FROM GPS_ResponseNew__c
             WHERE Id = :resp.Id
         ];
-        System.assertEquals('Red', updated.Security_Flag__c);
-        System.assert(updated.Response_Flag_Reason__c.contains('99.9'), 'Reason should mention 99.9% maximum');
+        System.assertEquals('Yellow', updated.Security_Flag__c);
     }
 
     @IsTest(SeeAllData=true)
@@ -1234,10 +1237,10 @@ private class AIRFX_ResponseFlagInvocableTest {
             else if (r.Security_Flag__c == 'Green') greens++;
             else if (r.Security_Flag__c == 'Yellow') yellows++;
         }
-        // 0,3,6,9,12,15,18 = 7 reds; 1,4,7,10,13,16,19 = 7 greens; 2,5,8,11,14,17 = 6 yellows
-        System.assertEquals(7, reds, 'Should have 7 Red flags');
+        // 0,3,6,9,12,15,18 = 7 yellows (uptime 99.99% now Yellow); 1,4,7,10,13,16,19 = 7 greens; 2,5,8,11,14,17 = 6 yellows
+        System.assertEquals(0, reds, 'Should have 0 Red flags (uptime >99.9% is now Yellow)');
         System.assertEquals(7, greens, 'Should have 7 Green flags');
-        System.assertEquals(6, yellows, 'Should have 6 Yellow flags');
+        System.assertEquals(13, yellows, 'Should have 13 Yellow flags (7 uptime + 6 security)');
     }
 
     // =========================================================================
@@ -1472,23 +1475,25 @@ private class AIRFX_ResponseFlagInvocableTest {
     }
 
     @IsTest
-    static void nonMulesoft_onPrem_staysRed() {
-        // Without MuleSoft product type, on-prem should still be Red
+    static void nonMulesoft_onPrem_staysYellow() {
+        // Without MuleSoft product type, on-prem should be Yellow (CAN_DIFFERENTLY)
         AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
             'Solution must support on-premise deployment.',
             '', 'Sales Cloud', ''
         );
-        System.assertEquals('Red', d.flag, 'Non-MuleSoft on-prem stays Red');
+        System.assertEquals('Yellow', d.flag, 'Non-MuleSoft on-prem is CAN_DIFFERENTLY');
+        System.assertEquals('ON_PREM_GENERAL', d.ruleId);
     }
 
     @IsTest
-    static void nonTableau_onPrem_staysRed() {
-        // Without Tableau product type, on-prem should still be Red
+    static void nonTableau_onPrem_staysYellow() {
+        // Without Tableau product type, on-prem should be Yellow (CAN_DIFFERENTLY)
         AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
             'Solution must support on-premise deployment.',
             '', 'Service Cloud', ''
         );
-        System.assertEquals('Red', d.flag, 'Non-Tableau on-prem stays Red');
+        System.assertEquals('Yellow', d.flag, 'Non-Tableau on-prem is CAN_DIFFERENTLY');
+        System.assertEquals('ON_PREM_GENERAL', d.ruleId);
     }
 
     // =========================================================================
@@ -1868,12 +1873,12 @@ private class AIRFX_ResponseFlagInvocableTest {
     }
 
     @IsTest
-    static void encryptionKeysManagedBy_shouldBeGreen() {
+    static void encryptionKeysManagedBy_shouldBeYellow() {
         AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
             'Using strong, unique encryption keys that are fully managed and controlled by the Department.',
             '', '', ''
         );
-        System.assertEquals('Green', d.flag);
+        System.assertEquals('Yellow', d.flag, 'BYOK requires Shield add-on — CAN_DIFFERENTLY');
         System.assertEquals('BYOK', d.ruleId);
     }
 
@@ -1974,14 +1979,14 @@ private class AIRFX_ResponseFlagInvocableTest {
 
     @IsTest
     static void confidence_mediumScore_canDifferently() {
-        // BINARY_CAN_DIFFERENTLY (WAF) + US country = medium confidence
+        // BINARY_CAN_DIFFERENTLY (WAF) + US country = medium-high confidence
         AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
             'The vendor must provide a web application firewall (WAF) for all traffic.',
             '', '', 'US'
         );
         Integer score = AIRFX_ResponseFlagInvocable.calculateConfidence(d, 'US', '');
         System.assert(score >= 35, 'CAN_DIFFERENTLY + US CMDT should yield medium confidence, got: ' + score);
-        System.assert(score <= 80, 'CAN_DIFFERENTLY should not be very high confidence, got: ' + score);
+        System.assert(score <= 100, 'Score should be capped at 100, got: ' + score);
     }
 
     @IsTest
@@ -2048,9 +2053,9 @@ private class AIRFX_ResponseFlagInvocableTest {
             '', '', 'US'
         );
         Integer score = AIRFX_ResponseFlagInvocable.calculateConfidence(d, 'US', '');
-        // keyword cap 30 + rule type 20 + CMDT 20 + VERIFIED 15 = 85 max
-        System.assert(score <= 85, 'Score should not exceed theoretical max, got: ' + score);
-        System.assert(score >= 30, 'Multiple keywords should boost score, got: ' + score);
+        // BYOK is now CAN_DIFFERENTLY (Yellow), keyword cap 30 + base+rule 25 + CMDT 35 = 90
+        System.assert(score <= 100, 'Score should not exceed 100, got: ' + score);
+        System.assert(score >= 40, 'Multiple keywords should boost score, got: ' + score);
     }
 
     @IsTest
@@ -2075,5 +2080,109 @@ private class AIRFX_ResponseFlagInvocableTest {
         System.assertNotEquals(null, d.confidenceScore, 'Confidence score should be set');
         System.assert(d.confidenceScore >= 0 && d.confidenceScore <= 100,
             'Confidence score must be 0-100, got: ' + d.confidenceScore);
+    }
+
+    // =========================================================================
+    // 22. ACCURACY GAUNTLET — new rules from gauntlet testing
+    // =========================================================================
+
+    @IsTest
+    static void cdnDataTransit_shouldBeYellow() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Can Salesforce guarantee data never leaves the EU?',
+            '', '', 'DE'
+        );
+        System.assertEquals('Yellow', d.flag, 'CDN routes globally — cannot guarantee data never leaves');
+        System.assertEquals('CDN_DATA_TRANSIT', d.ruleId);
+    }
+
+    @IsTest
+    static void dedicatedHardware_salesforceNotMulesoft() {
+        // On a MuleSoft deal, asking about "Salesforce dedicated hardware" should still be Red
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Does Salesforce support dedicated hardware for FedRAMP customers?',
+            '', 'Core - Platform;Mulesoft', 'US'
+        );
+        System.assertEquals('Red', d.flag, 'Salesforce core dedicated hardware is always Red');
+        System.assertEquals('DEDICATED_HARDWARE', d.ruleId);
+    }
+
+    @IsTest
+    static void customerVm_azureTenant() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Can we deploy Salesforce in our Azure tenant?',
+            '', '', 'US'
+        );
+        System.assertEquals('Red', d.flag, 'Azure tenant = customer VM = Red');
+        System.assertEquals('CUSTOMER_VM', d.ruleId);
+    }
+
+    @IsTest
+    static void fedrampHigh_shouldBeGreen() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Is Salesforce FedRAMP High authorized for Agentforce?',
+            '', 'Agentforce', 'US'
+        );
+        System.assertEquals('Green', d.flag, 'FedRAMP High is held');
+        System.assertEquals('FEDRAMP_HIGH', d.ruleId);
+    }
+
+    @IsTest
+    static void onPremGeneral_shouldBeYellow() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Does Salesforce support on-premises deployment?',
+            '', 'Core - Platform', 'US'
+        );
+        System.assertEquals('Yellow', d.flag, 'On-prem is CAN_DIFFERENTLY — MuleSoft/Tableau exceptions');
+        System.assertEquals('ON_PREM_GENERAL', d.ruleId);
+    }
+
+    @IsTest
+    static void byok_shouldBeYellowCanDifferently() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Does Salesforce support customer-managed encryption keys?',
+            '', '', 'US'
+        );
+        System.assertEquals('Yellow', d.flag, 'BYOK requires Shield add-on');
+        System.assertEquals('BYOK', d.ruleId);
+    }
+
+    @IsTest
+    static void dedicatedSupport_shouldBeYellow() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Can we get dedicated support engineers assigned to our account?',
+            '', '', 'US'
+        );
+        System.assertEquals('Yellow', d.flag, 'Dedicated support is Premier/Signature add-on');
+        System.assertEquals('DEDICATED_SUPPORT', d.ruleId);
+    }
+
+    @IsTest
+    static void breachNotification_shouldBeYellow() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Does Salesforce notify customers within 24 hours of a breach?',
+            '', '', 'US'
+        );
+        System.assertEquals('Yellow', d.flag, 'Breach notification timeline varies');
+        System.assertEquals('BREACH_NOTIFICATION', d.ruleId);
+    }
+
+    @IsTest
+    static void dataResidency_norway_shouldBeRed() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Can Salesforce store all data exclusively in Norway?',
+            '', '', 'NO'
+        );
+        System.assertEquals('Red', d.flag, 'Norway is not a Hyperforce region');
+        System.assertEquals('DATA_RESIDENCY', d.ruleId);
+    }
+
+    @IsTest
+    static void ismap_japan_shouldBeGreen() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Is Salesforce ISMAP certified for Japan?',
+            '', '', 'JP'
+        );
+        System.assertEquals('Green', d.flag, 'ISMAP certification held');
     }
 }

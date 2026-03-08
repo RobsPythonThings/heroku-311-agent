@@ -757,31 +757,25 @@ public with sharing class AIRFX_ResponseFlagInvocable {
 
         // 2. Rule type bonus
         String ruleId = decision.ruleId != null ? decision.ruleId : '';
+        Boolean hasRuleMatch = false;
         if (ruleId == 'NO_MATCH_SECURITY') {
             score += -10;
         } else if (ruleId == 'NO_MATCH_FUNCTIONAL' || ruleId == 'NO_QUESTION') {
             score += 0;
         } else if (ruleId.endsWith('_PARSE_FAIL')) {
             score += 0;
+        } else if (ruleId == 'PREFILTER_NON_SECURITY') {
+            // Pre-filter handled below
+            score += 0;
         } else {
-            // Determine rule type from the flag + ruleId
-            // BINARY_CAN → GREEN with a rule match
-            // BINARY_CANNOT → RED with a rule match
-            // BINARY_CAN_DIFFERENTLY → YELLOW with a rule match (or GREEN if optional)
-            if (ruleId == 'PREFILTER_NON_SECURITY') {
-                // Pre-filter handled below
-                score += 0;
-            } else if (decision.flag == 'Red' || (decision.flag == 'Yellow' && !ruleId.startsWith('NO_MATCH'))) {
-                // BINARY_CAN or BINARY_CANNOT (both get +20), or CAN_DIFFERENTLY with mandatory (+10)
-                // For simplicity: Red = CANNOT (+20), Green with rule = CAN (+20),
-                // Yellow with rule = CAN_DIFFERENTLY (+10)
-                if (decision.flag == 'Red') {
-                    score += 20; // BINARY_CANNOT
-                } else {
-                    score += 10; // BINARY_CAN_DIFFERENTLY
-                }
-            } else if (decision.flag == 'Green' && !ruleId.startsWith('NO_MATCH') && ruleId != 'PREFILTER_NON_SECURITY') {
-                score += 20; // BINARY_CAN (or CAN_DIFFERENTLY softened by optional language, or numeric met)
+            hasRuleMatch = true;
+            // Additional bonus by rule type — includes base for deterministic match
+            if (decision.flag == 'Red') {
+                score += 25 + 20; // BINARY_CANNOT: high base + full rule bonus
+            } else if (decision.flag == 'Yellow') {
+                score += 15 + 10; // BINARY_CAN_DIFFERENTLY: lower base + partial bonus
+            } else if (decision.flag == 'Green') {
+                score += 25 + 20; // BINARY_CAN or numeric met: high base + full bonus
             }
         }
 
@@ -792,7 +786,9 @@ public with sharing class AIRFX_ResponseFlagInvocable {
 
         // 4. CMDT record exists for country/product = +20
         // 5. CMDT Confidence__c: VERIFIED +15, INFERRED +5, NEEDS_REVIEW 0
-        if (String.isNotBlank(country)) {
+        // Only apply CMDT bonus for rule-matched or security questions (not NO_MATCH_FUNCTIONAL/PREFILTER)
+        Boolean isSecurity = hasRuleMatch || ruleId == 'NO_MATCH_SECURITY';
+        if (isSecurity && String.isNotBlank(country)) {
             String countryUpper = country.toUpperCase();
             List<Hyperforce_Region__mdt> hfRegions = [
                 SELECT Confidence__c
@@ -920,12 +916,13 @@ public with sharing class AIRFX_ResponseFlagInvocable {
             + 'typically outside peak business hours. Customers cannot choose or override maintenance windows. '
             + 'Major releases are scheduled 3 times per year (Spring, Summer, Winter) and cannot be deferred.'));
 
-        // UPTIME / AVAILABILITY — 3-tier: <99.7 GREEN, 99.7-99.9 YELLOW, >99.9 RED
+        // UPTIME / AVAILABILITY — 3-tier: <99.7 GREEN, 99.7-100 YELLOW, >100 RED (impossible)
+        // 100% uptime is aspirational — CAN_DIFFERENTLY (we offer 99.9% max), not a hard no.
         CapabilityRule uptimeRule = new CapabilityRule('UPTIME',
             new List<String>{'uptime', 'availability', '% sla', 'percent sla', 'percent uptime', 'percent availability'},
             'NUMERIC_TIERED_MIN', 99.7, '%', null,
-            'Salesforce cannot exceed 99.9% uptime. Requirements above 99.9% cannot be met.');
-        uptimeRule.numericUpperThreshold = 99.9;
+            'Salesforce maximum achievable uptime is 99.9%. Requirements above 99.9% cannot be guaranteed but Salesforce can discuss SLA options with your AE.');
+        uptimeRule.numericUpperThreshold = 100.0;
         uptimeRule.alternativeReason = 'Salesforce standard SLA commits to 99.7% uptime. Requirements up to 99.9% may be achievable with explicit approval \u2014 please engage your AE.';
         rules.add(uptimeRule);
 
@@ -941,11 +938,14 @@ public with sharing class AIRFX_ResponseFlagInvocable {
             12, ' hours',
             'Salesforce RTO is 12 hours. Requirements demanding shorter RTO cannot be met.'));
 
-        // BREACH NOTIFICATION — Gov Cloud: 24 hours
-        rules.add(numericMax('BREACH_NOTIFY_GOV',
-            new List<String>{'breach notification', 'breach notice', 'notify.*breach', 'security breach.*notif'},
-            24, ' hours',
-            'Salesforce Gov Cloud commits to 24-hour breach notification. Shorter timeframes cannot be guaranteed.'));
+        // BREACH NOTIFICATION — timeline varies by product and jurisdiction
+        rules.add(binaryCanDifferently('BREACH_NOTIFICATION',
+            new List<String>{'breach notification', 'breach notice', 'notify.*breach', 'security breach.*notif',
+                'notify.*within.*hour.*breach', 'breach.*within.*hour'},
+            'Salesforce has a security incident response program that includes customer notification. '
+            + 'Gov Cloud commits to 24-hour notification. Commercial notification timelines are policy-based '
+            + 'and may vary by jurisdiction and contract terms. Specific contractual SLAs on breach '
+            + 'notification timelines are not standard.'));
 
         // =================================================================
         // BINARY CANNOT — Red flags (Salesforce cannot do this)
@@ -963,49 +963,77 @@ public with sharing class AIRFX_ResponseFlagInvocable {
         // MULESOFT PRODUCT RULES — must fire before generic BINARY_CANNOT
         // =================================================================
 
-        rules.add(new CapabilityRule('MULESOFT_ON_PREM',
+        // MuleSoft product rules exclude questions that explicitly mention "Salesforce"
+        // without mentioning "MuleSoft" — those should fall through to generic rules.
+        List<String> muleSoftExclusions = new List<String>{'salesforce.*dedicated', 'salesforce.*on-prem',
+            'salesforce.*private cloud', 'salesforce.*customer vm', 'does salesforce support',
+            'can salesforce', 'salesforce support'};
+
+        CapabilityRule msOnPrem = new CapabilityRule('MULESOFT_ON_PREM',
             new List<String>{'on-premise', 'on premise', 'on-prem', 'self-hosted'},
             'BINARY_CAN', null, null, 'MULESOFT',
-            'MuleSoft Anypoint Runtime can be deployed on-premises, in customer-managed infrastructure, or in Salesforce-managed cloud (CloudHub). Anypoint Platform control plane is cloud-hosted.'));
+            'MuleSoft Anypoint Runtime can be deployed on-premises, in customer-managed infrastructure, or in Salesforce-managed cloud (CloudHub). Anypoint Platform control plane is cloud-hosted.');
+        msOnPrem.excludeKeywords = muleSoftExclusions;
+        rules.add(msOnPrem);
 
-        rules.add(new CapabilityRule('MULESOFT_DEDICATED',
+        CapabilityRule msDedicated = new CapabilityRule('MULESOFT_DEDICATED',
             new List<String>{'dedicated hardware', 'dedicated instance', 'dedicated infrastructure', 'dedicated server'},
             'BINARY_CAN', null, null, 'MULESOFT',
-            'MuleSoft Anypoint Runtime can run on dedicated customer infrastructure. CloudHub 2.0 also supports dedicated VPCs.'));
+            'MuleSoft Anypoint Runtime can run on dedicated customer infrastructure. CloudHub 2.0 also supports dedicated VPCs.');
+        msDedicated.excludeKeywords = muleSoftExclusions;
+        rules.add(msDedicated);
 
-        rules.add(new CapabilityRule('MULESOFT_PRIVATE_CLOUD',
+        CapabilityRule msPrivate = new CapabilityRule('MULESOFT_PRIVATE_CLOUD',
             new List<String>{'private cloud', 'customer-hosted cloud'},
             'BINARY_CAN', null, null, 'MULESOFT',
-            'MuleSoft Anypoint Runtime can be deployed in a customer\'s private cloud environment. Anypoint Platform control plane remains cloud-hosted.'));
+            'MuleSoft Anypoint Runtime can be deployed in a customer\'s private cloud environment. Anypoint Platform control plane remains cloud-hosted.');
+        msPrivate.excludeKeywords = muleSoftExclusions;
+        rules.add(msPrivate);
 
-        rules.add(new CapabilityRule('MULESOFT_CUSTOMER_VM',
+        CapabilityRule msVm = new CapabilityRule('MULESOFT_CUSTOMER_VM',
             new List<String>{'customer vm', 'customer virtual machine', 'deploy to our vm', 'deploy to agency vm'},
             'BINARY_CAN', null, null, 'MULESOFT',
-            'MuleSoft Anypoint Runtime can be deployed on customer-managed VMs running supported operating systems.'));
+            'MuleSoft Anypoint Runtime can be deployed on customer-managed VMs running supported operating systems.');
+        msVm.excludeKeywords = muleSoftExclusions;
+        rules.add(msVm);
 
         // =================================================================
         // TABLEAU PRODUCT RULES — must fire before generic BINARY_CANNOT
         // =================================================================
 
-        rules.add(new CapabilityRule('TABLEAU_ON_PREM',
+        // Tableau product rules exclude questions that explicitly mention "Salesforce"
+        // without mentioning "Tableau" — those should fall through to generic rules.
+        List<String> tableauExclusions = new List<String>{'salesforce.*dedicated', 'salesforce.*on-prem',
+            'salesforce.*private cloud', 'salesforce.*customer vm', 'does salesforce support',
+            'can salesforce', 'salesforce support'};
+
+        CapabilityRule tabOnPrem = new CapabilityRule('TABLEAU_ON_PREM',
             new List<String>{'on-premise', 'on premise', 'on-prem', 'self-hosted'},
             'BINARY_CAN', null, null, 'TABLEAU',
-            'Tableau Server can be deployed on-premises. Tableau Desktop is a local application. Tableau Cloud is the SaaS option.'));
+            'Tableau Server can be deployed on-premises. Tableau Desktop is a local application. Tableau Cloud is the SaaS option.');
+        tabOnPrem.excludeKeywords = tableauExclusions;
+        rules.add(tabOnPrem);
 
-        rules.add(new CapabilityRule('TABLEAU_DEDICATED',
+        CapabilityRule tabDedicated = new CapabilityRule('TABLEAU_DEDICATED',
             new List<String>{'dedicated hardware', 'dedicated instance', 'dedicated infrastructure', 'dedicated server'},
             'BINARY_CAN', null, null, 'TABLEAU',
-            'Tableau Server can run on dedicated customer hardware. Tableau Cloud runs on Salesforce-managed infrastructure.'));
+            'Tableau Server can run on dedicated customer hardware. Tableau Cloud runs on Salesforce-managed infrastructure.');
+        tabDedicated.excludeKeywords = tableauExclusions;
+        rules.add(tabDedicated);
 
-        rules.add(new CapabilityRule('TABLEAU_PRIVATE_CLOUD',
+        CapabilityRule tabPrivate = new CapabilityRule('TABLEAU_PRIVATE_CLOUD',
             new List<String>{'private cloud', 'customer-hosted cloud'},
             'BINARY_CAN', null, null, 'TABLEAU',
-            'Tableau Server can be deployed in a customer\'s private cloud. Tableau Cloud is multi-tenant SaaS.'));
+            'Tableau Server can be deployed in a customer\'s private cloud. Tableau Cloud is multi-tenant SaaS.');
+        tabPrivate.excludeKeywords = tableauExclusions;
+        rules.add(tabPrivate);
 
-        rules.add(new CapabilityRule('TABLEAU_CUSTOMER_VM',
+        CapabilityRule tabVm = new CapabilityRule('TABLEAU_CUSTOMER_VM',
             new List<String>{'customer vm', 'customer virtual machine', 'deploy to our vm'},
             'BINARY_CAN', null, null, 'TABLEAU',
-            'Tableau Server can be deployed on customer-managed VMs. Tableau Desktop runs locally on user machines.'));
+            'Tableau Server can be deployed on customer-managed VMs. Tableau Desktop runs locally on user machines.');
+        tabVm.excludeKeywords = tableauExclusions;
+        rules.add(tabVm);
 
         // =================================================================
         // GENERIC BINARY_CANNOT — these fire after product-specific rules
@@ -1076,8 +1104,12 @@ public with sharing class AIRFX_ResponseFlagInvocable {
             'Salesforce does not meet SecNumCloud requirements.'));
 
         rules.add(binaryCannot('CUSTOMER_VM',
-            new List<String>{'customer vm', 'customer virtual machine', 'deploy to our vm', 'deploy to agency vm', 'customer-owned infrastructure', 'our own vm', 'our own virtual machine', 'own virtual machine', 'deploy.*virtual machine', 'deploy.*our.*vm', 'our.*vm'},
-            'Salesforce cannot be deployed to a customer VM. Salesforce runs in AWS VMs managed by Salesforce.'));
+            new List<String>{'customer vm', 'customer virtual machine', 'deploy to our vm', 'deploy to agency vm',
+                'customer-owned infrastructure', 'our own vm', 'our own virtual machine', 'own virtual machine',
+                'deploy.*virtual machine', 'deploy.*our.*vm', 'our.*vm',
+                'our azure', 'azure tenant', 'our tenant', 'customer tenant',
+                'our aws', 'our gcp', 'deploy.*in our', 'our.*infrastructure'},
+            'Salesforce cannot be deployed to a customer VM or tenant. Salesforce runs on AWS infrastructure managed by Salesforce.'));
 
         rules.add(binaryCannot('CUSTOMER_APPROVAL_CHANGES',
             new List<String>{'customer approval before changes', 'approval before maintenance', 'approve.*before.*upgrade', 'seek.*authorization.*before', 'approve.*change.*before', 'approve.*before.*deploy', 'approve.*platform change', 'approval before.*change', 'approve.*before.*change'},
@@ -1107,17 +1139,21 @@ public with sharing class AIRFX_ResponseFlagInvocable {
             },
             'Salesforce is delivered exclusively as SaaS/PaaS. No on-premises infrastructure required for vendor-managed components. All maintenance, updates, and security patches are managed by Salesforce.'));
 
-        rules.add(binaryCannotWithExclusions('ON_PREM_GENERAL',
-            new List<String>{'on-premise', 'on premise', 'on-prem', 'self-hosted'},
-            new List<String>{
+        CapabilityRule onPremRule = new CapabilityRule('ON_PREM_GENERAL',
+            new List<String>{'on-premise', 'on premise', 'on-prem', 'on-premises', 'self-hosted'},
+            'BINARY_CAN_DIFFERENTLY', null, null, null,
+            'Salesforce core platform is cloud-only (SaaS). On-premises deployment is available for '
+            + 'MuleSoft Anypoint Runtime and Tableau Server/Desktop only. If the deal includes MuleSoft '
+            + 'or Tableau, on-premises options exist for those components.');
+        onPremRule.excludeKeywords = new List<String>{
                 'no on-premise', 'no on premise', 'no on-prem',
                 'not on-premise', 'not on premise', 'not on-prem',
                 'without on-premise', 'without on premise', 'without on-prem',
                 'requiring no on-prem', 'eliminat.*on-prem',
                 '\\bsaas\\b', 'cloud-based.*not.*on-prem',
                 'how is.*deploy', 'how.*deployed', 'describe.*deploy', 'what.*deployment model', 'cloud based'
-            },
-            'On-premises deployment is strictly limited to MuleSoft and Tableau only.'));
+            };
+        rules.add(onPremRule);
 
         rules.add(binaryCannot('CUSTOMER_POLICY_COMPLY',
             new List<String>{'comply with customer.*security policy', 'comply with agency.*security policy', 'follow.*customer.*policy', 'follow.*agency.*procedure', 'adhere to.*customer.*standard'},
@@ -1171,9 +1207,13 @@ public with sharing class AIRFX_ResponseFlagInvocable {
             new List<String>{'tls 1.2', 'tls 1.3', 'tls1.2', 'tls1.3', 'transport layer security'},
             'Salesforce supports TLS 1.2 and TLS 1.3.'));
 
-        rules.add(binaryCan('BYOK',
-            new List<String>{'bring your own key', 'byok', 'customer managed key', 'customer.*encryption key', 'encryption key.*managed', 'encryption key.*controlled', 'manage.*encryption key', 'control.*encryption key'},
-            'Salesforce offers BYOK via Shield Platform Encryption. Customers can manage encryption keys (keys must be shared with Salesforce). AES-256 encryption at rest.'));
+        rules.add(binaryCanDifferently('BYOK',
+            new List<String>{'bring your own key', 'byok', 'customer managed key', 'customer-managed key',
+                'customer.*encryption key', 'encryption key.*managed', 'encryption key.*controlled',
+                'manage.*encryption key', 'control.*encryption key'},
+            'Salesforce offers BYOK via Shield Platform Encryption (paid add-on). Customers can manage '
+            + 'encryption keys through AWS KMS integration. Note: keys are shared with Salesforce for '
+            + 'processing — fully customer-exclusive key management is not supported. AES-256 encryption at rest.'));
 
         rules.add(binaryCan('IL5',
             new List<String>{'il5', 'il-5', 'impact level 5', 'impact level five'},
@@ -1231,6 +1271,19 @@ public with sharing class AIRFX_ResponseFlagInvocable {
             new List<String>{'soc 2', 'soc2', 'soc ii', 'ssae 18', 'ssae18', 'soc type ii', 'soc type 2'},
             'Salesforce maintains SOC 2 Type II attestation. Reports are available under NDA via the Trust & Compliance portal at compliance.salesforce.com.'));
 
+        rules.add(binaryCan('FEDRAMP_HIGH',
+            new List<String>{'fedramp high', 'fedramp.*high.*authorized', 'fedramp.*authorized',
+                'fedramp.*certification', 'fedramp.*complian'},
+            'Salesforce holds FedRAMP High authorization for multiple products including Government Cloud Plus, '
+            + 'Data Cloud, Marketing Cloud, Service Cloud Voice, GovSlack, and Agentforce. '
+            + 'FedRAMP Moderate authorization is held for Government Cloud and MuleSoft Gov Cloud. '
+            + 'Current authorization status available at marketplace.fedramp.gov.'));
+
+        rules.add(binaryCan('ISMAP_CERT',
+            new List<String>{'ismap', 'ismap.*certif', 'ismap.*japan', 'japan.*ismap'},
+            'Salesforce holds ISMAP (Information system Security Management and Assessment Program) certification '
+            + 'for the Japanese government market. ISMAP listing covers core Salesforce products.'));
+
         // =================================================================
         // CONDITIONAL RULES
         // =================================================================
@@ -1255,10 +1308,27 @@ public with sharing class AIRFX_ResponseFlagInvocable {
             'BINARY_CANNOT', null, null, 'COMMERCIAL',
             'Only US Government Cloud guarantees citizenship of support. Commercial environments have a global support model.'));
 
+        // CDN DATA TRANSIT — must fire BEFORE DATA_RESIDENCY
+        // Questions asking for guarantees that data will "never leave" a region
+        // are Yellow because CDN (Akamai, CloudFront, Cloudflare, Fastly) routes globally.
+        rules.add(binaryCanDifferently('CDN_DATA_TRANSIT',
+            new List<String>{'data never leave', 'data never leaves', 'data will not leave',
+                'data cannot leave', 'data must not leave', 'data must not exit',
+                'guarantee data.*stay', 'guarantee data.*remain', 'guarantee.*data never',
+                'guarantee.*never leave', 'ensure data.*never leave'},
+            'Salesforce Hyperforce supports data residency at rest in supported regions. However, '
+            + 'CDN providers (Akamai, CloudFront, Cloudflare, Fastly) route traffic globally — '
+            + 'data in transit may pass through any country. A guarantee that data will never '
+            + 'leave a specific region cannot be made due to CDN routing.'));
+
         // DATA RESIDENCY — conditional on country
         rules.add(new CapabilityRule(
             'DATA_RESIDENCY',
-            new List<String>{'data residen', 'data sovereign', 'data locali', 'data location', 'hosted in', 'data center location', 'data stored', 'data must reside', 'data shall reside', 'data will reside', 'data reside', 'host.*in', 'org in', 'data.*leave', 'data.*transit', 'data.*cross border', 'data never leave', 'data remain in', 'keep data in'},
+            new List<String>{'data residen', 'data sovereign', 'data locali', 'data location', 'hosted in',
+                'data center location', 'data stored', 'data must reside', 'data shall reside',
+                'data will reside', 'data reside', 'host.*in', 'org in', 'data.*leave', 'data.*transit',
+                'data.*cross border', 'data remain in', 'keep data in',
+                'store.*data.*in', 'data exclusively', 'exclusively in'},
             'CONDITIONAL_DATA_RESIDENCY', null, null, null,
             'Salesforce hosts data in 18 Hyperforce regions: US, BR, CA, AU, IN, JP, SG, KR, FR, DE, SE, GB, ID, IE, IL, IT, CH, AE.'));
 
@@ -1295,6 +1365,15 @@ public with sharing class AIRFX_ResponseFlagInvocable {
         rules.add(binaryCanDifferently('SIEM_INTEGRATION',
             new List<String>{'siem integration', 'siem.*event', 'event.*siem', 'forward.*log.*siem', 'stream.*event.*siem', 'security information and event management'},
             'Infrastructure/OS/network logs are not available (multi-tenant SaaS). With Shield Event Monitoring (add-on), 20+ application event types can be streamed to external SIEM tools via the Streaming API. This covers login events, API events, report exports, permission changes, and more.'));
+
+        rules.add(binaryCanDifferently('DEDICATED_SUPPORT',
+            new List<String>{'dedicated support', 'dedicated engineer', 'assigned support',
+                'named support', 'dedicated account', 'dedicated.*support.*engineer',
+                'dedicated.*technical.*resource'},
+            'Salesforce does not assign dedicated support engineers in the base offering. '
+            + 'Premier Support (paid add-on) provides a named Customer Success Manager and faster response times. '
+            + 'Signature Success (premium tier) provides a dedicated Technical Account Manager (TAM) '
+            + 'and proactive monitoring. Both are available as paid upgrades.'));
 
         rules.add(binaryCanDifferently('BACKGROUND_CHECK_GENERAL',
             new List<String>{'do you.*background check', 'does.*vendor.*background check', 'do.*staff.*background', 'do.*employee.*background', 'conduct.*background check', 'perform.*background check'},
