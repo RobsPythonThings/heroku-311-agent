@@ -1,0 +1,21 @@
+{
+  "required" : [ "projectId" ],
+  "unevaluatedProperties" : false,
+  "properties" : {
+    "framework" : {
+      "title" : "Framework",
+      "description" : "Optional compliance framework override. Usually not needed — action resolves framework from parent project automatically.",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "projectId" : {
+      "title" : "Project ID",
+      "description" : "Instructions: GPS_Project__c record ID to generate answers for. If user is on a project record page, use that ID.",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : true
+    }
+  },
+  "lightning:type" : "lightning__objectType"
+}

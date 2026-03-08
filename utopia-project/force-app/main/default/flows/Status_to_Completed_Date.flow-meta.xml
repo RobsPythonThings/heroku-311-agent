@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>58.0</apiVersion>
+    <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
+    <decisions>
+        <description>First check is to see if the GPS_Co_Lead_2_Status__c was edited AND meets the status value criteria.</description>
+        <name>Check_if_GPS_Co_Lead_2_Status_c_was_Edited</name>
+        <label>Check if GPS_Co_Lead_2_Status__c was Edited</label>
+        <locationX>182</locationX>
+        <locationY>1139</locationY>
+        <defaultConnectorLabel>Not Edited and/or Does Not Meet Value</defaultConnectorLabel>
+        <rules>
+            <name>GPS_Co_Lead_2_Status_Edited_and_Meets_Value</name>
+            <conditionLogic>(1 AND 2) OR (1 AND 3) AND 4</conditionLogic>
+            <conditions>
+                <leftValueReference>$Record.GPS_Co_Lead_2_Status__c</leftValueReference>
+                <operator>IsChanged</operator>
+                <rightValue>
+                    <booleanValue>true</booleanValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>$Record.GPS_Co_Lead_2_Status__c</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <stringValue>Concluded</stringValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>$Record.GPS_Co_Lead_2_Status__c</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <stringValue>Qualified Out</stringValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>$Record.GPS_Co_Lead_2_Status__c</leftValueReference>
+                <operator>IsNull</operator>
+                <rightValue>
+                    <booleanValue>false</booleanValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Copy_2_of_Update_Co_Lead_Completed_Date_c_Completed_Date</targetReference>
+            </connector>
+            <label>GPS_Co_Lead_2_Status__Edited_and_Meets_Value</label>
+        </rules>
+    </decisions>
+    <decisions>
+        <description>First check is to see if the GPS_Co_Lead_s_Status__c was edited AND meets the status value criteria.</description>
+        <name>Check_if_GPS_Co_Lead_s_Status_c_was_Edited</name>
+        <label>Check if GPS_Co_Lead_s_Status__c was Edited</label>
+        <locationX>182</locationX>
+        <locationY>839</locationY>
+        <defaultConnector>
+            <targetReference>Check_if_GPS_Co_Lead_2_Status_c_was_Edited</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>Not Edited and/or Does Not Meet Value</defaultConnectorLabel>
+        <rules>
+            <name>GPS_Co_Lead_s_Status_Edited_and_Meets_Value</name>
+            <conditionLogic>(1 AND 2) OR (1 AND 3) AND 4</conditionLogic>
+            <conditions>
+                <leftValueReference>$Record.GPS_Co_Lead_s_Status__c</leftValueReference>
+                <operator>IsChanged</operator>
+                <rightValue>
+                    <booleanValue>true</booleanValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>$Record.GPS_Co_Lead_s_Status__c</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <stringValue>Concluded</stringValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>$Record.GPS_Co_Lead_s_Status__c</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <stringValue>Qualified Out</stringValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>$Record.GPS_Co_Lead_s_Status__c</leftValueReference>
+                <operator>IsNull</operator>
+                <rightValue>
+                    <booleanValue>false</booleanValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Update_Co_Lead_Completed_Date_c_Completed_Date</targetReference>
+            </connector>
+            <label>GPS_Co_Lead_s_Status__Edited_and_Meets_Value</label>
+        </rules>
+    </decisions>
+    <decisions>
+        <description>First check is to see if the GPS_Lead_Status__c was edited AND meets the status value criteria.</description>
+        <name>Check_if_GPS_Lead_Status_c_was_Edited</name>
+        <label>Check if GPS_Lead_Status__c was Edited</label>
+        <locationX>182</locationX>
+        <locationY>539</locationY>
+        <defaultConnector>
+            <targetReference>Check_if_GPS_Co_Lead_s_Status_c_was_Edited</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>Not Edited and/or Does Not Meet Value</defaultConnectorLabel>
+        <rules>
+            <name>GPS_Lead_Status_Edited_and_Meets_Value</name>
+            <conditionLogic>(1 AND 2) OR (1 AND 3) AND 4</conditionLogic>
+            <conditions>
+                <leftValueReference>$Record.GPS_Lead_Status__c</leftValueReference>
+                <operator>IsChanged</operator>
+                <rightValue>
+                    <booleanValue>true</booleanValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>$Record.GPS_Lead_Status__c</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <stringValue>Concluded</stringValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>$Record.GPS_Lead_Status__c</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <stringValue>Qualified Out</stringValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>$Record.GPS_Lead_Status__c</leftValueReference>
+                <operator>IsNull</operator>
+                <rightValue>
+                    <booleanValue>false</booleanValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Update_avnio_CompletedDate_c</targetReference>
+            </connector>
+            <label>GPS_Lead_Status__Edited_and_Meets_Value</label>
+        </rules>
+    </decisions>
+    <decisions>
+        <description>Checks if the record is type GPS</description>
+        <name>GPS_Assessment</name>
+        <label>GPS Assessment</label>
+        <locationX>380</locationX>
+        <locationY>431</locationY>
+        <defaultConnectorLabel>Not GPS</defaultConnectorLabel>
+        <rules>
+            <name>Is_GPS</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>$Record.RecordTypeId</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <elementReference>Get_Record_Type_ID.Id</elementReference>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Check_if_GPS_Lead_Status_c_was_Edited</targetReference>
+            </connector>
+            <label>Is GPS</label>
+        </rules>
+    </decisions>
+    <description>1. Record triggered Flow that triggers when the GPS_Co_Lead_s_Status__c, GPS_Co_Lead_2_Status__c, OR GPS_Lead_Status__c is changed.
+04/19/2024: Updated entry criteria to look at any of the three fields. Updated recordtype to NOT be hardcoded and instead queried based on the Developername.</description>
+    <environments>Default</environments>
+    <formulas>
+        <name>fToday</name>
+        <dataType>Date</dataType>
+        <expression>TODAY()</expression>
+    </formulas>
+    <interviewLabel>Status to Completed Date {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>Status to Completed Date</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>AutoLaunchedFlow</processType>
+    <recordLookups>
+        <description>Gets RecordType object record where Developername = GPS_Project</description>
+        <name>Get_Record_Type_ID</name>
+        <label>Get Record Type ID</label>
+        <locationX>380</locationX>
+        <locationY>323</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>GPS_Assessment</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>DeveloperName</field>
+            <operator>EqualTo</operator>
+            <value>
+                <stringValue>GPS_Project</stringValue>
+            </value>
+        </filters>
+        <getFirstRecordOnly>true</getFirstRecordOnly>
+        <object>RecordType</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <recordUpdates>
+        <description>Flow that triggers Co_Lead_Completed_Date__c once Status is marked as completed.</description>
+        <name>Copy_2_of_Update_Co_Lead_Completed_Date_c_Completed_Date</name>
+        <label>Copy 2 of Update Co_Lead_Completed_Date__c Completed Date</label>
+        <locationX>50</locationX>
+        <locationY>1247</locationY>
+        <inputAssignments>
+            <field>GPS_Co_Lead_2_Completed_Date__c</field>
+            <value>
+                <elementReference>fToday</elementReference>
+            </value>
+        </inputAssignments>
+        <inputReference>$Record</inputReference>
+    </recordUpdates>
+    <recordUpdates>
+        <description>Flow that triggers Completed Date once Status is marked as completed.</description>
+        <name>Update_avnio_CompletedDate_c</name>
+        <label>Update avnio_CompletedDate__c</label>
+        <locationX>50</locationX>
+        <locationY>647</locationY>
+        <connector>
+            <targetReference>Check_if_GPS_Co_Lead_s_Status_c_was_Edited</targetReference>
+        </connector>
+        <inputAssignments>
+            <field>avnio__CompletedDate__c</field>
+            <value>
+                <elementReference>fToday</elementReference>
+            </value>
+        </inputAssignments>
+        <inputReference>$Record</inputReference>
+    </recordUpdates>
+    <recordUpdates>
+        <description>Flow that triggers Co_Lead_Completed_Date__c once Status is marked as completed.</description>
+        <name>Update_Co_Lead_Completed_Date_c_Completed_Date</name>
+        <label>Update Co_Lead_Completed_Date__c Completed Date</label>
+        <locationX>50</locationX>
+        <locationY>947</locationY>
+        <connector>
+            <targetReference>Check_if_GPS_Co_Lead_2_Status_c_was_Edited</targetReference>
+        </connector>
+        <inputAssignments>
+            <field>Co_Lead_Completed_Date__c</field>
+            <value>
+                <elementReference>fToday</elementReference>
+            </value>
+        </inputAssignments>
+        <inputReference>$Record</inputReference>
+    </recordUpdates>
+    <start>
+        <locationX>254</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Get_Record_Type_ID</targetReference>
+        </connector>
+        <filterLogic>or</filterLogic>
+        <filters>
+            <field>GPS_Lead_Status__c</field>
+            <operator>IsChanged</operator>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </filters>
+        <filters>
+            <field>GPS_Co_Lead_s_Status__c</field>
+            <operator>IsChanged</operator>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </filters>
+        <filters>
+            <field>GPS_Co_Lead_2_Status__c</field>
+            <operator>IsChanged</operator>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </filters>
+        <object>avnio__Project__c</object>
+        <recordTriggerType>Update</recordTriggerType>
+        <triggerType>RecordAfterSave</triggerType>
+    </start>
+    <status>Active</status>
+</Flow>

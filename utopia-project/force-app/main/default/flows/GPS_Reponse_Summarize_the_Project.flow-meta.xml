@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>62.0</apiVersion>
+    <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
+    <assignments>
+        <description>Adds the last bucket summary to the project summary</description>
+        <name>Add_to_Summary</name>
+        <label>Add to Summary</label>
+        <locationX>352</locationX>
+        <locationY>866</locationY>
+        <assignmentItems>
+            <assignToReference>ProjectBucketSummary</assignToReference>
+            <operator>Add</operator>
+            <value>
+                <elementReference>OneBucketSummary</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>For_Each_Bucket</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
+        <name>Initialize_Variables</name>
+        <label>Initialize Variables</label>
+        <locationX>352</locationX>
+        <locationY>458</locationY>
+        <assignmentItems>
+            <assignToReference>TotalResponses</assignToReference>
+            <operator>AssignCount</operator>
+            <value>
+                <elementReference>Get_Responses_for_Bucket</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>UnansweredResponses</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <numberValue>0.0</numberValue>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>For_Each_Response</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
+        <description>Tally up how many questions have responses</description>
+        <name>Tally_Responses</name>
+        <label>Tally Responses</label>
+        <locationX>440</locationX>
+        <locationY>674</locationY>
+        <assignmentItems>
+            <assignToReference>UnansweredResponses</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>CountUnAnswered</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>For_Each_Response</targetReference>
+        </connector>
+    </assignments>
+    <description>Loops through Buckets and Responses and creates a project summary</description>
+    <environments>Default</environments>
+    <formulas>
+        <description>Returns CountAnswered+1 if the Response has a Knowledge Article, CountAnswered otherwise</description>
+        <name>CountUnAnswered</name>
+        <dataType>Number</dataType>
+        <expression>IF (OR({!For_Each_Response.Response__c} != null,{!For_Each_Response.External_Response__c} != null), {!UnansweredResponses}, {!UnansweredResponses}+ 1 )</expression>
+        <scale>0</scale>
+    </formulas>
+    <formulas>
+        <description>Prints a summary of the state of the bucket</description>
+        <name>OneBucketSummary</name>
+        <dataType>String</dataType>
+        <expression>{!For_Each_Bucket.Name} &amp; &apos; has a total of &apos; &amp; TEXT({!TotalResponses}) &amp; &apos; requirements, with &apos; &amp; TEXT({!UnansweredResponses}) &amp; &apos; unanswered requirements&apos;</expression>
+    </formulas>
+    <interviewLabel>GPS Reponse - Summarize the Project {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>GPS Reponse - Summarize the Project</label>
+    <loops>
+        <name>For_Each_Bucket</name>
+        <label>For Each Bucket</label>
+        <locationX>176</locationX>
+        <locationY>242</locationY>
+        <collectionReference>Get_Buckets</collectionReference>
+        <iterationOrder>Asc</iterationOrder>
+        <nextValueConnector>
+            <targetReference>Get_Responses_for_Bucket</targetReference>
+        </nextValueConnector>
+    </loops>
+    <loops>
+        <name>For_Each_Response</name>
+        <label>For Each Response</label>
+        <locationX>352</locationX>
+        <locationY>566</locationY>
+        <collectionReference>Get_Responses_for_Bucket</collectionReference>
+        <iterationOrder>Asc</iterationOrder>
+        <nextValueConnector>
+            <targetReference>Tally_Responses</targetReference>
+        </nextValueConnector>
+        <noMoreValuesConnector>
+            <targetReference>Add_to_Summary</targetReference>
+        </noMoreValuesConnector>
+    </loops>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>Flow</processType>
+    <recordLookups>
+        <description>Get all the response buckets associated with this project</description>
+        <name>Get_Buckets</name>
+        <label>Get Buckets</label>
+        <locationX>176</locationX>
+        <locationY>134</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>For_Each_Bucket</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>GPS_Project__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>ProjectId</elementReference>
+            </value>
+        </filters>
+        <getFirstRecordOnly>false</getFirstRecordOnly>
+        <object>Response_Bucket__c</object>
+        <sortField>Name</sortField>
+        <sortOrder>Asc</sortOrder>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <recordLookups>
+        <name>Get_Responses_for_Bucket</name>
+        <label>Get Responses for Bucket</label>
+        <locationX>352</locationX>
+        <locationY>350</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Initialize_Variables</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Response_Bucket__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>For_Each_Bucket.Id</elementReference>
+            </value>
+        </filters>
+        <getFirstRecordOnly>false</getFirstRecordOnly>
+        <object>GPS_Response__c</object>
+        <sortField>Id</sortField>
+        <sortOrder>Asc</sortOrder>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <start>
+        <locationX>50</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Get_Buckets</targetReference>
+        </connector>
+    </start>
+    <status>Active</status>
+    <variables>
+        <name>ProjectBucketSummary</name>
+        <dataType>String</dataType>
+        <isCollection>true</isCollection>
+        <isInput>false</isInput>
+        <isOutput>true</isOutput>
+    </variables>
+    <variables>
+        <description>The Project record Id of the project</description>
+        <name>ProjectId</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+    <variables>
+        <description>Total count of response objects in a bucket</description>
+        <name>TotalResponses</name>
+        <dataType>Number</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <scale>0</scale>
+        <value>
+            <numberValue>0.0</numberValue>
+        </value>
+    </variables>
+    <variables>
+        <name>UnansweredResponses</name>
+        <dataType>Number</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <scale>0</scale>
+        <value>
+            <numberValue>0.0</numberValue>
+        </value>
+    </variables>
+</Flow>

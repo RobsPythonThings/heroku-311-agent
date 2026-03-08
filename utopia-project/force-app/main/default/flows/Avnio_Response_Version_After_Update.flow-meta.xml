@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>60.0</apiVersion>
+    <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
+    <environments>Default</environments>
+    <interviewLabel>Avnio-Response versi {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>Avnio-Response Version-After Update</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>FREE_FORM_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>AutoLaunchedFlow</processType>
+    <recordUpdates>
+        <name>Update_Review_Status</name>
+        <label>Update Review Status</label>
+        <locationX>434</locationX>
+        <locationY>365</locationY>
+        <inputAssignments>
+            <field>avnio__ReviewStatus__c</field>
+            <value>
+                <stringValue>Review Required</stringValue>
+            </value>
+        </inputAssignments>
+        <inputReference>$Record</inputReference>
+    </recordUpdates>
+    <start>
+        <locationX>445</locationX>
+        <locationY>48</locationY>
+        <connector>
+            <targetReference>Update_Review_Status</targetReference>
+        </connector>
+        <filterLogic>(1 OR 2) AND (3 OR 4) AND 5 AND 6</filterLogic>
+        <filters>
+            <field>avnio__Question__c</field>
+            <operator>IsChanged</operator>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </filters>
+        <filters>
+            <field>avnio__Answer__c</field>
+            <operator>IsChanged</operator>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </filters>
+        <filters>
+            <field>avnio__ReviewStatus__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <stringValue>Not Required</stringValue>
+            </value>
+        </filters>
+        <filters>
+            <field>avnio__ReviewStatus__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <stringValue>Not Submitted</stringValue>
+            </value>
+        </filters>
+        <filters>
+            <field>Review_Status_Response__c</field>
+            <operator>NotEqualTo</operator>
+            <value>
+                <stringValue>Submitted</stringValue>
+            </value>
+        </filters>
+        <filters>
+            <field>Review_Status_Response__c</field>
+            <operator>NotEqualTo</operator>
+            <value>
+                <stringValue>In Progress</stringValue>
+            </value>
+        </filters>
+        <object>avnio__ResponseVersion__c</object>
+        <recordTriggerType>Update</recordTriggerType>
+        <triggerType>RecordBeforeSave</triggerType>
+    </start>
+    <status>Draft</status>
+</Flow>

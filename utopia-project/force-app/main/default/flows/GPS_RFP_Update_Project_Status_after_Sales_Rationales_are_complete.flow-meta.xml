@@ -1,0 +1,483 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>58.0</apiVersion>
+    <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
+    <assignments>
+        <name>Assign_Values_to_Project</name>
+        <label>Assign Values to Project</label>
+        <locationX>50</locationX>
+        <locationY>431</locationY>
+        <assignmentItems>
+            <assignToReference>$Record.GPS_Project_Status__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <stringValue>Sales Rationale In-Progress</stringValue>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Justifications_Match</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
+        <name>Assign_Values_to_Project_0</name>
+        <label>Assign Values to Project</label>
+        <locationX>50</locationX>
+        <locationY>731</locationY>
+        <assignmentItems>
+            <assignToReference>$Record.GPS_Project_Status__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <stringValue>Sales Rationale Complete</stringValue>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>$Record.Sales_Rationale_Complete__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Voting_Begun</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
+        <name>Assign_Values_to_Project_0_0</name>
+        <label>Assign Values to Project</label>
+        <locationX>50</locationX>
+        <locationY>1031</locationY>
+        <assignmentItems>
+            <assignToReference>$Record.GPS_Project_Status__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <stringValue>Committee Vote In-Progress</stringValue>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Vote_Complete</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
+        <name>Assign_Values_to_Project_0_0_0</name>
+        <label>Assign Values to Project</label>
+        <locationX>50</locationX>
+        <locationY>1931</locationY>
+        <assignmentItems>
+            <assignToReference>$Record.GPS_Project_Status__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <stringValue>Committee Vote Complete</stringValue>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>$Record.Committee_Approval_Status__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>committeeVoteFormula</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Update_Project</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
+        <name>Count_No_Votes</name>
+        <label>Count No Votes</label>
+        <locationX>402</locationX>
+        <locationY>1655</locationY>
+        <assignmentItems>
+            <assignToReference>noVoteCount</assignToReference>
+            <operator>Add</operator>
+            <value>
+                <numberValue>1.0</numberValue>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Loop_Committee_Votes</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
+        <name>Count_Yes_Votes</name>
+        <label>Count Yes Votes</label>
+        <locationX>138</locationX>
+        <locationY>1655</locationY>
+        <assignmentItems>
+            <assignToReference>yesVoteCount</assignToReference>
+            <operator>Add</operator>
+            <value>
+                <numberValue>1.0</numberValue>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Loop_Committee_Votes</targetReference>
+        </connector>
+    </assignments>
+    <constants>
+        <name>GPSUpdateProjectStatusValue1</name>
+        <dataType>Number</dataType>
+        <value>
+            <numberValue>0.0</numberValue>
+        </value>
+    </constants>
+    <decisions>
+        <name>Committee_Vote_Status</name>
+        <label>Committee Vote Status</label>
+        <locationX>402</locationX>
+        <locationY>1547</locationY>
+        <defaultConnector>
+            <targetReference>Loop_Committee_Votes</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>Default Outcome</defaultConnectorLabel>
+        <rules>
+            <name>Yes_Vote</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>Loop_Committee_Votes.Vote__c</leftValueReference>
+                <operator>Contains</operator>
+                <rightValue>
+                    <stringValue>Yes</stringValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Count_Yes_Votes</targetReference>
+            </connector>
+            <label>Yes Vote</label>
+        </rules>
+        <rules>
+            <name>No_Vote</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>Loop_Committee_Votes.Vote__c</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <stringValue>No - No Bid</stringValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Count_No_Votes</targetReference>
+            </connector>
+            <label>No Vote</label>
+        </rules>
+    </decisions>
+    <decisions>
+        <name>Justifications_Match</name>
+        <label>Justifications Match?</label>
+        <locationX>182</locationX>
+        <locationY>623</locationY>
+        <defaultConnector>
+            <targetReference>Voting_Begun</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>Default Outcome</defaultConnectorLabel>
+        <rules>
+            <name>Yes</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>$Record.Override_Number_Justifications_Needed__c</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <elementReference>$Record.Number_Justifications_Entered__c</elementReference>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>$Record.Override_Number_Justifications_Needed__c</leftValueReference>
+                <operator>NotEqualTo</operator>
+                <rightValue>
+                    <numberValue>0.0</numberValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>$Record.GPS_Project_Status__c</leftValueReference>
+                <operator>NotEqualTo</operator>
+                <rightValue>
+                    <stringValue>Bid Assigned</stringValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>$Record.GPS_Project_Status__c</leftValueReference>
+                <operator>NotEqualTo</operator>
+                <rightValue>
+                    <stringValue>Bid Ready to Assign</stringValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Assign_Values_to_Project_0</targetReference>
+            </connector>
+            <doesRequireRecordChangedToMeetCriteria>true</doesRequireRecordChangedToMeetCriteria>
+            <label>Yes</label>
+        </rules>
+    </decisions>
+    <decisions>
+        <name>Sales_Rationale_In_Progress</name>
+        <label>Sales Rationale In-Progress</label>
+        <locationX>182</locationX>
+        <locationY>323</locationY>
+        <defaultConnector>
+            <targetReference>Justifications_Match</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>Default Outcome</defaultConnectorLabel>
+        <rules>
+            <name>Justifications_greater_than_0</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>$Record.Number_Justifications_Entered__c</leftValueReference>
+                <operator>GreaterThan</operator>
+                <rightValue>
+                    <numberValue>0.0</numberValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>$Record.GPS_Project_Status__c</leftValueReference>
+                <operator>NotEqualTo</operator>
+                <rightValue>
+                    <stringValue>Bid Assigned</stringValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>$Record.GPS_Project_Status__c</leftValueReference>
+                <operator>NotEqualTo</operator>
+                <rightValue>
+                    <stringValue>Bid Ready to Assign</stringValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Assign_Values_to_Project</targetReference>
+            </connector>
+            <doesRequireRecordChangedToMeetCriteria>true</doesRequireRecordChangedToMeetCriteria>
+            <label>Justifications greater than 0?</label>
+        </rules>
+    </decisions>
+    <decisions>
+        <name>Vote_Complete</name>
+        <label>Vote Complete?</label>
+        <locationX>182</locationX>
+        <locationY>1223</locationY>
+        <defaultConnector>
+            <targetReference>Update_Project</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>Default Outcome</defaultConnectorLabel>
+        <rules>
+            <name>Yes3</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>$Record.Override_Request_Num_Votes__c</leftValueReference>
+                <operator>GreaterThan</operator>
+                <rightValue>
+                    <numberValue>0.0</numberValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>allCommitteeVotesEntered</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <booleanValue>true</booleanValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>$Record.GPS_Project_Status__c</leftValueReference>
+                <operator>NotEqualTo</operator>
+                <rightValue>
+                    <stringValue>Bid Assigned</stringValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>$Record.GPS_Project_Status__c</leftValueReference>
+                <operator>NotEqualTo</operator>
+                <rightValue>
+                    <stringValue>Bid Ready to Assign</stringValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Get_all_Committee_Vote_Records</targetReference>
+            </connector>
+            <doesRequireRecordChangedToMeetCriteria>true</doesRequireRecordChangedToMeetCriteria>
+            <label>Yes</label>
+        </rules>
+    </decisions>
+    <decisions>
+        <name>Voting_Begun</name>
+        <label>Voting Begun?</label>
+        <locationX>182</locationX>
+        <locationY>923</locationY>
+        <defaultConnector>
+            <targetReference>Vote_Complete</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>Default Outcome</defaultConnectorLabel>
+        <rules>
+            <name>Yes2</name>
+            <conditionLogic>(1 OR 2) AND 3 AND 4</conditionLogic>
+            <conditions>
+                <leftValueReference>$Record.Override_Request_Total_Vote_Yes__c</leftValueReference>
+                <operator>GreaterThanOrEqualTo</operator>
+                <rightValue>
+                    <numberValue>1.0</numberValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>$Record.No_Vote_total__c</leftValueReference>
+                <operator>GreaterThanOrEqualTo</operator>
+                <rightValue>
+                    <numberValue>1.0</numberValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>$Record.GPS_Project_Status__c</leftValueReference>
+                <operator>NotEqualTo</operator>
+                <rightValue>
+                    <stringValue>Bid Assigned</stringValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>$Record.GPS_Project_Status__c</leftValueReference>
+                <operator>NotEqualTo</operator>
+                <rightValue>
+                    <stringValue>Bid Ready to Assign</stringValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Assign_Values_to_Project_0_0</targetReference>
+            </connector>
+            <doesRequireRecordChangedToMeetCriteria>true</doesRequireRecordChangedToMeetCriteria>
+            <label>Yes</label>
+        </rules>
+    </decisions>
+    <description>Updated CommitteeVoteFormula to 51 as a whole number --Updated Formula to reference Percent Yes Votes -- GPS Update Project Status after Sales Rationales are complete(Update to 50%)</description>
+    <environments>Default</environments>
+    <formulas>
+        <description>Complete the votes after all votes are completed not before that</description>
+        <name>allCommitteeVotesEntered</name>
+        <dataType>Boolean</dataType>
+        <expression>(
+  BLANKVALUE({!$Record.Override_Request_Total_Vote_Yes__c}, 0) +
+  BLANKVALUE({!$Record.No_Vote_total__c}, 0)
+)
+= BLANKVALUE({!$Record.Override_Request_Num_Votes__c}, 0)</expression>
+    </formulas>
+    <formulas>
+        <name>committeeVote51Percent</name>
+        <dataType>Boolean</dataType>
+        <expression>IF(
+(({!$Record.Override_Request_Total_Vote_Yes__c} + {!$Record.No_Vote_total__c}) / {!$Record.Override_Request_Num_Votes__c}) &gt; 0.50, TRUE,
+FALSE
+)</expression>
+    </formulas>
+    <formulas>
+        <name>committeeVote75Percent</name>
+        <dataType>Boolean</dataType>
+        <expression>IF(
+(({!$Record.Override_Request_Total_Vote_Yes__c} + {!$Record.No_Vote_total__c}) / {!$Record.Override_Request_Num_Votes__c}) &gt;= 0.75, TRUE,
+FALSE
+)</expression>
+    </formulas>
+    <formulas>
+        <name>committeeVoteFormula</name>
+        <dataType>String</dataType>
+        <expression>IF(
+{!$Record.Override_Request_Percent_Vote_Yes__c} &gt; 51,
+  &quot;Committee Approved&quot;,
+  &quot;Committee Denied&quot;
+)</expression>
+    </formulas>
+    <formulas>
+        <name>totalCommitteeVotesEntered</name>
+        <dataType>Number</dataType>
+        <expression>{!$Record.Override_Request_Total_Vote_Yes__c} + {!$Record.No_Vote_total__c}</expression>
+        <scale>0</scale>
+    </formulas>
+    <interviewLabel>GPS RFP Update Project Status after Sales Rationales are complete {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>GPS RFP Update Project Status - Sales Rationale Process</label>
+    <loops>
+        <name>Loop_Committee_Votes</name>
+        <label>Loop Committee Votes</label>
+        <locationX>50</locationX>
+        <locationY>1439</locationY>
+        <collectionReference>Get_all_Committee_Vote_Records</collectionReference>
+        <iterationOrder>Asc</iterationOrder>
+        <nextValueConnector>
+            <targetReference>Committee_Vote_Status</targetReference>
+        </nextValueConnector>
+        <noMoreValuesConnector>
+            <targetReference>Assign_Values_to_Project_0_0_0</targetReference>
+        </noMoreValuesConnector>
+    </loops>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>AutoLaunchedFlow</processType>
+    <recordLookups>
+        <name>Get_all_Committee_Vote_Records</name>
+        <label>Get all Committee Vote Records</label>
+        <locationX>50</locationX>
+        <locationY>1331</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Loop_Committee_Votes</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>GPS_Project__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>$Record.Id</elementReference>
+            </value>
+        </filters>
+        <filters>
+            <field>Team_Category__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <stringValue>Executive Committee</stringValue>
+            </value>
+        </filters>
+        <getFirstRecordOnly>false</getFirstRecordOnly>
+        <object>Override_Requests__c</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <recordUpdates>
+        <name>Update_Project</name>
+        <label>Update Project</label>
+        <locationX>182</locationX>
+        <locationY>2123</locationY>
+        <inputReference>$Record</inputReference>
+    </recordUpdates>
+    <start>
+        <locationX>56</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Sales_Rationale_In_Progress</targetReference>
+        </connector>
+        <object>GPS_Project__c</object>
+        <recordTriggerType>Update</recordTriggerType>
+        <triggerType>RecordAfterSave</triggerType>
+    </start>
+    <status>Active</status>
+    <variables>
+        <name>noVoteCount</name>
+        <dataType>Number</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <scale>0</scale>
+    </variables>
+    <variables>
+        <name>yesVoteCount</name>
+        <dataType>Number</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <scale>0</scale>
+    </variables>
+</Flow>

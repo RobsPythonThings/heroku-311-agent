@@ -1,0 +1,14 @@
+{
+  "required" : [ "questions" ],
+  "unevaluatedProperties" : false,
+  "properties" : {
+    "questions" : {
+      "title" : "questions",
+      "description" : "This is the text the question that the user has asked in the end-user conversation",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    }
+  },
+  "lightning:type" : "lightning__objectType"
+}

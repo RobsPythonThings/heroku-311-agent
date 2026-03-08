@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GenAiPromptTemplate xmlns="http://soap.sforce.com/2006/04/metadata">
+    <activeVersionIdentifier>fZJqCRNf80jiZQFtLf0cSYRO0U0FvbEQxPiezEC3ZXg=_4</activeVersionIdentifier>
+    <description>Given some markdown text, ask an LLM to return it as HTML</description>
+    <developerName>ConvertMarkdownToHTML</developerName>
+    <masterLabel>ConvertMarkdownToHTML</masterLabel>
+    <templateVersions>
+        <content>Convert the Markdown to HTML in the following text:
+{!$Input:Markdown}
+</content>
+        <inputs>
+            <apiName>Markdown</apiName>
+            <definition>primitive://String</definition>
+            <masterLabel>Markdown</masterLabel>
+            <referenceName>Input:Markdown</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultOpenAIGPT4</primaryModel>
+        <status>Published</status>
+        <versionIdentifier>fZJqCRNf80jiZQFtLf0cSYRO0U0FvbEQxPiezEC3ZXg=_1</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>Convert the Markdown to HTML in the following text:
+{!$Input:Markdown}
+</content>
+        <inputs>
+            <apiName>Markdown</apiName>
+            <definition>primitive://String</definition>
+            <masterLabel>Markdown</masterLabel>
+            <referenceName>Input:Markdown</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultAzureOpenAIGPT35Turbo_16k</primaryModel>
+        <status>Draft</status>
+        <versionIdentifier>fZJqCRNf80jiZQFtLf0cSYRO0U0FvbEQxPiezEC3ZXg=_2</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>Convert the Markdown to HTML in the following text:
+{!$Input:Markdown}
+</content>
+        <inputs>
+            <apiName>Markdown</apiName>
+            <definition>primitive://String</definition>
+            <masterLabel>Markdown</masterLabel>
+            <referenceName>Input:Markdown</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultAzureOpenAIGPT35Turbo_16k</primaryModel>
+        <status>Published</status>
+        <versionIdentifier>fZJqCRNf80jiZQFtLf0cSYRO0U0FvbEQxPiezEC3ZXg=_3</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>Convert the Markdown to HTML in the following text:
+{!$Input:Markdown}
+</content>
+        <inputs>
+            <apiName>Markdown</apiName>
+            <definition>primitive://String</definition>
+            <masterLabel>Markdown</masterLabel>
+            <referenceName>Input:Markdown</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultVertexAIGemini20FlashLite001</primaryModel>
+        <status>Published</status>
+        <versionIdentifier>fZJqCRNf80jiZQFtLf0cSYRO0U0FvbEQxPiezEC3ZXg=_4</versionIdentifier>
+    </templateVersions>
+    <type>einstein_gpt__flex</type>
+    <visibility>Global</visibility>
+</GenAiPromptTemplate>

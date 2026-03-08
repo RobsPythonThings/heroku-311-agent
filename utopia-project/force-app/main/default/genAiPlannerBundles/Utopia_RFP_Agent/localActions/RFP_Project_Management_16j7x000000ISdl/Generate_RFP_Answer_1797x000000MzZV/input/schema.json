@@ -1,0 +1,21 @@
+{
+  "required" : [ "responseId" ],
+  "unevaluatedProperties" : false,
+  "properties" : {
+    "framework" : {
+      "title" : "Framework",
+      "description" : "Optional compliance framework override. Usually not needed — the action resolves framework from the parent GPS_Project__c automatically.",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "responseId" : {
+      "title" : "Response Record ID",
+      "description" : "The GPS_ResponseNew__c record ID for the question to answer.",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : true
+    }
+  },
+  "lightning:type" : "lightning__objectType"
+}

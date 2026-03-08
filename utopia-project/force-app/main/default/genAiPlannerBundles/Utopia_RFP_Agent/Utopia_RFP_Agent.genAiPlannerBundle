@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GenAiPlannerBundle xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <description>AI-powered RFP response agent for Salesforce GPS (Government &amp; Public Sector). Triages government RFP questions using a 64-rule deterministic flag engine, routes content retrieval based on deal context (product, country, framework), and generates grounded answers from triple-source retrieval across Knowledge articles, HECVAT assessments, and compliance whitepapers. Operates on GPS_Project__c records containing 200-500 security and compliance requirements extracted from uploaded RFP documents.</description>
+    <localActionLinks>
+        <genAiFunctionName>AnswerQuestionsWithKnowledge_16j7x000000ISdl</genAiFunctionName>
+    </localActionLinks>
+    <localTopicLinks>
+        <genAiPluginName>RFP_Project_Management_16j7x000000ISdl</genAiPluginName>
+    </localTopicLinks>
+    <localTopics>
+        <fullName>RFP_Project_Management_16j7x000000ISdl</fullName>
+        <aiPluginUtterances>
+            <developerName>utterance_1</developerName>
+            <language xsi:nil="true"/>
+            <masterLabel>Utterance 1</masterLabel>
+            <utterance>Triage this RFP</utterance>
+        </aiPluginUtterances>
+        <aiPluginUtterances>
+            <developerName>utterance_2</developerName>
+            <language xsi:nil="true"/>
+            <masterLabel>Utterance 2</masterLabel>
+            <utterance>Flag the questions on this project</utterance>
+        </aiPluginUtterances>
+        <aiPluginUtterances>
+            <developerName>utterance_3</developerName>
+            <language xsi:nil="true"/>
+            <masterLabel>Utterance 3</masterLabel>
+            <utterance>Answer the yellow questions</utterance>
+        </aiPluginUtterances>
+        <aiPluginUtterances>
+            <developerName>utterance_4</developerName>
+            <language xsi:nil="true"/>
+            <masterLabel>Utterance 4</masterLabel>
+            <utterance>Generate an answer for this requirement</utterance>
+        </aiPluginUtterances>
+        <aiPluginUtterances>
+            <developerName>utterance_5</developerName>
+            <language xsi:nil="true"/>
+            <masterLabel>Utterance 5</masterLabel>
+            <utterance>How many red flags are on this project?</utterance>
+        </aiPluginUtterances>
+        <aiPluginUtterances>
+            <developerName>utterance_6</developerName>
+            <language xsi:nil="true"/>
+            <masterLabel>Utterance 6</masterLabel>
+            <utterance>Analyze this RFP for compliance risks</utterance>
+        </aiPluginUtterances>
+        <canEscalate>false</canEscalate>
+        <description>Use this topic when the user asks about triaging an 
+RFP project, flagging RFP requirements, generating answers for RFP questions, or anything related to GPS_Project__c records and their associated GPS_ResponseNew__c requirements.</description>
+        <developerName>RFP_Project_Management_16j7x000000ISdl</developerName>
+        <genAiPluginInstructions>
+            <description>You help bid managers and SEs triage and answer government RFP questions.
+
+IMPORTANT: When users refer to projects by name or number (like &quot;P-0014&quot;, &quot;0014&quot;, or &quot;project 14&quot;), ALWAYS pass that value as the projectName parameter, NOT projectId. Only use projectId if the user provides a full 18-character Salesforce record ID.
+
+ACTION 1: AIRFX_AgentAction (Triage RFP Project)
+Use when the user says &quot;triage this RFP&quot;, &quot;flag the questions&quot;, or &quot;analyze this project&quot;.
+Input: projectName (e.g. &quot;P-0014&quot;) OR projectId (full Salesforce ID). Optional framework (HECVAT, FedRAMP, etc.)
+Returns: flag counts (Red/Yellow/Green), active content lanes, routing explanation.
+After triaging, report the flag breakdown and ask if they want answers generated for Yellow questions.
+
+ACTION 2: AIRFX_GenerateAnswer (Generate RFP Answer)
+Use when the user says &quot;answer this question&quot; or &quot;generate an answer&quot; for a SINGLE specific question.
+Input: responseId (GPS_ResponseNew__c record ID)
+Returns: generated answer, status, sources used.
+After generating, report which sources were cited.
+
+ACTION 3: AIRFX_GenerateBatchAnswers (Answer All Yellow Questions)
+Use when the user says &quot;answer all the yellow questions&quot;, &quot;generate all answers&quot;, or &quot;answer everything&quot;.
+Input: projectName (e.g. &quot;P-0014&quot;) OR projectId (full Salesforce ID)
+Returns: count of questions queued, estimated time, job ID.
+This runs asynchronously — answers are written to records in the background. Report the count and estimated time.
+
+ACTION 4: AIRFX_CheckAnswerProgress (Check Answer Progress)
+Use when the user says &quot;how&apos;s it going?&quot;, &quot;check progress&quot;, &quot;how many are done?&quot;, or &quot;status update&quot;.
+Input: projectName (e.g. &quot;P-0014&quot;) OR projectId (full Salesforce ID)
+Returns: answered count, remaining count, estimated time left.
+
+RULES:
+- Always triage before answering. If not yet triaged, run AIRFX_AgentAction first.
+- Only Yellow flags need AI answers. Red and Green are already handled by the flag engine.
+- For bulk requests, use ACTION 3 (batch). For a single question, use ACTION 2.
+- Be specific in summaries: say the counts and name the flags that fired.
+- Include source attribution when reporting generated answers.
+- NEVER try to put a project name into the projectId field. Use projectName instead.</description>
+            <developerName>instructions_0_1772154909084</developerName>
+            <language>en_US</language>
+            <masterLabel>instructions_0_1772154909084</masterLabel>
+            <sortOrder>0</sortOrder>
+        </genAiPluginInstructions>
+        <genAiPluginInstructions>
+            <description>FORMATTING:
+- After triaging, present results in a clean, readable format like this:
+
+  📊 **Project P-0014** (Tableau - Cloud / FI) — 66 questions triaged
+  🔴 1 Red: &quot;How is your solution deployed; on-premise, cloud based, etc.?&quot; → On-premises is limited to MuleSoft and Tableau only.
+  🟢 1 Green: &quot;Offer secure, role-based access control...&quot; → Auto-verified.
+  🟡 64 Yellow: Ready for AI answer generation.
+  📡 Routing: Knowledge Base + HECVAT Tableau
+  
+  Want me to generate answers for the 64 Yellow questions?
+
+- Always include project name, product, and country.
+- Show Red and Green flag details with question text and reason.
+- Do NOT show raw field values, record IDs, or routing internals to the user.
+- Keep responses conversational and scannable.
+- When the user asks about a specific flag, give the full question text and explanation in plain language.</description>
+            <developerName>instructions_0_1772238114016</developerName>
+            <language>en_US</language>
+            <masterLabel>instructions_0_1772238114016</masterLabel>
+            <sortOrder>1</sortOrder>
+        </genAiPluginInstructions>
+        <language>en_US</language>
+        <localActionLinks>
+            <functionName>Utopia_Triage_and_Route_Project_1797x000000MzZV</functionName>
+        </localActionLinks>
+        <localActionLinks>
+            <functionName>Generate_RFP_Answer_1797x000000MzZV</functionName>
+        </localActionLinks>
+        <localActionLinks>
+            <functionName>Utopia_Answer_All_Yellow_Questions_1797x000000MzZV</functionName>
+        </localActionLinks>
+        <localActionLinks>
+            <functionName>Utopia_Check_Answer_Progress_1797x000000MzZV</functionName>
+        </localActionLinks>
+        <localActions>
+            <fullName>Utopia_Answer_All_Yellow_Questions_1797x000000MzZV</fullName>
+            <description>Use when user says &quot;answer all the yellow questions&quot;, &quot;generate all answers&quot;, or &quot;answer everything on this project&quot;. Takes a GPS_Project__c ID, queries all Yellow-flagged questions, and generates grounded answers asynchronously. Only use AFTER the project has been triaged with AIRFX_AgentAction. Returns immediately with count of questions queued and estimated completion time.</description>
+            <developerName>Utopia_Answer_All_Yellow_Questions_1797x000000MzZV</developerName>
+            <invocationTarget>AIRFX_GenerateBatchAnswers</invocationTarget>
+            <invocationTargetType>apex</invocationTargetType>
+            <isConfirmationRequired>false</isConfirmationRequired>
+            <isIncludeInProgressIndicator>true</isIncludeInProgressIndicator>
+            <localDeveloperName>Utopia_Answer_All_Yellow_Questions</localDeveloperName>
+            <masterLabel>Utopia: Answer All Yellow Questions</masterLabel>
+            <progressIndicatorMessage>Queuing answer generation for all Yellow-flagged questions...</progressIndicatorMessage>
+        </localActions>
+        <localActions>
+            <fullName>Utopia_Check_Answer_Progress_1797x000000MzZV</fullName>
+            <description>Use when user asks about progress, status, &quot;how&apos;s it going?&quot;, &quot;how many are done?&quot;, or &quot;are the answers ready?&quot;. Read-only check with no side effects.</description>
+            <developerName>Utopia_Check_Answer_Progress_1797x000000MzZV</developerName>
+            <invocationTarget>AIRFX_CheckAnswerProgress</invocationTarget>
+            <invocationTargetType>apex</invocationTargetType>
+            <isConfirmationRequired>false</isConfirmationRequired>
+            <isIncludeInProgressIndicator>true</isIncludeInProgressIndicator>
+            <localDeveloperName>Utopia_Check_Answer_Progress</localDeveloperName>
+            <masterLabel>Utopia: Check Answer Progress</masterLabel>
+            <progressIndicatorMessage>Checking answer generation progress...</progressIndicatorMessage>
+        </localActions>
+        <localActions>
+            <fullName>Utopia_Triage_and_Route_Project_1797x000000MzZV</fullName>
+            <description>Use this action when the user asks to triage, flag, or analyze an RFP project. It runs 64 deterministic rules on every requirement, flags them Red/Yellow/Green, and resolves which content lanes to activate based on deal context. Always run this before generating answers.</description>
+            <developerName>Utopia_Triage_and_Route_Project_1797x000000MzZV</developerName>
+            <invocationTarget>AIRFX_AgentAction</invocationTarget>
+            <invocationTargetType>apex</invocationTargetType>
+            <isConfirmationRequired>false</isConfirmationRequired>
+            <isIncludeInProgressIndicator>true</isIncludeInProgressIndicator>
+            <localDeveloperName>Utopia_Triage_and_Route_Project</localDeveloperName>
+            <masterLabel>Utopia: Triage and Route Project</masterLabel>
+            <progressIndicatorMessage>Triaging RFP requirements and resolving content routing...</progressIndicatorMessage>
+        </localActions>
+        <localActions>
+            <fullName>Generate_RFP_Answer_1797x000000MzZV</fullName>
+            <description>Use this action to generate a grounded AI answer for a single RFP requirement. Takes a GPS_ResponseNew__c record ID, resolves deal context automatically, calls triple-source retrieval, and writes the answer back to the record. Only use on Yellow-flagged requirements.</description>
+            <developerName>Generate_RFP_Answer_1797x000000MzZV</developerName>
+            <invocationTarget>AIRFX_GenerateAnswer</invocationTarget>
+            <invocationTargetType>apex</invocationTargetType>
+            <isConfirmationRequired>false</isConfirmationRequired>
+            <isIncludeInProgressIndicator>true</isIncludeInProgressIndicator>
+            <localDeveloperName>Generate_RFP_Answer</localDeveloperName>
+            <masterLabel>Generate RFP Answer</masterLabel>
+            <progressIndicatorMessage>Generating grounded answer from Knowledge, HECVAT, and compliance sources...</progressIndicatorMessage>
+        </localActions>
+        <localDeveloperName>RFP_Project_Management</localDeveloperName>
+        <masterLabel>RFP Project Management</masterLabel>
+        <pluginType>Topic</pluginType>
+        <scope>Your job is only to triage RFP projects and generate grounded answers for RFP requirements. You work with GPS_Project__c records and their child GPS_ResponseNew__c requirement records. You do not handle general Salesforce administration, report building, or tasks outside the RFP response workflow.</scope>
+    </localTopics>
+    <masterLabel>Utopia RFP Agent</masterLabel>
+    <plannerActions>
+        <fullName>AnswerQuestionsWithKnowledge_16j7x000000ISdl</fullName>
+        <description>Answers questions about company policies and procedures, troubleshooting steps, or product information. For example: “What is your return policy?” “How do I fix an issue?” or “What features does a product have?”</description>
+        <developerName>AnswerQuestionsWithKnowledge_16j7x000000ISdl</developerName>
+        <invocationTarget>streamKnowledgeSearch</invocationTarget>
+        <invocationTargetType>standardInvocableAction</invocationTargetType>
+        <isConfirmationRequired>false</isConfirmationRequired>
+        <isIncludeInProgressIndicator>true</isIncludeInProgressIndicator>
+        <localDeveloperName>AnswerQuestionsWithKnowledge</localDeveloperName>
+        <masterLabel>Answer Questions with Knowledge</masterLabel>
+        <progressIndicatorMessage>Getting answers</progressIndicatorMessage>
+        <source>EmployeeCopilot__AnswerQuestionsWithKnowledge</source>
+    </plannerActions>
+    <plannerSurfaces>
+        <adaptiveResponseAllowed>true</adaptiveResponseAllowed>
+        <callRecordingAllowed>false</callRecordingAllowed>
+        <surface>SurfaceAction__Messaging</surface>
+        <surfaceType>Messaging</surfaceType>
+    </plannerSurfaces>
+    <plannerType>AiCopilot__ReAct</plannerType>
+</GenAiPlannerBundle>

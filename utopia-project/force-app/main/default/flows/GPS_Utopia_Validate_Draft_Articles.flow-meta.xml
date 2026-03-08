@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>64.0</apiVersion>
+    <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
+    <description>This record-triggered flow runs when a Knowledge article is published. It finds associated Knowledge Review records linked to the article&apos;s draft version and updates their status to Validated.</description>
+    <environments>Default</environments>
+    <interviewLabel>GPS Utopia Validate Draft Articles {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>GPS Utopia Validate Draft Articles</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>AutoLaunchedFlow</processType>
+    <recordUpdates>
+        <description>Validate Knowledge review</description>
+        <name>Update_Knowledge_Review</name>
+        <label>Update Knowledge Review</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <inputAssignments>
+            <field>Validation_Status__c</field>
+            <value>
+                <stringValue>Validated</stringValue>
+            </value>
+        </inputAssignments>
+        <inputReference>$Record.Knowledge_Reviews__r</inputReference>
+    </recordUpdates>
+    <start>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Update_Knowledge_Review</targetReference>
+        </connector>
+        <doesRequireRecordChangedToMeetCriteria>true</doesRequireRecordChangedToMeetCriteria>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>ValidationStatus</field>
+            <operator>EqualTo</operator>
+            <value>
+                <stringValue>Validated</stringValue>
+            </value>
+        </filters>
+        <object>Knowledge__kav</object>
+        <recordTriggerType>CreateAndUpdate</recordTriggerType>
+        <scheduledPaths>
+            <name>scheduled</name>
+            <label>scheduled</label>
+            <offsetNumber>1</offsetNumber>
+            <offsetUnit>Minutes</offsetUnit>
+            <recordField>LastModifiedDate</recordField>
+            <timeSource>RecordField</timeSource>
+        </scheduledPaths>
+        <triggerType>RecordAfterSave</triggerType>
+    </start>
+    <status>Obsolete</status>
+</Flow>

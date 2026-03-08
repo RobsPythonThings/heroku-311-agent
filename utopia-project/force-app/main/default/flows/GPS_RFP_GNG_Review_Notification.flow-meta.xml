@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <actionCalls>
+        <name>GPS_GNG_Review_Alert</name>
+        <label>GNG Review Alert</label>
+        <locationX>176</locationX>
+        <locationY>323</locationY>
+        <actionName>emailSimple</actionName>
+        <actionType>emailSimple</actionType>
+        <flowTransactionModel>CurrentTransaction</flowTransactionModel>
+        <inputParameters>
+            <name>emailAddresses</name>
+            <value>
+                <stringValue>gps-sandbox-test-tria-aaaaksj7quhhf6di37nlg4xi4m@salesforce.org.slack.com</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>emailSubject</name>
+            <value>
+                <stringValue>GNG Ready for Review</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>emailBody</name>
+            <value>
+                <elementReference>GPS_Body</elementReference>
+            </value>
+        </inputParameters>
+        <nameSegment>emailSimple</nameSegment>
+        <offset>0</offset>
+    </actionCalls>
+    <apiVersion>59.0</apiVersion>
+    <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
+    <description>2025-05-26 | JCDJ | W-000737 | Deactivated</description>
+    <environments>Default</environments>
+    <formulas>
+        <name>GPS_Body</name>
+        <dataType>String</dataType>
+        <expression>&quot;Please review the following project by copying the following address   &quot;&amp;
+{!GPS_Project_URL}</expression>
+    </formulas>
+    <formulas>
+        <name>GPS_Project_URL</name>
+        <dataType>String</dataType>
+        <expression>&quot;https://qbranch-sfdc--avniopsful.sandbox.lightning.force.com/lightning/r/GPS_Project__c/&quot;&amp;   {!$Record.Id}&amp;&quot;/view&quot;</expression>
+    </formulas>
+    <interviewLabel>GPS GNG Review Notification {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>GPS GNG Review Notification</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>AutoLaunchedFlow</processType>
+    <start>
+        <locationX>50</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>GPS_GNG_Review_Alert</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>GPS_Project_Status__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <stringValue>SE GNG Review</stringValue>
+            </value>
+        </filters>
+        <filters>
+            <field>GPS_Project_Status__c</field>
+            <operator>IsChanged</operator>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </filters>
+        <object>GPS_Project__c</object>
+        <recordTriggerType>Update</recordTriggerType>
+        <triggerType>RecordAfterSave</triggerType>
+    </start>
+    <status>Draft</status>
+</Flow>

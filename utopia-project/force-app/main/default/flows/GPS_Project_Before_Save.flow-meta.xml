@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>60.0</apiVersion>
+    <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
+    <assignments>
+        <name>Assign_Loss_Result</name>
+        <label>Assign Loss Result</label>
+        <locationX>314</locationX>
+        <locationY>1295</locationY>
+        <assignmentItems>
+            <assignToReference>$Record.Result__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <stringValue>Loss</stringValue>
+            </value>
+        </assignmentItems>
+    </assignments>
+    <assignments>
+        <name>Assign_Security_Review_Change_Date</name>
+        <label>Assign Security Review Change Date</label>
+        <locationX>182</locationX>
+        <locationY>995</locationY>
+        <assignmentItems>
+            <assignToReference>$Record.Security_Review_Change_Date__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>$Flow.CurrentDate</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Check_Project_Opportunity_Stage</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
+        <name>Assign_Win_Result</name>
+        <label>Assign Win Result</label>
+        <locationX>50</locationX>
+        <locationY>1295</locationY>
+        <assignmentItems>
+            <assignToReference>$Record.Result__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <stringValue>Win</stringValue>
+            </value>
+        </assignmentItems>
+    </assignments>
+    <assignments>
+        <name>Assignment_1</name>
+        <label>Assignment 1</label>
+        <locationX>182</locationX>
+        <locationY>395</locationY>
+        <assignmentItems>
+            <assignToReference>$Record.GPS_Project_Status__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <stringValue>Security Review</stringValue>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Status_Updated_to_Bid_Assigned</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
+        <name>Assignment_Date</name>
+        <label>Assignment Date</label>
+        <locationX>182</locationX>
+        <locationY>695</locationY>
+        <assignmentItems>
+            <assignToReference>$Record.GPS_Assignment_Date__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>$Flow.CurrentDate</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Status_Updated_to_Security_Review</targetReference>
+        </connector>
+    </assignments>
+    <decisions>
+        <name>Check_Project_Opportunity_Stage</name>
+        <label>Check Project Opportunity Stage</label>
+        <locationX>314</locationX>
+        <locationY>1187</locationY>
+        <defaultConnectorLabel>Default Outcome</defaultConnectorLabel>
+        <rules>
+            <name>Win</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>$Record.Oppty_Stage__c</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <elementReference>opptyStageValueWin</elementReference>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Assign_Win_Result</targetReference>
+            </connector>
+            <label>Win</label>
+        </rules>
+        <rules>
+            <name>Loss</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>$Record.Oppty_Stage__c</leftValueReference>
+                <operator>Contains</operator>
+                <rightValue>
+                    <elementReference>opptyStageValueLost</elementReference>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>$Record.Category__c</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <stringValue>RFP</stringValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Assign_Loss_Result</targetReference>
+            </connector>
+            <label>Loss</label>
+        </rules>
+    </decisions>
+    <decisions>
+        <name>Security_Specialist_Assigned</name>
+        <label>Security Specialist Assigned?</label>
+        <locationX>314</locationX>
+        <locationY>287</locationY>
+        <defaultConnector>
+            <targetReference>Status_Updated_to_Bid_Assigned</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>Default Outcome</defaultConnectorLabel>
+        <rules>
+            <name>Yes_Assigned</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>$Record.Security_Reviewer__c</leftValueReference>
+                <operator>IsNull</operator>
+                <rightValue>
+                    <booleanValue>false</booleanValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>$Record__Prior.Security_Reviewer__c</leftValueReference>
+                <operator>IsNull</operator>
+                <rightValue>
+                    <booleanValue>true</booleanValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>$Record.GPS_Project_Status__c</leftValueReference>
+                <operator>NotEqualTo</operator>
+                <rightValue>
+                    <stringValue>Bid Ready to Assign</stringValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>$Record.GPS_Project_Status__c</leftValueReference>
+                <operator>NotEqualTo</operator>
+                <rightValue>
+                    <stringValue>Bid Assigned</stringValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Assignment_1</targetReference>
+            </connector>
+            <label>Yes, Assigned</label>
+        </rules>
+    </decisions>
+    <decisions>
+        <name>Status_Updated_to_Bid_Assigned</name>
+        <label>Status Updated to Bid Assigned?</label>
+        <locationX>314</locationX>
+        <locationY>587</locationY>
+        <defaultConnector>
+            <targetReference>Status_Updated_to_Security_Review</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>Default Outcome</defaultConnectorLabel>
+        <rules>
+            <name>Yes_Bid_Assigned</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>$Record.GPS_Project_Status__c</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <stringValue>Bid Assigned</stringValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>$Record__Prior.GPS_Project_Status__c</leftValueReference>
+                <operator>NotEqualTo</operator>
+                <rightValue>
+                    <stringValue>Bid Assigned</stringValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Assignment_Date</targetReference>
+            </connector>
+            <label>Yes, Bid Assigned</label>
+        </rules>
+    </decisions>
+    <decisions>
+        <name>Status_Updated_to_Security_Review</name>
+        <label>Status Updated to Security Review</label>
+        <locationX>314</locationX>
+        <locationY>887</locationY>
+        <defaultConnector>
+            <targetReference>Check_Project_Opportunity_Stage</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>Default Outcome</defaultConnectorLabel>
+        <rules>
+            <name>Yes_Updated_to_Sec_Rev</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>$Record.GPS_Project_Status__c</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <stringValue>Security Review</stringValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>$Record__Prior.GPS_Project_Status__c</leftValueReference>
+                <operator>NotEqualTo</operator>
+                <rightValue>
+                    <stringValue>Security Review</stringValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Assign_Security_Review_Change_Date</targetReference>
+            </connector>
+            <label>Yes, Updated to Sec Rev</label>
+        </rules>
+    </decisions>
+    <environments>Default</environments>
+    <interviewLabel>GPS Project Before Save {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>GPS Project Before Save</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>AutoLaunchedFlow</processType>
+    <start>
+        <locationX>188</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Security_Specialist_Assigned</targetReference>
+        </connector>
+        <object>avnio__Project__c</object>
+        <recordTriggerType>CreateAndUpdate</recordTriggerType>
+        <triggerType>RecordBeforeSave</triggerType>
+    </start>
+    <status>Active</status>
+    <variables>
+        <name>opptyStageValueLost</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <value>
+            <stringValue>Lost</stringValue>
+        </value>
+    </variables>
+    <variables>
+        <name>opptyStageValueWin</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <value>
+            <stringValue>08 - Closed</stringValue>
+        </value>
+    </variables>
+</Flow>

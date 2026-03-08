@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GenAiPromptTemplate xmlns="http://soap.sforce.com/2006/04/metadata">
+    <activeVersionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_3</activeVersionIdentifier>
+    <description>Generates RFP/RFI responses using pure semantic search across all Knowledge articles. No section filter. Called by AIRFX_DataCloudResponseEngine.</description>
+    <developerName>DataCloud_RFP_Answer_v2</developerName>
+    <masterLabel>DataCloud_RFP_Answer_v2</masterLabel>
+    <templateVersions>
+        <content>You are authoring a proposal response to a government RFP/RFI as a Salesforce representative. Write in a professional, confident tone appropriate for government procurement. Be specific and reference concrete platform capabilities rather than making general claims.
+
+Use ONLY the following retrieved Knowledge articles as your source material:
+
+{!$EinsteinSearch:Utopia_Knowledge_Clean_Retriever_1Cx_jB3856b3c4c.results}
+
+If no relevant articles are retrieved, respond with: &amp;quot;No relevant knowledge articles were found for this question.&amp;quot;
+
+---
+
+Question: {!$Input:Question}
+
+---
+
+Instructions:
+- Answer the question directly and completely using ONLY the retrieved knowledge articles above.
+- Do NOT fabricate or infer information not present in the retrieved articles.
+- Use a professional, confident tone appropriate for a government RFP/RFI response.
+- Reference specific platform capabilities, features, and compliance standards where applicable.
+- If the retrieved articles only partially address the question, answer what you can and note any gaps.
+- Structure your response in clear, well-organized paragraphs.
+</content>
+        <inputs>
+            <apiName>Question</apiName>
+            <definition>primitive://String</definition>
+            <masterLabel>Question</masterLabel>
+            <referenceName>Input:Question</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultBedrockAnthropicClaude4Sonnet</primaryModel>
+        <status>Published</status>
+        <templateDataProviders>
+            <definition>invocable://getEinsteinRetrieverResults/Utopia_Knowledge_Clean_Retriever_1Cx_jB3856b3c4c</definition>
+            <label>Utopia_Knowledge_Clean Retriever</label>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>searchText</parameterName>
+                <valueExpression>{!$Input:Question}</valueExpression>
+            </parameters>
+            <parameters>
+                <definition>primitive://List&lt;String&gt;</definition>
+                <isRequired>false</isRequired>
+                <parameterName>outputFieldNames</parameterName>
+                <valueExpression>[&amp;quot;Answer&amp;quot;,&amp;quot;PS_Section_Name&amp;quot;,&amp;quot;Title&amp;quot;]</valueExpression>
+            </parameters>
+            <parameters>
+                <definition>primitive://Integer</definition>
+                <isRequired>false</isRequired>
+                <parameterName>resultCount</parameterName>
+                <valueExpression>5</valueExpression>
+            </parameters>
+            <referenceName>EinsteinSearch:Utopia_Knowledge_Clean_Retriever_1Cx_jB3856b3c4c</referenceName>
+        </templateDataProviders>
+        <versionIdentifier>v2_1</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>You are authoring a proposal response to a government RFP/RFI as a Salesforce representative. Write in a professional, confident tone appropriate for government procurement. Be specific and reference concrete platform capabilities rather than making general claims.
+
+Use ONLY the following retrieved Knowledge articles as your source material:
+
+{!$EinsteinSearch:Utopia_Knowledge_Clean_Retriever_1Cx_jB3856b3c4c.results}
+
+If no relevant articles are retrieved, respond with: &amp;quot;No relevant knowledge articles were found for this question.&amp;quot;
+
+---
+
+Question: {!$Input:Question}
+
+---
+
+Instructions:
+- Answer the question directly and completely using ONLY the retrieved knowledge articles above.
+- Do NOT fabricate or infer information not present in the retrieved articles.
+- Use a professional, confident tone appropriate for a government RFP/RFI response.
+- Reference specific platform capabilities, features, and compliance standards where applicable.
+- If the retrieved articles only partially address the question, answer what you can and note any gaps.
+- Structure your response in clear, well-organized paragraphs.
+</content>
+        <inputs>
+            <apiName>Question</apiName>
+            <definition>primitive://String</definition>
+            <masterLabel>Question</masterLabel>
+            <referenceName>Input:Question</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultBedrockAnthropicClaude4Sonnet</primaryModel>
+        <status>Draft</status>
+        <templateDataProviders>
+            <definition>invocable://getEinsteinRetrieverResults/Utopia_Knowledge_Clean_Retriever_1Cx_jB3856b3c4c</definition>
+            <label>Utopia_Knowledge_Clean Retriever</label>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>searchText</parameterName>
+                <valueExpression>{!$Input:Question}</valueExpression>
+            </parameters>
+            <parameters>
+                <definition>primitive://Integer</definition>
+                <isRequired>false</isRequired>
+                <parameterName>resultCount</parameterName>
+                <valueExpression>5</valueExpression>
+            </parameters>
+            <referenceName>EinsteinSearch:Utopia_Knowledge_Clean_Retriever_1Cx_jB3856b3c4c</referenceName>
+        </templateDataProviders>
+        <versionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_2</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>You are authoring a proposal response to a government RFP/RFI as a Salesforce representative. Write in a professional, confident tone appropriate for government procurement. Be specific and reference concrete platform capabilities rather than making general claims.
+
+Use ONLY the following retrieved Knowledge articles as your source material:
+
+{!$EinsteinSearch:Utopia_Knowledge_Clean_Retriever_1Cx_jB3856b3c4c.results}
+
+If no relevant articles are retrieved, respond with: &amp;quot;No relevant knowledge articles were found for this question.&amp;quot;
+
+---
+
+Question: {!$Input:Question}
+
+---
+
+Instructions:
+- Answer the question directly and completely using ONLY the retrieved knowledge articles above.
+- Do NOT fabricate or infer information not present in the retrieved articles.
+- Use a professional, confident tone appropriate for a government RFP/RFI response.
+- Reference specific platform capabilities, features, and compliance standards where applicable.
+- If the retrieved articles only partially address the question, answer what you can and note any gaps.
+- Structure your response in clear, well-organized paragraphs.
+</content>
+        <inputs>
+            <apiName>Question</apiName>
+            <definition>primitive://String</definition>
+            <masterLabel>Question</masterLabel>
+            <referenceName>Input:Question</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultBedrockAnthropicClaude4Sonnet</primaryModel>
+        <status>Published</status>
+        <templateDataProviders>
+            <definition>invocable://getEinsteinRetrieverResults/Utopia_Knowledge_Clean_Retriever_1Cx_jB3856b3c4c</definition>
+            <label>Utopia_Knowledge_Clean Retriever</label>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>searchText</parameterName>
+                <valueExpression>{!$Input:Question}</valueExpression>
+            </parameters>
+            <parameters>
+                <definition>primitive://Integer</definition>
+                <isRequired>false</isRequired>
+                <parameterName>resultCount</parameterName>
+                <valueExpression>5</valueExpression>
+            </parameters>
+            <referenceName>EinsteinSearch:Utopia_Knowledge_Clean_Retriever_1Cx_jB3856b3c4c</referenceName>
+        </templateDataProviders>
+        <versionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_3</versionIdentifier>
+    </templateVersions>
+    <type>einstein_gpt__flex</type>
+    <visibility>Global</visibility>
+</GenAiPromptTemplate>

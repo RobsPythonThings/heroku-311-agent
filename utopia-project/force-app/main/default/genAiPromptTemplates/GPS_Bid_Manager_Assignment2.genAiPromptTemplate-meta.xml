@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GenAiPromptTemplate xmlns="http://soap.sforce.com/2006/04/metadata">
+    <activeVersionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_1</activeVersionIdentifier>
+    <developerName>GPS_Bid_Manager_Assignment2</developerName>
+    <masterLabel>GPS Bid Manager Assignment2</masterLabel>
+    <templateVersions>
+        <content>You are assigning a GPS Project Manager. Analyze the following data and recommend the best manager.
+
+PROJECT AND AVAILABLE MANAGERS:
+
+
+ASSIGNMENT CRITERIA:
+
+HARD REQUIREMENTS (must meet all):
+1. Manager must speak the required language
+2. Manager should be in the same region  
+3. Manager should not have PTO during the project window
+
+OPTIMIZATION FACTORS (prioritize in order):
+1. Current workload - prefer managers with fewer active projects
+2. Role balance - consider if they&apos;re Lead vs Co-Lead (Leads carry more weight)
+3. Schedule conflicts - avoid managers with projects due around the same time
+4. Availability - consider upcoming events that might impact capacity
+5. Performance track record - review actual vs estimated hours
+
+REASONING APPROACH:
+- First filter out managers who don&apos;t meet hard requirements
+- Then rank remaining candidates by optimization factors
+- Consider the whole picture - a manager with 3 projects where 2 are wrapping up may be better than one with 2 projects just starting
+- Evaluate date proximity contextually - due dates 2 weeks apart may or may not conflict depending on project duration
+
+OUTPUT FORMAT (must follow exactly):
+Manager ID: [insert user ID]
+Manager Name: [insert name]
+Confidence: [High/Medium/Low]
+Rationale: [2-3 sentences explaining why this manager is the best choice, mentioning key factors like language match, workload, availability]
+
+If no manager meets all hard requirements, explain the best compromise option.
+</content>
+        <inputs>
+            <apiName>ChatTranscript</apiName>
+            <definition>primitive://String</definition>
+            <referenceName>Input:ChatTranscript</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultOpenAIGPT4OmniMini</primaryModel>
+        <status>Published</status>
+        <versionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_1</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>You are assigning a GPS Project Manager. Analyze the following data and recommend the best manager.
+
+
+ASSIGNMENT CRITERIA:
+
+HARD REQUIREMENTS (must meet all):
+1. Manager must speak the required language
+2. Manager should be in the same region  
+3. Manager should not have PTO during the project window
+
+OPTIMIZATION FACTORS (prioritize in order):
+1. Current workload - prefer managers with fewer active projects
+2. Role balance - consider if they&apos;re Lead vs Co-Lead (Leads carry more weight)
+3. Schedule conflicts - avoid managers with projects due around the same time
+4. Availability - consider upcoming events that might impact capacity
+5. Performance track record - review actual vs estimated hours
+
+REASONING APPROACH:
+- First filter out managers who don&apos;t meet hard requirements
+- Then rank remaining candidates by optimization factors
+- Consider the whole picture - a manager with 3 projects where 2 are wrapping up may be better than one with 2 projects just starting
+- Evaluate date proximity contextually - due dates 2 weeks apart may or may not conflict depending on project duration
+
+OUTPUT FORMAT (must follow exactly):
+Manager ID: [insert user ID]
+Manager Name: [insert name]
+Confidence: [High/Medium/Low]
+Rationale: [2-3 sentences explaining why this manager is the best choice, mentioning key factors like language match, workload, availability]
+
+If no manager meets all hard requirements, explain the best compromise option.
+</content>
+        <inputs>
+            <apiName>ChatTranscript</apiName>
+            <definition>primitive://String</definition>
+            <referenceName>Input:ChatTranscript</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultOpenAIGPT4OmniMini</primaryModel>
+        <status>Draft</status>
+        <versionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_2</versionIdentifier>
+    </templateVersions>
+    <type>SvcCopilotTmpl__createCaseWithEnhancedData</type>
+    <visibility>Global</visibility>
+</GenAiPromptTemplate>

@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>58.0</apiVersion>
+    <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
+    <decisions>
+        <description>Check to see if the GNG process is complete or just the AE has completed</description>
+        <name>What_is_the_GNG_Status</name>
+        <label>What is the GNG Status</label>
+        <locationX>446</locationX>
+        <locationY>323</locationY>
+        <defaultConnectorLabel>Default Outcome</defaultConnectorLabel>
+        <rules>
+            <name>Yes_GNG_Complete</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>$Record.of_GNG_AE_Answers__c</leftValueReference>
+                <operator>GreaterThanOrEqualTo</operator>
+                <rightValue>
+                    <elementReference>$Record.of_AE_Questions__c</elementReference>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>$Record.of_GNG_SE_Answers__c</leftValueReference>
+                <operator>GreaterThanOrEqualTo</operator>
+                <rightValue>
+                    <elementReference>$Record.of_SE_Questions__c</elementReference>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>$Record.of_GNG_SE_Answers__c</leftValueReference>
+                <operator>NotEqualTo</operator>
+                <rightValue>
+                    <numberValue>0.0</numberValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>$Record__Prior.GPS_Project_Status__c</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <stringValue>SE GNG Review</stringValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Update_Project_Status</targetReference>
+            </connector>
+            <label>Yes, GNG Complete</label>
+        </rules>
+        <rules>
+            <name>Yes_AE_is_Complete</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>$Record.of_GNG_AE_Answers__c</leftValueReference>
+                <operator>GreaterThanOrEqualTo</operator>
+                <rightValue>
+                    <elementReference>$Record.of_AE_Questions__c</elementReference>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>$Record.of_GNG_SE_Answers__c</leftValueReference>
+                <operator>LessThan</operator>
+                <rightValue>
+                    <elementReference>$Record.of_SE_Questions__c</elementReference>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>$Record.Go_No_Go_Complete__c</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <booleanValue>false</booleanValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>$Record__Prior.GPS_Project_Status__c</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <stringValue>GNG In-Process</stringValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Update_Project_Status_for_SE</targetReference>
+            </connector>
+            <label>Yes, AE is Complete</label>
+        </rules>
+        <rules>
+            <name>Yes_Is_Draft</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>$Record__Prior.GPS_Project_Status__c</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <stringValue>Draft</stringValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Update_Project_Status_to_Start_GNG</targetReference>
+            </connector>
+            <label>Yes, Is Draft</label>
+        </rules>
+    </decisions>
+    <description>Added check and update to support new GNG process
+Fixed race condition issue</description>
+    <environments>Default</environments>
+    <formulas>
+        <name>vfCompletedDate</name>
+        <dataType>Date</dataType>
+        <expression>TODAY()</expression>
+    </formulas>
+    <interviewLabel>GPS Update Project Status {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>GPS Update Project Status on GNG</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>AutoLaunchedFlow</processType>
+    <recordUpdates>
+        <name>Update_Project_Status</name>
+        <label>Update Project Status to Complete</label>
+        <locationX>50</locationX>
+        <locationY>431</locationY>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>GPS_Project_Status__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <stringValue>SE GNG Review</stringValue>
+            </value>
+        </filters>
+        <inputAssignments>
+            <field>GPS_Project_Status__c</field>
+            <value>
+                <stringValue>Triage In-Progress</stringValue>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Go_No_Go_Complete_Change_Date__c</field>
+            <value>
+                <elementReference>vfCompletedDate</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Go_No_Go_Complete__c</field>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </inputAssignments>
+        <inputReference>$Record</inputReference>
+    </recordUpdates>
+    <recordUpdates>
+        <name>Update_Project_Status_for_SE</name>
+        <label>Update Project Status for SE</label>
+        <locationX>314</locationX>
+        <locationY>431</locationY>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>GPS_Project_Status__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <stringValue>GNG In-Process</stringValue>
+            </value>
+        </filters>
+        <inputAssignments>
+            <field>GPS_Project_Status__c</field>
+            <value>
+                <stringValue>SE GNG Review</stringValue>
+            </value>
+        </inputAssignments>
+        <inputReference>$Record</inputReference>
+    </recordUpdates>
+    <recordUpdates>
+        <name>Update_Project_Status_to_Start_GNG</name>
+        <label>Update Project Status to Start GNG</label>
+        <locationX>578</locationX>
+        <locationY>431</locationY>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>GPS_Project_Status__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <stringValue>Draft</stringValue>
+            </value>
+        </filters>
+        <inputAssignments>
+            <field>GPS_Project_Status__c</field>
+            <value>
+                <stringValue>GNG In-Process</stringValue>
+            </value>
+        </inputAssignments>
+        <inputReference>$Record</inputReference>
+    </recordUpdates>
+    <start>
+        <locationX>320</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>What_is_the_GNG_Status</targetReference>
+        </connector>
+        <filterLogic>or</filterLogic>
+        <filters>
+            <field>GPS_Project_Status__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <stringValue>GNG In-Process</stringValue>
+            </value>
+        </filters>
+        <filters>
+            <field>GPS_Project_Status__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <stringValue>SE GNG Review</stringValue>
+            </value>
+        </filters>
+        <filters>
+            <field>GPS_Project_Status__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <stringValue>Draft</stringValue>
+            </value>
+        </filters>
+        <object>GPS_Project__c</object>
+        <recordTriggerType>Update</recordTriggerType>
+        <triggerType>RecordAfterSave</triggerType>
+    </start>
+    <status>Active</status>
+</Flow>

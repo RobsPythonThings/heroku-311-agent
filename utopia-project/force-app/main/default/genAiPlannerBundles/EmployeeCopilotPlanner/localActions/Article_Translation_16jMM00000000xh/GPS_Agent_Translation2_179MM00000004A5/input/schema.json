@@ -1,0 +1,31 @@
+{
+  "required" : [ "KnowledgeArticleId", "varLanguage" ],
+  "unevaluatedProperties" : false,
+  "properties" : {
+    "KnowledgeArticleId" : {
+      "title" : "KnowledgeArticleId",
+      "description" : "Knowledge Article Id",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "recordId" : {
+      "title" : "recordId",
+      "description" : "Id of Knowledge article",
+      "lightning:type" : "lightning__recordInfoType",
+      "lightning:sObjectInfo" : {
+        "apiName" : "Knowledge__kav"
+      },
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "varLanguage" : {
+      "title" : "varLanguage",
+      "description" : "Language that the user wants to translate the article to",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : true
+    }
+  },
+  "lightning:type" : "lightning__objectType"
+}

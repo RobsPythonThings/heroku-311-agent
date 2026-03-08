@@ -1,0 +1,1942 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GenAiPromptTemplate xmlns="http://soap.sforce.com/2006/04/metadata">
+    <activeVersionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_36</activeVersionIdentifier>
+    <developerName>FLEX_Retrieve_Questions_from_RFX_Documents</developerName>
+    <masterLabel>FLEX - Retrieve Questions from RFX Documents</masterLabel>
+    <templateVersions>
+        <content>{!$RelatedList:Project.CombinedAttachments.Records}
+
+How many files are attached to the record in the data set?
+
+If there are any files attached in the notes and attachments, get the contents of each file.
+
+identify all the questions in the contents of each file and list the following:
+- Every question within the document along with the full context for the questions.
+- Anything that is labeled as a requirement 
+- Anything thats labeled as a wishlist item
+
+Provide the output in a JSON format with the following:
+- For each file, provide the file name and the content document Id
+- For each requirement, question or wishlist item include the following
+-- A type field that describes whether the item is a requirement, question or wishlist item
+-- Separate the requirement id, question id or wishlist id and include it as Item Id
+-- Indicate the section of the document where it appears
+
+&quot;&quot;&quot;
+Instructions: 
+- Do not summarize the questions. 
+- List each question without any modifications.
+- List any statements that resemble a question
+
+Do not provide any information thats not in the document
+&quot;&quot;&quot;
+</content>
+        <inputs>
+            <apiName>Project</apiName>
+            <definition>SOBJECT://GPS_Project__c</definition>
+            <masterLabel>Project</masterLabel>
+            <referenceName>Input:Project</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultVertexAIGeminiPro25</primaryModel>
+        <status>Published</status>
+        <templateDataProviders>
+            <definition>invocable://getRelatedList</definition>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>parentRecordId</parameterName>
+                <valueExpression>{!$Input:Project.Id}</valueExpression>
+            </parameters>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>relatedListName</parameterName>
+                <valueExpression>CombinedAttachments</valueExpression>
+            </parameters>
+            <referenceName>RelatedList:Project.CombinedAttachments.Records</referenceName>
+        </templateDataProviders>
+        <versionIdentifier>wzWV6s2fyxrjwV+v+STaft9ON0kiWH+qjnpZOAQTfJY=_1</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>{!$RelatedList:Project.CombinedAttachments.Records}
+
+How many files are attached to the record in the data set?
+
+If there are any files attached in the notes and attachments, get the contents of each file.
+
+identify all the questions in the contents of each file and list the following:
+- Every question within the document along with the full context for the questions.
+- Anything that is labeled as a requirement 
+- Anything thats labeled as a wishlist item
+
+Provide the output in a JSON format with the following:
+- For each file, provide the file name and the content document Id
+- For each requirement, question or wishlist item include the following
+-- A type field that describes whether the item is a requirement, question or wishlist item
+-- Separate the requirement id, question id or wishlist id and include it as Item Id
+-- Indicate the section of the document where it appears
+
+&quot;&quot;&quot;
+Instructions: 
+- Do not summarize the questions. 
+- List each question without any modifications.
+- List any statements that resemble a question
+
+Do not provide any information thats not in the document
+
+Remove &quot;```json&quot; at the top and &quot;```&quot; at the bottom of the response.
+&quot;&quot;&quot;
+</content>
+        <inputs>
+            <apiName>Project</apiName>
+            <definition>SOBJECT://GPS_Project__c</definition>
+            <masterLabel>Project</masterLabel>
+            <referenceName>Input:Project</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultVertexAIGeminiPro25</primaryModel>
+        <status>Published</status>
+        <templateDataProviders>
+            <definition>invocable://getRelatedList</definition>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>parentRecordId</parameterName>
+                <valueExpression>{!$Input:Project.Id}</valueExpression>
+            </parameters>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>relatedListName</parameterName>
+                <valueExpression>CombinedAttachments</valueExpression>
+            </parameters>
+            <referenceName>RelatedList:Project.CombinedAttachments.Records</referenceName>
+        </templateDataProviders>
+        <versionIdentifier>wzWV6s2fyxrjwV+v+STaft9ON0kiWH+qjnpZOAQTfJY=_2</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>{!$RelatedList:Project.CombinedAttachments.Records}
+
+How many files are attached to the record in the data set?
+
+If there are any files attached in the notes and attachments, get the contents of each file.
+
+identify all the questions in the contents of each file and list the following:
+- Every question within the document along with the full context for the questions.
+- Anything that is labeled as a requirement 
+- Anything thats labeled as a wishlist item
+
+Provide the output in a JSON format with the following:
+- For each file, provide the file name and the content document Id
+- For each requirement, question or wishlist item include the following
+-- A type field that describes whether the item is a requirement, question or wishlist item
+-- Separate the requirement id, question id or wishlist id and include it as Item Id
+-- Indicate the section of the document where it appears
+-- label the question as question instead of context
+
+&quot;&quot;&quot;
+Instructions: 
+- Do not summarize the questions. 
+- List each question without any modifications.
+- List any statements that resemble a question
+
+Do not provide any information thats not in the document
+
+Remove &quot;```json&quot; at the top and &quot;```&quot; at the bottom of the response.
+&quot;&quot;&quot;
+</content>
+        <inputs>
+            <apiName>Project</apiName>
+            <definition>SOBJECT://GPS_Project__c</definition>
+            <masterLabel>Project</masterLabel>
+            <referenceName>Input:Project</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultVertexAIGeminiPro25</primaryModel>
+        <status>Published</status>
+        <templateDataProviders>
+            <definition>invocable://getRelatedList</definition>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>parentRecordId</parameterName>
+                <valueExpression>{!$Input:Project.Id}</valueExpression>
+            </parameters>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>relatedListName</parameterName>
+                <valueExpression>CombinedAttachments</valueExpression>
+            </parameters>
+            <referenceName>RelatedList:Project.CombinedAttachments.Records</referenceName>
+        </templateDataProviders>
+        <versionIdentifier>wzWV6s2fyxrjwV+v+STaft9ON0kiWH+qjnpZOAQTfJY=_3</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>{!$RelatedList:Project.CombinedAttachments.Records}
+
+How many files are attached to the record in the data set?
+
+If there are any files attached in the notes and attachments, get the contents of each file.
+
+identify all the questions in the contents of each file and list the following:
+- Every question within the document along with the full context for the questions.
+- Anything that is labeled as a requirement 
+- Anything thats labeled as a wishlist item
+
+Provide the output in a JSON format with the following:
+- For each file, provide the file name and the content document Id
+- For each requirement, question or wishlist item include the following
+-- A type field that describes whether the item is a requirement, question or wishlist item
+-- Separate the requirement id, question id or wishlist id and include it as Item Id
+-- Indicate the section of the document where it appears
+-- use the label of question for the actual question, requirement or a wishlist item
+
+&quot;&quot;&quot;
+Instructions: 
+- Do not summarize the questions. 
+- List each question without any modifications.
+- List any statements that resemble a question
+
+Do not provide any information thats not in the document
+
+Remove &quot;```json&quot; at the top and &quot;```&quot; at the bottom of the response.
+&quot;&quot;&quot;
+</content>
+        <inputs>
+            <apiName>Project</apiName>
+            <definition>SOBJECT://GPS_Project__c</definition>
+            <masterLabel>Project</masterLabel>
+            <referenceName>Input:Project</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultVertexAIGeminiPro25</primaryModel>
+        <status>Published</status>
+        <templateDataProviders>
+            <definition>invocable://getRelatedList</definition>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>parentRecordId</parameterName>
+                <valueExpression>{!$Input:Project.Id}</valueExpression>
+            </parameters>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>relatedListName</parameterName>
+                <valueExpression>CombinedAttachments</valueExpression>
+            </parameters>
+            <referenceName>RelatedList:Project.CombinedAttachments.Records</referenceName>
+        </templateDataProviders>
+        <versionIdentifier>wzWV6s2fyxrjwV+v+STaft9ON0kiWH+qjnpZOAQTfJY=_4</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>{!$RelatedList:Project.CombinedAttachments.Records}
+
+How many files are attached to the record in the data set?
+
+If there are any files attached in the notes and attachments, get the contents of each file.
+
+identify all the questions in the contents of each file and list the following:
+- Every question within the document along with the full context for the questions.
+- Anything that is labeled as a requirement 
+- Anything thats labeled as a wishlist item
+
+Provide the output in a JSON format with the following:
+- For each file, provide the file name and the content document Id
+- For each requirement, question or wishlist item include the following
+-- A type field that describes whether the item is a requirement, question or wishlist item
+-- Separate the requirement id, question id or wishlist id and include it as itemId
+-- Indicate the section of the document where it appears
+-- use the label of question for the actual question, requirement or a wishlist item
+
+&quot;&quot;&quot;
+Instructions: 
+- Do not summarize the questions. 
+- List each question without any modifications.
+- List any statements that resemble a question
+
+Do not provide any information thats not in the document
+
+Remove &quot;```json&quot; at the top and &quot;```&quot; at the bottom of the response.
+&quot;&quot;&quot;
+</content>
+        <inputs>
+            <apiName>Project</apiName>
+            <definition>SOBJECT://GPS_Project__c</definition>
+            <masterLabel>Project</masterLabel>
+            <referenceName>Input:Project</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultVertexAIGeminiPro25</primaryModel>
+        <status>Published</status>
+        <templateDataProviders>
+            <definition>invocable://getRelatedList</definition>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>parentRecordId</parameterName>
+                <valueExpression>{!$Input:Project.Id}</valueExpression>
+            </parameters>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>relatedListName</parameterName>
+                <valueExpression>CombinedAttachments</valueExpression>
+            </parameters>
+            <referenceName>RelatedList:Project.CombinedAttachments.Records</referenceName>
+        </templateDataProviders>
+        <versionIdentifier>wzWV6s2fyxrjwV+v+STaft9ON0kiWH+qjnpZOAQTfJY=_5</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>{!$RelatedList:Project.CombinedAttachments.Records}
+
+How many files are attached to the record in the data set?
+
+If there are any files attached in the notes and attachments, get the contents of each file.
+
+identify all the questions in the contents of each file and list the following:
+- Every question within the document along with the full context for the questions.
+- Anything that is labeled as a requirement 
+- Anything thats labeled as a wishlist item
+
+Provide the output in a JSON format with the following:
+- Ensure that the top node is called &quot;files&quot; 
+- For each file, provide the file name labeled as &quot;fileName&quot; and the content document Id as &quot;contentDocumentId&quot;
+- For each requirement, question or wishlist item include the following
+-- A type field that describes whether the item is a requirement, question or wishlist item
+-- Separate the requirement id, question id or wishlist id and include it as itemId
+-- Indicate the section of the document where it appears and label it as &quot;section&quot;
+-- use the label of &quot;question&quot; for the actual question, requirement or a wishlist item
+
+&quot;&quot;&quot;
+Instructions: 
+- Do not summarize the questions. 
+- List each question without any modifications.
+- List any statements that resemble a question
+
+Do not provide any information thats not in the document
+
+Remove &quot;```json&quot; at the top and &quot;```&quot; at the bottom of the response.
+&quot;&quot;&quot;
+</content>
+        <inputs>
+            <apiName>Project</apiName>
+            <definition>SOBJECT://GPS_Project__c</definition>
+            <masterLabel>Project</masterLabel>
+            <referenceName>Input:Project</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultVertexAIGeminiPro25</primaryModel>
+        <status>Published</status>
+        <templateDataProviders>
+            <definition>invocable://getRelatedList</definition>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>parentRecordId</parameterName>
+                <valueExpression>{!$Input:Project.Id}</valueExpression>
+            </parameters>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>relatedListName</parameterName>
+                <valueExpression>CombinedAttachments</valueExpression>
+            </parameters>
+            <referenceName>RelatedList:Project.CombinedAttachments.Records</referenceName>
+        </templateDataProviders>
+        <versionIdentifier>wzWV6s2fyxrjwV+v+STaft9ON0kiWH+qjnpZOAQTfJY=_6</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>{!$RelatedList:Project.CombinedAttachments.Records}
+
+How many files are attached to the record in the data set?
+
+If there are any files attached in the notes and attachments, get the contents of each file.
+
+identify all the questions in the contents of each file and list the following:
+- Every question within the document along with the full context for the questions.
+- Anything that is labeled as a requirement 
+- Anything thats labeled as a wishlist item
+
+Provide the output in a JSON format with the following:
+- Ensure that the top node is called &quot;files&quot; 
+- For each file, provide the file name labeled as &quot;fileName&quot; and the content document Id as &quot;contentDocumentId&quot;
+- For each requirement, question or wishlist item include the following. label this section as &quot;items&quot;
+-- A type field that describes whether the item is a requirement, question or wishlist item
+-- Separate the requirement id, question id or wishlist id and include it as itemId
+-- Indicate the section of the document where it appears and label it as &quot;section&quot;
+-- use the label of &quot;question&quot; for the actual question, requirement or a wishlist item
+
+&quot;&quot;&quot;
+Instructions: 
+- Do not summarize the questions. 
+- List each question without any modifications.
+- List any statements that resemble a question
+
+Do not provide any information thats not in the document
+
+Remove &quot;```json&quot; at the top and &quot;```&quot; at the bottom of the response.
+&quot;&quot;&quot;
+</content>
+        <inputs>
+            <apiName>Project</apiName>
+            <definition>SOBJECT://GPS_Project__c</definition>
+            <masterLabel>Project</masterLabel>
+            <referenceName>Input:Project</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultVertexAIGeminiPro25</primaryModel>
+        <status>Published</status>
+        <templateDataProviders>
+            <definition>invocable://getRelatedList</definition>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>parentRecordId</parameterName>
+                <valueExpression>{!$Input:Project.Id}</valueExpression>
+            </parameters>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>relatedListName</parameterName>
+                <valueExpression>CombinedAttachments</valueExpression>
+            </parameters>
+            <referenceName>RelatedList:Project.CombinedAttachments.Records</referenceName>
+        </templateDataProviders>
+        <versionIdentifier>wzWV6s2fyxrjwV+v+STaft9ON0kiWH+qjnpZOAQTfJY=_7</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>{!$RelatedList:Project.CombinedAttachments.Records}
+
+How many files are attached to the record in the data set?
+
+If there are any files attached in the notes and attachments, get the contents of each file.
+
+identify all the questions in the contents of each file and list the following:
+- Every question within the document along with the full context for the questions.
+- Anything that is labeled as a requirement 
+- Anything thats labeled as a wishlist item
+
+Provide the output in a JSON format with the following:
+- Ensure that the top node is called &quot;files&quot; 
+- For each file, provide the file name labeled as &quot;fileName&quot; and the content document Id as &quot;contentDocumentId&quot;
+- For each requirement, question or wishlist item include the following. label this section as &quot;items&quot;
+-- A type field that describes whether the item is a requirement, question or wishlist item
+-- Separate the requirement id, question id or wishlist id and include it as itemId
+-- Indicate the section of the document where it appears and label it as &quot;section&quot;
+-- use the label of &quot;question&quot; for the actual question, requirement or a wishlist item
+
+&quot;&quot;&quot;
+Instructions: 
+- Do not summarize the questions. 
+- List each question without any modifications.
+- List any statements that resemble a question
+
+Do not provide any information thats not in the document
+
+DO NOT ADD &quot;```json&quot; at the top and &quot;```&quot; at the bottom of the response.
+&quot;&quot;&quot;
+</content>
+        <inputs>
+            <apiName>Project</apiName>
+            <definition>SOBJECT://GPS_Project__c</definition>
+            <masterLabel>Project</masterLabel>
+            <referenceName>Input:Project</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultVertexAIGeminiPro25</primaryModel>
+        <status>Published</status>
+        <templateDataProviders>
+            <definition>invocable://getRelatedList</definition>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>parentRecordId</parameterName>
+                <valueExpression>{!$Input:Project.Id}</valueExpression>
+            </parameters>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>relatedListName</parameterName>
+                <valueExpression>CombinedAttachments</valueExpression>
+            </parameters>
+            <referenceName>RelatedList:Project.CombinedAttachments.Records</referenceName>
+        </templateDataProviders>
+        <versionIdentifier>wzWV6s2fyxrjwV+v+STaft9ON0kiWH+qjnpZOAQTfJY=_8</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>You are a strict data extraction engine. Your only purpose is to output raw JSON data. You do not speak, converse, or offer explanations.
+
+Input Context:
+{!$RelatedList:Project.CombinedAttachments.Records}
+Instructions:
+1. Scan the attached files in the data set.
+2. Identify all questions, requirements, and wishlist items.
+3. Extract them exactly as written (do not summarize).
+
+Output Format:
+Provide the output in a strict JSON format structure:
+- Top node: &quot;files&quot;
+- Per file: &quot;fileName&quot; and &quot;contentDocumentId&quot;
+- Per item (label list as &quot;items&quot;):
+  -- &quot;type&quot; (Question, Requirement, or Wishlist Item)
+  -- &quot;itemId&quot; (The ID number if present, e.g., &quot;1.1&quot;, &quot;Q1&quot;)
+  -- &quot;section&quot; (Document section header)
+  -- &quot;question&quot; (The actual text of the item)
+
+Strict Constraints (CRITICAL):
+- Your response must begin immediately with the &quot;{&quot; character.
+- Do NOT include any introductory text like &quot;I have analyzed...&quot; or &quot;Here is the output&quot;.
+- Do NOT include markdown code fences (like ```json).
+- Do NOT provide any information that is not in the document.
+
+Begin JSON output:
+</content>
+        <inputs>
+            <apiName>Project</apiName>
+            <definition>SOBJECT://GPS_Project__c</definition>
+            <masterLabel>Project</masterLabel>
+            <referenceName>Input:Project</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultVertexAIGeminiPro25</primaryModel>
+        <status>Published</status>
+        <templateDataProviders>
+            <definition>invocable://getRelatedList</definition>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>parentRecordId</parameterName>
+                <valueExpression>{!$Input:Project.Id}</valueExpression>
+            </parameters>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>relatedListName</parameterName>
+                <valueExpression>CombinedAttachments</valueExpression>
+            </parameters>
+            <referenceName>RelatedList:Project.CombinedAttachments.Records</referenceName>
+        </templateDataProviders>
+        <versionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_17</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>You are a strict API response generator. Your only purpose is to extract data and output raw JSON. You are forbidden from generating conversational text or markdown formatting.
+
+Context:
+{!$RelatedList:Project.CombinedAttachments.Records}
+
+Task:
+1. Analyze the attached files.
+2. Extract every question, requirement, and wishlist item exactly as written.
+3. Structure the output into the JSON format defined below.
+
+JSON Structure:
+{
+ &quot;files&quot;: [
+  {
+   &quot;fileName&quot;: &quot;Name of file&quot;,
+   &quot;contentDocumentId&quot;: &quot;ID of file&quot;,
+   &quot;items&quot;: [
+    {
+     &quot;type&quot;: &quot;Question | Requirement | Wishlist Item&quot;,
+     &quot;itemId&quot;: &quot;ID if present (e.g., Q1, REQ-01)&quot;,
+     &quot;section&quot;: &quot;Section Header&quot;,
+     &quot;question&quot;: &quot;The exact text of the item&quot;
+    }
+   ]
+  }
+ ]
+}
+
+CRITICAL OUTPUT RULES:
+1. The VERY FIRST character of your response must be the open curly brace &quot;{&quot;.
+2. Do NOT write &quot;I have analyzed...&quot; or any intro text.
+3. Do NOT use markdown code blocks (no ```json).
+4. Do NOT output the json in a code block. Output it as raw text only.
+5. If a file has no items, return an empty &quot;items&quot; list for that file.
+
+Begin JSON response:
+</content>
+        <inputs>
+            <apiName>Project</apiName>
+            <definition>SOBJECT://GPS_Project__c</definition>
+            <masterLabel>Project</masterLabel>
+            <referenceName>Input:Project</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultVertexAIGeminiPro25</primaryModel>
+        <status>Published</status>
+        <templateDataProviders>
+            <definition>invocable://getRelatedList</definition>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>parentRecordId</parameterName>
+                <valueExpression>{!$Input:Project.Id}</valueExpression>
+            </parameters>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>relatedListName</parameterName>
+                <valueExpression>CombinedAttachments</valueExpression>
+            </parameters>
+            <referenceName>RelatedList:Project.CombinedAttachments.Records</referenceName>
+        </templateDataProviders>
+        <versionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_18</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>You are a data parsing machine. You are not a chat assistant.
+Input: {!$RelatedList:Project.CombinedAttachments.Records}
+
+INSTRUCTIONS:
+1. Extract questions, requirements, and wishlist items from the input.
+2. Output the result as a raw text string representing a JSON object.
+
+STRICT FORMATTING RULES (FAILURE TO COMPLY WILL BREAK SYSTEM):
+1. BANNED CHARACTER: You are strictly FORBIDDEN from using the backtick character (`). Do not use it for code blocks. Do not use it for formatting.
+2. RAW TEXT ONLY: Do not format the output as &quot;code&quot;. Output it as plain text.
+3. START SEQUENCE: The output must start immediately with the character &quot;{&quot;.
+
+Target JSON Structure:
+{
+ &quot;files&quot;: [
+  {
+    &quot;fileName&quot;: &quot;...&quot;,
+    &quot;contentDocumentId&quot;: &quot;...&quot;,
+    &quot;items&quot;: [ ... ]
+  }
+ ]
+}
+
+BEGIN RESPONSE (Start with { ):
+</content>
+        <inputs>
+            <apiName>Project</apiName>
+            <definition>SOBJECT://GPS_Project__c</definition>
+            <masterLabel>Project</masterLabel>
+            <referenceName>Input:Project</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultVertexAIGeminiPro25</primaryModel>
+        <status>Published</status>
+        <templateDataProviders>
+            <definition>invocable://getRelatedList</definition>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>parentRecordId</parameterName>
+                <valueExpression>{!$Input:Project.Id}</valueExpression>
+            </parameters>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>relatedListName</parameterName>
+                <valueExpression>CombinedAttachments</valueExpression>
+            </parameters>
+            <referenceName>RelatedList:Project.CombinedAttachments.Records</referenceName>
+        </templateDataProviders>
+        <versionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_19</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>{!$RelatedList:Project.CombinedAttachments.Records}
+
+How many files are attached to the record in the data set?
+
+If there are any files attached in the notes and attachments, get the contents of each file.
+
+identify all the questions in the contents of each file and list the following:
+- Every question within the document along with the full context for the questions.
+- Anything that is labeled as a requirement 
+- Anything thats labeled as a wishlist item
+
+Provide the output in a JSON format with the following:
+- Ensure that the top node is called &quot;files&quot; 
+- For each file, provide the file name labeled as &quot;fileName&quot; and the content document Id as &quot;contentDocumentId&quot;
+- For each requirement, question or wishlist item include the following. label this section as &quot;items&quot;
+-- A type field that describes whether the item is a requirement, question or wishlist item
+-- Separate the requirement id, question id or wishlist id and include it as itemId
+-- Indicate the section of the document where it appears and label it as &quot;section&quot;
+-- use the label of &quot;question&quot; for the actual question, requirement or a wishlist item
+--dont start the jason with ```json or I have analyzed...&quot; or &quot;Here is the output&quot;.
+&quot;&quot;&quot;
+Instructions: 
+- Do not summarize the questions. 
+- List each question without any modifications.
+- List any statements that resemble a question
+
+Do not provide any information thats not in the document
+
+DO NOT ADD &quot;```json&quot; at the top and &quot;```&quot; at the bottom of the response.
+&quot;&quot;&quot;
+</content>
+        <inputs>
+            <apiName>Project</apiName>
+            <definition>SOBJECT://GPS_Project__c</definition>
+            <masterLabel>Project</masterLabel>
+            <referenceName>Input:Project</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultVertexAIGeminiPro25</primaryModel>
+        <status>Published</status>
+        <templateDataProviders>
+            <definition>invocable://getRelatedList</definition>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>parentRecordId</parameterName>
+                <valueExpression>{!$Input:Project.Id}</valueExpression>
+            </parameters>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>relatedListName</parameterName>
+                <valueExpression>CombinedAttachments</valueExpression>
+            </parameters>
+            <referenceName>RelatedList:Project.CombinedAttachments.Records</referenceName>
+        </templateDataProviders>
+        <versionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_20</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>{!$RelatedList:Project.CombinedAttachments.Records}
+
+How many files are attached to the record in the data set?
+
+If there are any files attached in the notes and attachments, get the contents of each file.
+
+identify all the questions in the contents of each file and list the following:
+- Every question within the document along with the full context for the questions.
+- Anything that is labeled as a requirement 
+- Anything thats labeled as a wishlist item
+
+Provide the output in a JSON format with the following:
+- avoid starting with ```json itll break the Json
+- Ensure that the top node is called &quot;files&quot; 
+- For each file, provide the file name labeled as &quot;fileName&quot; and the content document Id as &quot;contentDocumentId&quot;
+- For each requirement, question or wishlist item include the following. label this section as &quot;items&quot;
+-- A type field that describes whether the item is a requirement, question or wishlist item
+-- Separate the requirement id, question id or wishlist id and include it as itemId
+-- Indicate the section of the document where it appears and label it as &quot;section&quot;
+-- use the label of &quot;question&quot; for the actual question, requirement or a wishlist item
+--dont start the jason with ```json or I have analyzed...&quot; or &quot;Here is the output&quot;.
+&quot;&quot;&quot;
+Instructions: 
+- Do not summarize the questions. 
+- List each question without any modifications.
+- List any statements that resemble a question
+
+Do not provide any information thats not in the document
+
+DO NOT ADD &quot;```json&quot; at the top and &quot;```&quot; at the bottom of the response.
+&quot;&quot;&quot;
+</content>
+        <inputs>
+            <apiName>Project</apiName>
+            <definition>SOBJECT://GPS_Project__c</definition>
+            <masterLabel>Project</masterLabel>
+            <referenceName>Input:Project</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultVertexAIGeminiPro25</primaryModel>
+        <status>Published</status>
+        <templateDataProviders>
+            <definition>invocable://getRelatedList</definition>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>parentRecordId</parameterName>
+                <valueExpression>{!$Input:Project.Id}</valueExpression>
+            </parameters>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>relatedListName</parameterName>
+                <valueExpression>CombinedAttachments</valueExpression>
+            </parameters>
+            <referenceName>RelatedList:Project.CombinedAttachments.Records</referenceName>
+        </templateDataProviders>
+        <versionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_21</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>ROLE: You are a backend API processor. You are NOT a chat assistant.
+{!$RelatedList:Project.CombinedAttachments.Records}
+
+How many files are attached to the record in the data set?
+
+If there are any files attached in the notes and attachments, get the contents of each file.
+
+identify all the questions in the contents of each file and list the following:
+- Every question within the document along with the full context for the questions.
+- Anything that is labeled as a requirement 
+- Anything thats labeled as a wishlist item
+
+Provide the output in a JSON format with the following:
+- avoid starting with ```json itll break the Json
+- Ensure that the top node is called &quot;files&quot; 
+- For each file, provide the file name labeled as &quot;fileName&quot; and the content document Id as &quot;contentDocumentId&quot;
+- For each requirement, question or wishlist item include the following. label this section as &quot;items&quot;
+-- A type field that describes whether the item is a requirement, question or wishlist item
+-- Separate the requirement id, question id or wishlist id and include it as itemId
+-- Indicate the section of the document where it appears and label it as &quot;section&quot;
+-- use the label of &quot;question&quot; for the actual question, requirement or a wishlist item
+--dont start the jason with ```json or I have analyzed...&quot; or &quot;Here is the output&quot;.
+
+STRICT SYNTAX RULES:
+1. The output must be RAW TEXT.
+2. The character sequence ``` is STRICTLY FORBIDDEN. It constitutes a syntax error.
+3. Do NOT include a preamble (e.g., &quot;Here is the JSON&quot;).
+4. The output must start with the character &quot;{&quot; and end with the character &quot;}&quot;.
+JSON SCHEMA:
+{
+ &quot;files&quot;: [
+  {
+   &quot;fileName&quot;: &quot;String&quot;,
+   &quot;contentDocumentId&quot;: &quot;String&quot;,
+   &quot;items&quot;: [
+    {
+     &quot;type&quot;: &quot;Question&quot; | &quot;Requirement&quot; | &quot;Wishlist Item&quot;,
+     &quot;itemId&quot;: &quot;String (e.g. 1.2, Q5) or null&quot;,
+     &quot;section&quot;: &quot;String (Section Header)&quot;,
+     &quot;question&quot;: &quot;String (Verbatim text)&quot;
+    }
+   ]
+  }
+ ]
+}
+
+BEGIN RESPONSE:
+&quot;&quot;&quot;
+Instructions: 
+- Do not summarize the questions. 
+- List each question without any modifications.
+- List any statements that resemble a question
+
+Do not provide any information thats not in the document
+
+DO NOT ADD &quot;```json&quot; at the top and &quot;```&quot; at the bottom of the response.
+&quot;&quot;&quot;
+</content>
+        <inputs>
+            <apiName>Project</apiName>
+            <definition>SOBJECT://GPS_Project__c</definition>
+            <masterLabel>Project</masterLabel>
+            <referenceName>Input:Project</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultVertexAIGeminiPro25</primaryModel>
+        <status>Published</status>
+        <templateDataProviders>
+            <definition>invocable://getRelatedList</definition>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>parentRecordId</parameterName>
+                <valueExpression>{!$Input:Project.Id}</valueExpression>
+            </parameters>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>relatedListName</parameterName>
+                <valueExpression>CombinedAttachments</valueExpression>
+            </parameters>
+            <referenceName>RelatedList:Project.CombinedAttachments.Records</referenceName>
+        </templateDataProviders>
+        <versionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_22</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>ROLE: You are a backend API processor. You are NOT a chat assistant.
+
+INPUT DATA:
+{!$RelatedList:Project.CombinedAttachments.Records}
+
+CONTEXT &amp; CRITICAL SYNTAX WARNING:
+Your response is being programmatically injected into an existing JSON file stream that has already started.
+The system has already outputted the opening markdown tags (```json).
+**IF YOU ADD &quot;```json&quot; AT THE START OF YOUR RESPONSE, IT WILL CAUSE A DOUBLE-DECLARATION ERROR AND CRASH THE SYSTEM.**
+
+TASK:
+1. Analyze the attached files.
+2. Identify all questions (verbatim), requirements, and wishlist items.
+3. Output the result strictly as raw JSON content.
+
+DATA EXTRACTION RULES:
+- **Questions:** List every question with full context. List any statement that resembles a question. Do not summarize; use verbatim text.
+- **Requirements:** Extract anything labeled as a requirement.
+- **Wishlist:** Extract anything labeled as a wishlist item.
+- **Strict Scope:** Do not provide any information not found in the documents.
+
+OUTPUT SCHEMA:
+The output must start immediately with the character &quot;{&quot; and match this structure:
+
+{
+ &quot;files&quot;: [
+  {
+   &quot;fileName&quot;: &quot;String (File Name)&quot;,
+   &quot;contentDocumentId&quot;: &quot;String (ID)&quot;,
+   &quot;items&quot;: [
+    {
+     &quot;type&quot;: &quot;Question&quot; | &quot;Requirement&quot; | &quot;Wishlist Item&quot;,
+     &quot;itemId&quot;: &quot;String (e.g., 1.2, Q5) or null&quot;,
+     &quot;section&quot;: &quot;String (Document Section Header)&quot;,
+     &quot;question&quot;: &quot;String (The actual text of the question/item)&quot;
+    }
+   ]
+  }
+ ]
+}
+
+FINAL INSTRUCTION:
+Begin your response immediately with &quot;{&quot;. Do not add introductory text.
+
+BEGIN RESPONSE:
+</content>
+        <inputs>
+            <apiName>Project</apiName>
+            <definition>SOBJECT://GPS_Project__c</definition>
+            <masterLabel>Project</masterLabel>
+            <referenceName>Input:Project</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultVertexAIGeminiPro25</primaryModel>
+        <status>Published</status>
+        <templateDataProviders>
+            <definition>invocable://getRelatedList</definition>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>parentRecordId</parameterName>
+                <valueExpression>{!$Input:Project.Id}</valueExpression>
+            </parameters>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>relatedListName</parameterName>
+                <valueExpression>CombinedAttachments</valueExpression>
+            </parameters>
+            <referenceName>RelatedList:Project.CombinedAttachments.Records</referenceName>
+        </templateDataProviders>
+        <versionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_23</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>ROLE: You are a backend API processor. You are NOT a chat assistant.
+
+INPUT DATA:
+{!$RelatedList:Project.CombinedAttachments.Records}
+
+CONTEXT &amp; CRITICAL SYNTAX WARNING:
+Your response is being programmatically injected into an existing JSON file stream that has already started. do not start with ```json
+The system has already outputted the opening markdown tags (```json).
+**IF YOU ADD &quot;```json&quot; AT THE START OF YOUR RESPONSE, IT WILL CAUSE A DOUBLE-DECLARATION ERROR AND CRASH THE SYSTEM.**
+
+TASK:
+1. Analyze the attached files.
+2. Identify all questions (verbatim), requirements, and wishlist items.
+3. Output the result strictly as raw JSON content.
+
+DATA EXTRACTION RULES:
+- **Questions:** List every question with full context. List any statement that resembles a question. Do not summarize; use verbatim text.
+- **Requirements:** Extract anything labeled as a requirement.
+- **Wishlist:** Extract anything labeled as a wishlist item.
+- **Strict Scope:** Do not provide any information not found in the documents.
+
+OUTPUT SCHEMA:
+The output must start immediately with the character &quot;{&quot; and match this structure:
+
+{
+ &quot;files&quot;: [
+  {
+   &quot;fileName&quot;: &quot;String (File Name)&quot;,
+   &quot;contentDocumentId&quot;: &quot;String (ID)&quot;,
+   &quot;items&quot;: [
+    {
+     &quot;type&quot;: &quot;Question&quot; | &quot;Requirement&quot; | &quot;Wishlist Item&quot;,
+     &quot;itemId&quot;: &quot;String (e.g., 1.2, Q5) or null&quot;,
+     &quot;section&quot;: &quot;String (Document Section Header)&quot;,
+     &quot;question&quot;: &quot;String (The actual text of the question/item)&quot;
+    }
+   ]
+  }
+ ]
+}
+
+FINAL INSTRUCTION:
+Begin your response immediately with &quot;{&quot;. Do not add introductory text.
+
+BEGIN RESPONSE:
+</content>
+        <inputs>
+            <apiName>Project</apiName>
+            <definition>SOBJECT://GPS_Project__c</definition>
+            <masterLabel>Project</masterLabel>
+            <referenceName>Input:Project</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultVertexAIGeminiPro25</primaryModel>
+        <status>Published</status>
+        <templateDataProviders>
+            <definition>invocable://getRelatedList</definition>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>parentRecordId</parameterName>
+                <valueExpression>{!$Input:Project.Id}</valueExpression>
+            </parameters>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>relatedListName</parameterName>
+                <valueExpression>CombinedAttachments</valueExpression>
+            </parameters>
+            <referenceName>RelatedList:Project.CombinedAttachments.Records</referenceName>
+        </templateDataProviders>
+        <versionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_24</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>ROLE: You are a backend API processor. You are NOT a chat assistant.
+
+INPUT DATA:
+{!$RelatedList:Project.CombinedAttachments.Records}
+
+CONTEXT &amp; CRITICAL SYNTAX WARNING:
+Your response is being programmatically injected into an existing JSON file stream that has already started. DO NOT START WITH ```json you are already starting inside the code
+The system has already outputted the opening markdown tags (```json).
+**IF YOU ADD &quot;```json&quot; AT THE START OF YOUR RESPONSE, IT WILL CAUSE A DOUBLE-DECLARATION ERROR AND CRASH THE SYSTEM.**
+
+identify all the questions in the contents of each file and list the following:
+- Every question within the document along with the full context for the questions.
+
+- Ensure that the top node is called &quot;files&quot; 
+- For each file, provide the file name labeled as &quot;fileName&quot; and the content document Id as &quot;contentDocumentId&quot;
+- For each requirement, question or wishlist item include the following. label this section as &quot;items&quot;
+-- A type field that describes whether the item is a requirement, question or wishlist item
+-- Separate the requirement id, question id or wishlist id and include it as itemId
+-- Indicate the section of the document where it appears and label it as &quot;section&quot;
+-- use the label of &quot;question&quot; for the actual question, requirement or a wishlist item
+
+TASK:
+1. Analyze the attached files.
+2. Identify all questions (verbatim), requirements, and wishlist items.
+3. Output the result strictly as raw JSON content.
+
+DATA EXTRACTION RULES:
+- **Questions:** List every question with full context. List any statement that resembles a question. Do not summarize; use verbatim text.
+- **Requirements:** Extract anything labeled as a requirement.
+- **Wishlist:** Extract anything labeled as a wishlist item.
+- **Strict Scope:** Do not provide any information not found in the documents.
+
+OUTPUT SCHEMA:
+The output must start immediately with the character &quot;{&quot; and match this structure:
+
+{
+ &quot;files&quot;: [
+  {
+   &quot;fileName&quot;: &quot;String (File Name)&quot;,
+   &quot;contentDocumentId&quot;: &quot;String (ID)&quot;,
+   &quot;items&quot;: [
+    {
+     &quot;type&quot;: &quot;Question&quot; | &quot;Requirement&quot; | &quot;Wishlist Item&quot;,
+     &quot;itemId&quot;: &quot;String (e.g., 1.2, Q5) or null&quot;,
+     &quot;section&quot;: &quot;String (Document Section Header)&quot;,
+     &quot;question&quot;: &quot;String (The actual text of the question/item)&quot;
+    }
+   ]
+  }
+ ]
+}
+
+FINAL INSTRUCTION:
+Begin your response immediately with &quot;{&quot;. Do not add introductory text.
+
+BEGIN RESPONSE:
+</content>
+        <inputs>
+            <apiName>Project</apiName>
+            <definition>SOBJECT://GPS_Project__c</definition>
+            <masterLabel>Project</masterLabel>
+            <referenceName>Input:Project</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultVertexAIGeminiPro25</primaryModel>
+        <status>Draft</status>
+        <templateDataProviders>
+            <definition>invocable://getRelatedList</definition>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>parentRecordId</parameterName>
+                <valueExpression>{!$Input:Project.Id}</valueExpression>
+            </parameters>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>relatedListName</parameterName>
+                <valueExpression>CombinedAttachments</valueExpression>
+            </parameters>
+            <referenceName>RelatedList:Project.CombinedAttachments.Records</referenceName>
+        </templateDataProviders>
+        <versionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_25</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>ROLE: You are a backend API processor. You are NOT a chat assistant.
+
+INPUT DATA:
+{!$RelatedList:Project.CombinedAttachments.Records}
+
+CONTEXT &amp; CRITICAL SYNTAX WARNING:
+Your response is being programmatically injected into an existing JSON file stream that has already started. do not start with ```json
+The system has already outputted the opening markdown tags (```json).
+**IF YOU ADD &quot;```json&quot; AT THE START OF YOUR RESPONSE, IT WILL CAUSE A DOUBLE-DECLARATION ERROR AND CRASH THE SYSTEM.**
+
+TASK:
+1. Analyze the attached files.
+2. Identify all questions (verbatim), requirements, and wishlist items.
+3. Output the result strictly as raw JSON content.
+
+DATA EXTRACTION RULES:
+- **Questions:** List every question with full context. List any statement that resembles a question. Do not summarize; use verbatim text.
+- **Requirements:** Extract anything labeled as a requirement.
+- **Wishlist:** Extract anything labeled as a wishlist item.
+- **Strict Scope:** Do not provide any information not found in the documents.
+
+OUTPUT SCHEMA:
+The output must start immediately with the character &quot;{&quot; and match this structure:
+
+{
+ &quot;files&quot;: [
+  {
+   &quot;fileName&quot;: &quot;String (File Name)&quot;,
+   &quot;contentDocumentId&quot;: &quot;String (ID)&quot;,
+   &quot;items&quot;: [
+    {
+     &quot;type&quot;: &quot;Question&quot; | &quot;Requirement&quot; | &quot;Wishlist Item&quot;,
+     &quot;itemId&quot;: &quot;String (e.g., 1.2, Q5) or null&quot;,
+     &quot;section&quot;: &quot;String (Document Section Header)&quot;,
+     &quot;question&quot;: &quot;String (The actual text of the question/item)&quot;
+    }
+   ]
+  }
+ ]
+}
+
+FINAL INSTRUCTION:
+Begin your response immediately with &quot;{&quot;. Do not add introductory text.
+
+BEGIN RESPONSE:
+</content>
+        <inputs>
+            <apiName>Project</apiName>
+            <definition>SOBJECT://GPS_Project__c</definition>
+            <masterLabel>Project</masterLabel>
+            <referenceName>Input:Project</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultVertexAIGeminiPro25</primaryModel>
+        <status>Published</status>
+        <templateDataProviders>
+            <definition>invocable://getRelatedList</definition>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>parentRecordId</parameterName>
+                <valueExpression>{!$Input:Project.Id}</valueExpression>
+            </parameters>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>relatedListName</parameterName>
+                <valueExpression>CombinedAttachments</valueExpression>
+            </parameters>
+            <referenceName>RelatedList:Project.CombinedAttachments.Records</referenceName>
+        </templateDataProviders>
+        <versionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_26</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>ROLE: You are a backend API processor. You are NOT a chat assistant.
+
+INPUT DATA:
+{!$RelatedList:Project.CombinedAttachments.Records}
+
+CONTEXT &amp; CRITICAL SYNTAX WARNING:
+DO NOT START use ```json as you are inside the code already .Your response is being programmatically injected into an existing JSON file stream that has already started. do not start with ```json
+The system has already outputted the opening markdown tags (```json).
+**IF YOU ADD &quot;```json&quot; AT THE START OF YOUR RESPONSE, IT WILL CAUSE A DOUBLE-DECLARATION ERROR AND CRASH THE SYSTEM.**
+
+TASK:
+1. Analyze the attached files.
+2. Identify all questions (verbatim), requirements, and wishlist items.
+3. Output the result strictly as raw JSON content.
+
+DATA EXTRACTION RULES:
+- **Questions:** List every question with full context. List any statement that resembles a question. Do not summarize; use verbatim text.
+- **Requirements:** Extract anything labeled as a requirement.
+- **Wishlist:** Extract anything labeled as a wishlist item.
+- **Strict Scope:** Do not provide any information not found in the documents.
+
+OUTPUT SCHEMA:
+The output must start immediately with the character &quot;{&quot; and match this structure:
+
+{
+ &quot;files&quot;: [
+  {
+   &quot;fileName&quot;: &quot;String (File Name)&quot;,
+   &quot;contentDocumentId&quot;: &quot;String (ID)&quot;,
+   &quot;items&quot;: [
+    {
+     &quot;type&quot;: &quot;Question&quot; | &quot;Requirement&quot; | &quot;Wishlist Item&quot;,
+     &quot;itemId&quot;: &quot;String (e.g., 1.2, Q5) or null&quot;,
+     &quot;section&quot;: &quot;String (Document Section Header)&quot;,
+     &quot;question&quot;: &quot;String (The actual text of the question/item)&quot;
+    }
+   ]
+  }
+ ]
+}
+
+FINAL INSTRUCTION:
+Begin your response immediately with &quot;{&quot;. Do not add introductory text.
+
+BEGIN RESPONSE:
+</content>
+        <inputs>
+            <apiName>Project</apiName>
+            <definition>SOBJECT://GPS_Project__c</definition>
+            <masterLabel>Project</masterLabel>
+            <referenceName>Input:Project</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultVertexAIGeminiPro25</primaryModel>
+        <status>Draft</status>
+        <templateDataProviders>
+            <definition>invocable://getRelatedList</definition>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>parentRecordId</parameterName>
+                <valueExpression>{!$Input:Project.Id}</valueExpression>
+            </parameters>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>relatedListName</parameterName>
+                <valueExpression>CombinedAttachments</valueExpression>
+            </parameters>
+            <referenceName>RelatedList:Project.CombinedAttachments.Records</referenceName>
+        </templateDataProviders>
+        <versionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_27</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>“Do NOT output json at the beginning. The JSON block is already opened before your response. If you add json again, you will double-declare it and break the output. Assume the response already starts inside a JSON code fence.”
+
+Here is your updated prompt with ONLY that line replaced. Nothing else changed:
+
+{!$RelatedList:Project.CombinedAttachments.Records}
+
+How many files are attached to the record in the data set?
+
+If there are any files attached in the notes and attachments, get the contents of each file.
+
+Identify all the questions in the contents of each file and list the following:
+
+Every question within the document along with the full context for the questions.
+
+Anything that is labeled as a requirement
+
+Anything that&apos;s labeled as a wishlist item
+
+Do NOT output json at the beginning. The JSON block is already opened before your response. If you add json again, you will double-declare it and break the output. Assume the response already starts inside a JSON code fence.
+
+Provide the output in a JSON format with the following:
+
+Ensure that the top node is called &quot;files&quot;
+
+For each file, provide the file name labeled as &quot;fileName&quot; and the content document Id as &quot;contentDocumentId&quot;
+
+For each requirement, question or wishlist item include the following. Label this section as &quot;items&quot;
+-- A type field that describes whether the item is a requirement, question or wishlist item
+-- Separate the requirement id, question id or wishlist id and include it as itemId
+-- Indicate the section of the document where it appears and label it as &quot;section&quot;
+-- Use the label &quot;question&quot; for the actual question, requirement or wishlist item
+
+&quot;&quot;&quot;
+Instructions:
+
+Do not summarize the questions.
+
+List each question without any modifications.
+
+List any statements that resemble a question.
+
+Do not provide any information that&apos;s not in the document.
+
+DO NOT ADD &quot;json&quot; at the top and &quot;&quot; at the bottom of the response.
+&quot;&quot;&quot;
+</content>
+        <inputs>
+            <apiName>Project</apiName>
+            <definition>SOBJECT://GPS_Project__c</definition>
+            <masterLabel>Project</masterLabel>
+            <referenceName>Input:Project</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultVertexAIGeminiPro25</primaryModel>
+        <status>Published</status>
+        <templateDataProviders>
+            <definition>invocable://getRelatedList</definition>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>parentRecordId</parameterName>
+                <valueExpression>{!$Input:Project.Id}</valueExpression>
+            </parameters>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>relatedListName</parameterName>
+                <valueExpression>CombinedAttachments</valueExpression>
+            </parameters>
+            <referenceName>RelatedList:Project.CombinedAttachments.Records</referenceName>
+        </templateDataProviders>
+        <versionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_28</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>“Do NOT output json at the beginning. The JSON block is already opened before your response. If you add json again, you will double-declare it and break the output. Assume the response already starts inside a JSON code fence. The first character of your response MUST be {. Do not start with files, do not start with any field name. The response must begin exactly with { and nothing before it. You must not use any code fences.
+
+{!$RelatedList:Project.CombinedAttachments.Records}
+
+How many files are attached to the record in the data set?
+
+If there are any files attached in the notes and attachments, get the contents of each file.
+
+Identify all the questions in the contents of each file and list the following:
+
+Every question within the document along with the full context for the questions.
+
+Anything that is labeled as a requirement
+
+Anything that&apos;s labeled as a wishlist item
+
+Do NOT output json at the beginning. The JSON block is already opened before your response. If you add json again, you will double-declare it and break the output. Assume the response already starts inside a JSON code fence.
+
+Provide the output in a JSON format with the following:
+
+Ensure that the top node is called &quot;files&quot;
+
+For each file, provide the file name labeled as &quot;fileName&quot; and the content document Id as &quot;contentDocumentId&quot;
+
+For each requirement, question or wishlist item include the following. Label this section as &quot;items&quot;
+-- A type field that describes whether the item is a requirement, question or wishlist item
+-- Separate the requirement id, question id or wishlist id and include it as itemId
+-- Indicate the section of the document where it appears and label it as &quot;section&quot;
+-- Use the label &quot;question&quot; for the actual question, requirement or wishlist item
+
+&quot;&quot;&quot;
+Instructions:
+
+Do not summarize the questions.
+
+List each question without any modifications.
+
+List any statements that resemble a question.
+
+Do not provide any information that&apos;s not in the document.
+
+DO NOT ADD &quot;json&quot; at the top and &quot;&quot; at the bottom of the response.
+&quot;&quot;&quot;
+</content>
+        <inputs>
+            <apiName>Project</apiName>
+            <definition>SOBJECT://GPS_Project__c</definition>
+            <masterLabel>Project</masterLabel>
+            <referenceName>Input:Project</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultVertexAIGeminiPro25</primaryModel>
+        <status>Draft</status>
+        <templateDataProviders>
+            <definition>invocable://getRelatedList</definition>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>parentRecordId</parameterName>
+                <valueExpression>{!$Input:Project.Id}</valueExpression>
+            </parameters>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>relatedListName</parameterName>
+                <valueExpression>CombinedAttachments</valueExpression>
+            </parameters>
+            <referenceName>RelatedList:Project.CombinedAttachments.Records</referenceName>
+        </templateDataProviders>
+        <versionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_29</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>{!$RelatedList:Project.CombinedAttachments.Records}
+
+assume you already have ```json so dont use it again start with {
+How many files are attached to the record in the data set?
+
+If there are any files attached in the notes and attachments, get the contents of each file.
+
+Identify all the questions in the contents of each file and list the following:
+
+Every question within the document along with the full context for the questions.
+
+Anything that is labeled as a requirement
+
+Anything that&apos;s labeled as a wishlist item
+
+Assume the response is already inside a json code block. Do NOT add json. Start your output immediately with { as the first character.
+
+Provide the output in a JSON format with the following:
+
+Ensure that the top node is called &quot;files&quot;
+
+For each file, provide the file name labeled as &quot;fileName&quot; and the content document Id as &quot;contentDocumentId&quot;
+
+For each requirement, question or wishlist item include the following. Label this section as &quot;items&quot;
+-- A type field that describes whether the item is a requirement, question or wishlist item
+-- Separate the requirement id, question id or wishlist id and include it as itemId
+-- Indicate the section of the document where it appears and label it as &quot;section&quot;
+-- Use the label &quot;question&quot; for the actual question, requirement or wishlist item
+
+&quot;&quot;&quot;
+Instructions:
+
+Do not summarize the questions.
+
+List each question without any modifications.
+
+List any statements that resemble a question.
+
+Do not provide any information that&apos;s not in the document.
+
+DO NOT ADD &quot;json&quot; at the top and &quot;&quot; at the bottom of the response.
+&quot;&quot;&quot;
+</content>
+        <inputs>
+            <apiName>Project</apiName>
+            <definition>SOBJECT://GPS_Project__c</definition>
+            <masterLabel>Project</masterLabel>
+            <referenceName>Input:Project</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultVertexAIGeminiPro25</primaryModel>
+        <status>Published</status>
+        <templateDataProviders>
+            <definition>invocable://getRelatedList</definition>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>parentRecordId</parameterName>
+                <valueExpression>{!$Input:Project.Id}</valueExpression>
+            </parameters>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>relatedListName</parameterName>
+                <valueExpression>CombinedAttachments</valueExpression>
+            </parameters>
+            <referenceName>RelatedList:Project.CombinedAttachments.Records</referenceName>
+        </templateDataProviders>
+        <versionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_30</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>{!$RelatedList:Project.CombinedAttachments.Records}
+
+Assume you already have ```json so dont use it again. Start your output immediately with {
+
+How many files are attached to the record in the data set?
+
+If there are any files attached in the notes and attachments, get the contents of each file.
+
+Identify all the questions in the contents of each file and list the following:
+
+Every question within the document along with the full context for the questions.
+
+Anything that is labeled as a requirement
+
+Anything that&apos;s labeled as a wishlist item
+
+Provide the output in a JSON format with the following:
+
+Ensure that the top node is called &quot;files&quot;
+
+For each file, provide the file name labeled as &quot;fileName&quot; and the content document Id as &quot;contentDocumentId&quot;
+
+For each requirement, question or wishlist item include the following. Label this section as &quot;items&quot;
+-- A type field that describes whether the item is a requirement, question or wishlist item
+-- Separate the requirement id, question id or wishlist id and include it as itemId
+-- Indicate the section of the document where it appears and label it as &quot;section&quot;
+-- Use the label &quot;question&quot; for the actual question, requirement or wishlist item
+
+Use the following JSON structure as your example syntax:
+{
+ &quot;files&quot;: [
+  {
+   &quot;fileName&quot;: &quot;Copy of 201-25-006__Exhibit_B__Requirements.xlsx - VDOE Security Requirements&quot;,
+   &quot;contentDocumentId&quot;: &quot;0697x00000FnDEoAAN&quot;,
+   &quot;items&quot;: [
+    {
+     &quot;type&quot;: &quot;requirement&quot;,
+     &quot;itemId&quot;: &quot;S-1&quot;,
+     &quot;section&quot;: &quot;VDOE Security Requirements&quot;,
+     &quot;question&quot;: &quot;The solution shall provide system administration features appropriate for customer-level configuration, including the ability to manage user access, assign roles, and adjust key configurable settings within the boundaries of the hosted environment, without requiring vendor support for routine administrative tasks.&quot;
+    },
+    {
+     &quot;type&quot;: &quot;requirement&quot;,
+     &quot;itemId&quot;: &quot;S-2&quot;,
+     &quot;section&quot;: &quot;VDOE Security Requirements&quot;,
+     &quot;question&quot;: &quot;The solution shall support Multi-Factor Authentication (MFA) for both internal and external users in accordance with current Virginia Information Technologies Agency (VITA) security standards.&quot;
+    }
+   ]
+  }
+ ]
+}
+
+&quot;&quot;&quot;
+Instructions:
+
+Do not summarize the questions.
+
+List each question without any modifications.
+
+List any statements that resemble a question.
+
+Do not provide any information that&apos;s not in the document.
+
+Assume the response is already inside a json code block. Do NOT add json. Start your output immediately with { as the first character.
+&quot;&quot;&quot;
+</content>
+        <inputs>
+            <apiName>Project</apiName>
+            <definition>SOBJECT://GPS_Project__c</definition>
+            <masterLabel>Project</masterLabel>
+            <referenceName>Input:Project</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultVertexAIGeminiPro25</primaryModel>
+        <status>Draft</status>
+        <templateDataProviders>
+            <definition>invocable://getRelatedList</definition>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>parentRecordId</parameterName>
+                <valueExpression>{!$Input:Project.Id}</valueExpression>
+            </parameters>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>relatedListName</parameterName>
+                <valueExpression>CombinedAttachments</valueExpression>
+            </parameters>
+            <referenceName>RelatedList:Project.CombinedAttachments.Records</referenceName>
+        </templateDataProviders>
+        <versionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_31</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>{!$RelatedList:Project.CombinedAttachments.Records}
+
+[SYSTEM CONFIGURATION]
+MODE: RAW_DATA_ONLY
+FORMAT: PLAIN TEXT
+STRICT_CONSTRAINT: NO MARKDOWN. NO BACKTICKS.
+
+[INSTRUCTION]
+You are a data extraction engine. You are NOT a chat assistant.
+You are writing directly to a database stream.
+1. Do not wrap the output in code blocks.
+2. Do not use markdown formatting.
+3. Start the output immediately with the opening brace &apos;{&apos;.
+
+[TASK INSTRUCTIONS]
+1. Analyze the attached files.
+2. Count how many files are attached.
+3. Extract contents of each file.
+4. Identify all questions, requirements, and wishlist items.
+
+[DATA EXTRACTION RULES]
+* Files: Label top node &quot;files&quot;. Include &quot;fileName&quot; and &quot;contentDocumentId&quot;.
+* Items: Inside each file, create a list called &quot;items&quot;.
+ * Type: &quot;requirement&quot;, &quot;question&quot;, or &quot;wishlist item&quot;.
+ * ItemId: The ID found in the text (e.g., S-1, 1A).
+ * Section: The section header.
+ * Question: The extracted text verbatim.
+
+[EXAMPLE SYNTAX]
+{
+ &quot;files&quot;: [
+ {
+  &quot;fileName&quot;: &quot;Example_Requirements.xlsx&quot;,
+  &quot;contentDocumentId&quot;: &quot;0697x00000FnDEoAAN&quot;,
+  &quot;items&quot;: [
+  {
+   &quot;type&quot;: &quot;requirement&quot;,
+   &quot;itemId&quot;: &quot;S-1&quot;,
+   &quot;section&quot;: &quot;Security&quot;,
+   &quot;question&quot;: &quot;The solution shall provide system administration features.&quot;
+  }
+  ]
+ }
+ ]
+}
+
+[START OF STREAM]
+{
+</content>
+        <inputs>
+            <apiName>Project</apiName>
+            <definition>SOBJECT://GPS_Project__c</definition>
+            <masterLabel>Project</masterLabel>
+            <referenceName>Input:Project</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultVertexAIGeminiPro25</primaryModel>
+        <status>Published</status>
+        <templateDataProviders>
+            <definition>invocable://getRelatedList</definition>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>parentRecordId</parameterName>
+                <valueExpression>{!$Input:Project.Id}</valueExpression>
+            </parameters>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>relatedListName</parameterName>
+                <valueExpression>CombinedAttachments</valueExpression>
+            </parameters>
+            <referenceName>RelatedList:Project.CombinedAttachments.Records</referenceName>
+        </templateDataProviders>
+        <versionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_36</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>{!$RelatedList:Project.CombinedAttachments.Records}
+
+Assume you already have ```json so dont use it again.
+If you start with ```json this is wrong.
+Start your output immediately with {
+
+How many files are attached to the record in the data set?
+
+If there are any files attached in the notes and attachments, get the contents of each file.
+
+Identify all the questions in the contents of each file and list the following:
+
+Every question within the document along with the full context for the questions.
+
+Anything that is labeled as a requirement
+
+Anything that&apos;s labeled as a wishlist item
+
+Provide the output in a JSON format with the following:
+
+Ensure that the top node is called &quot;files&quot;
+
+For each file, provide the file name labeled as &quot;fileName&quot; and the content document Id as &quot;contentDocumentId&quot;
+
+For each requirement, question or wishlist item include the following. Label this section as &quot;items&quot;
+-- A type field that describes whether the item is a requirement, question or wishlist item
+-- Separate the requirement id, question id or wishlist id and include it as itemId
+-- Indicate the section of the document where it appears and label it as &quot;section&quot;
+-- Use the label &quot;question&quot; for the actual question, requirement or wishlist item
+
+Use the following JSON structure as your example syntax:
+{
+ &quot;files&quot;: [
+  {
+   &quot;fileName&quot;: &quot;Copy of 201-25-006__Exhibit_B__Requirements.xlsx - VDOE Security Requirements&quot;,
+   &quot;contentDocumentId&quot;: &quot;0697x00000FnDEoAAN&quot;,
+   &quot;items&quot;: [
+    {
+     &quot;type&quot;: &quot;requirement&quot;,
+     &quot;itemId&quot;: &quot;S-1&quot;,
+     &quot;section&quot;: &quot;VDOE Security Requirements&quot;,
+     &quot;question&quot;: &quot;The solution shall provide system administration features appropriate for customer-level configuration, including the ability to manage user access, assign roles, and adjust key configurable settings within the boundaries of the hosted environment, without requiring vendor support for routine administrative tasks.&quot;
+    },
+    {
+     &quot;type&quot;: &quot;requirement&quot;,
+     &quot;itemId&quot;: &quot;S-2&quot;,
+     &quot;section&quot;: &quot;VDOE Security Requirements&quot;,
+     &quot;question&quot;: &quot;The solution shall support Multi-Factor Authentication (MFA) for both internal and external users in accordance with current Virginia Information Technologies Agency (VITA) security standards.&quot;
+    }
+   ]
+  }
+ ]
+}
+
+&quot;&quot;&quot;
+Instructions:
+
+Do not summarize the questions.
+
+List each question without any modifications.
+
+List any statements that resemble a question.
+
+Do not provide any information that&apos;s not in the document.
+
+Assume the response is already inside a json code block. Do NOT add json. Start your output immediately with { as the first character.
+&quot;&quot;&quot;
+</content>
+        <inputs>
+            <apiName>Project</apiName>
+            <definition>SOBJECT://GPS_Project__c</definition>
+            <masterLabel>Project</masterLabel>
+            <referenceName>Input:Project</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultVertexAIGeminiPro25</primaryModel>
+        <status>Draft</status>
+        <templateDataProviders>
+            <definition>invocable://getRelatedList</definition>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>parentRecordId</parameterName>
+                <valueExpression>{!$Input:Project.Id}</valueExpression>
+            </parameters>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>relatedListName</parameterName>
+                <valueExpression>CombinedAttachments</valueExpression>
+            </parameters>
+            <referenceName>RelatedList:Project.CombinedAttachments.Records</referenceName>
+        </templateDataProviders>
+        <versionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_32</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>{!$RelatedList:Project.CombinedAttachments.Records}
+
+*** SYSTEM INSTRUCTION: STRICT RAW DATA OUTPUT ONLY ***
+The output stream is already open inside a code block. 
+Generating Markdown backticks (like ```json or I have reviewed the data and located four attached files. The contents of each file have been processed. The extracted requirements and questions are detailed below.) will cause a compilation error.
+Do NOT include any formatting wrappers.
+Your response must begin immediately with the character: {
+
+IMPORTANT TASK:
+How many files are attached to the record in the data set?
+If there are any files attached in the notes and attachments, get the contents of each file.
+Identify all the questions in the contents of each file.
+
+VERY IMPORTANT REQUIREMENTS FOR EXTRACTION:
+1. Every question within the document along with the full context.
+2. Anything labeled as a requirement.
+3. Anything labeled as a wishlist item.
+
+JSON SCHEMA ENFORCEMENT:
+Ensure the top node is called &quot;files&quot;.
+For each file, provide &quot;fileName&quot; and &quot;contentDocumentId&quot;.
+For each extracted item, create an &quot;items&quot; list containing:
+-- &quot;type&quot;: (requirement, question, or wishlist item)
+-- &quot;itemId&quot;: (The ID found in the text)
+-- &quot;section&quot;: (The section header where it appears)
+-- &quot;question&quot;: (The text of the actual question/requirement)
+
+TARGET OUTPUT FORMAT (Follow this structure exactly, NO MARKDOWN):
+{
+ &quot;files&quot;: [
+  {
+   &quot;fileName&quot;: &quot;Example_Requirements.xlsx&quot;,
+   &quot;contentDocumentId&quot;: &quot;0697x00000FnDEoAAN&quot;,
+   &quot;items&quot;: [
+    {
+     &quot;type&quot;: &quot;requirement&quot;,
+     &quot;itemId&quot;: &quot;S-1&quot;,
+     &quot;section&quot;: &quot;VDOE Security Requirements&quot;,
+     &quot;question&quot;: &quot;The solution shall provide system administration features appropriate for customer-level configuration.&quot;
+    },
+    {
+     &quot;type&quot;: &quot;requirement&quot;,
+     &quot;itemId&quot;: &quot;S-2&quot;,
+     &quot;section&quot;: &quot;Security&quot;,
+     &quot;question&quot;: &quot;The solution shall support Multi-Factor Authentication (MFA).&quot;
+    }
+   ]
+  }
+ ]
+}
+
+&quot;&quot;&quot;
+FINAL VALIDATION:
+1. Do not summarize questions; list them verbatim.
+2. Do not provide info not in the document.
+3. CHECK YOUR OUTPUT START: If the first character is `, DELETE IT.
+4. The first character must be {.
+&quot;&quot;&quot;
+</content>
+        <inputs>
+            <apiName>Project</apiName>
+            <definition>SOBJECT://GPS_Project__c</definition>
+            <masterLabel>Project</masterLabel>
+            <referenceName>Input:Project</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultVertexAIGeminiPro25</primaryModel>
+        <status>Published</status>
+        <templateDataProviders>
+            <definition>invocable://getRelatedList</definition>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>parentRecordId</parameterName>
+                <valueExpression>{!$Input:Project.Id}</valueExpression>
+            </parameters>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>relatedListName</parameterName>
+                <valueExpression>CombinedAttachments</valueExpression>
+            </parameters>
+            <referenceName>RelatedList:Project.CombinedAttachments.Records</referenceName>
+        </templateDataProviders>
+        <versionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_33</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>{!$RelatedList:Project.CombinedAttachments.Records}
+
+*** SYSTEM INSTRUCTION: STRICT RAW DATA OUTPUT ONLY ***
+The output stream is already open inside a code block. 
+Generating Markdown backticks (like ```json or I have reviewed the data and located four attached files. The contents of each file have been processed. The extracted requirements and questions are detailed below.) will cause a compilation error.
+Do NOT include any formatting wrappers.
+Your response must begin immediately with the character: {
+
+IMPORTANT TASK:
+How many files are attached to the record in the data set?
+If there are any files attached in the notes and attachments, get the contents of each file.
+Identify all the questions in the contents of each file.
+
+VERY IMPORTANT REQUIREMENTS FOR EXTRACTION:
+1. Every question within the document along with the full context.
+2. Anything labeled as a requirement.
+3. Anything labeled as a wishlist item.
+
+JSON SCHEMA ENFORCEMENT:
+Ensure the top node is called &quot;files&quot;.
+For each file, provide &quot;fileName&quot; and &quot;contentDocumentId&quot;.
+For each extracted item, create an &quot;items&quot; list containing:
+-- &quot;type&quot;: (requirement, question, or wishlist item)
+-- &quot;itemId&quot;: (The ID found in the text)
+-- &quot;section&quot;: (The section header where it appears)
+-- &quot;question&quot;: (The text of the actual question/requirement)
+
+TARGET OUTPUT FORMAT (Follow this structure exactly, NO MARKDOWN):
+{
+ &quot;files&quot;: [
+  {
+   syntax
+}
+
+&quot;&quot;&quot;
+FINAL VALIDATION:
+1. Do not summarize questions; list them verbatim.
+2. Do not provide info not in the document.
+3. CHECK YOUR OUTPUT START: If the first character is `, DELETE IT.
+4. The first character must be {.
+&quot;&quot;&quot;
+</content>
+        <inputs>
+            <apiName>Project</apiName>
+            <definition>SOBJECT://GPS_Project__c</definition>
+            <masterLabel>Project</masterLabel>
+            <referenceName>Input:Project</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultVertexAIGeminiPro25</primaryModel>
+        <status>Published</status>
+        <templateDataProviders>
+            <definition>invocable://getRelatedList</definition>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>parentRecordId</parameterName>
+                <valueExpression>{!$Input:Project.Id}</valueExpression>
+            </parameters>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>relatedListName</parameterName>
+                <valueExpression>CombinedAttachments</valueExpression>
+            </parameters>
+            <referenceName>RelatedList:Project.CombinedAttachments.Records</referenceName>
+        </templateDataProviders>
+        <versionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_34</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>{!$RelatedList:Project.CombinedAttachments.Records}
+
+*** SYSTEM INSTRUCTION: STRICT RAW DATA OUTPUT ONLY ***
+when i view the raw response it has ```json ```json so DO NOT START WITH ```json it already has it so star t with {
+The output stream is already open inside a code block. 
+Generating Markdown backticks (like ```json or I have reviewed the data and located four attached files. The contents of each file have been processed. The extracted requirements and questions are detailed below.) will cause a compilation error.
+Do NOT include any formatting wrappers.
+Your response must begin immediately with the character: {
+
+IMPORTANT TASK:
+How many files are attached to the record in the data set?
+If there are any files attached in the notes and attachments, get the contents of each file.
+Identify all the questions in the contents of each file.
+
+VERY IMPORTANT REQUIREMENTS FOR EXTRACTION:
+1. Every question within the document along with the full context.
+2. Anything labeled as a requirement.
+3. Anything labeled as a wishlist item.
+
+JSON SCHEMA ENFORCEMENT:
+Ensure the top node is called &quot;files&quot;.
+For each file, provide &quot;fileName&quot; and &quot;contentDocumentId&quot;.
+For each extracted item, create an &quot;items&quot; list containing:
+-- &quot;type&quot;: (requirement, question, or wishlist item)
+-- &quot;itemId&quot;: (The ID found in the text)
+-- &quot;section&quot;: (The section header where it appears)
+-- &quot;question&quot;: (The text of the actual question/requirement)
+
+TARGET OUTPUT FORMAT (Follow this structure exactly, NO MARKDOWN):
+{
+ &quot;files&quot;: [
+  {
+   syntax
+}
+
+&quot;&quot;&quot;
+FINAL VALIDATION:
+1. Do not summarize questions; list them verbatim.
+2. Do not provide info not in the document.
+3. CHECK YOUR OUTPUT START: If the first character is `, DELETE IT.
+4. The first character must be {.
+&quot;&quot;&quot;
+</content>
+        <inputs>
+            <apiName>Project</apiName>
+            <definition>SOBJECT://GPS_Project__c</definition>
+            <masterLabel>Project</masterLabel>
+            <referenceName>Input:Project</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultVertexAIGeminiPro25</primaryModel>
+        <status>Draft</status>
+        <templateDataProviders>
+            <definition>invocable://getRelatedList</definition>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>parentRecordId</parameterName>
+                <valueExpression>{!$Input:Project.Id}</valueExpression>
+            </parameters>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>relatedListName</parameterName>
+                <valueExpression>CombinedAttachments</valueExpression>
+            </parameters>
+            <referenceName>RelatedList:Project.CombinedAttachments.Records</referenceName>
+        </templateDataProviders>
+        <versionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_35</versionIdentifier>
+    </templateVersions>
+    <type>einstein_gpt__flex</type>
+    <visibility>Global</visibility>
+</GenAiPromptTemplate>

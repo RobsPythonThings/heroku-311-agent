@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
+    <label>AIRFX Knowledge Admin</label>
+    <description>Full Knowledge article edit and management permissions</description>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Knowledge__kav.Answer_Plain_Text__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <userPermissions>
+        <enabled>true</enabled>
+        <name>ManageKnowledge</name>
+    </userPermissions>
+    <userPermissions>
+        <enabled>true</enabled>
+        <name>EditKnowledge</name>
+    </userPermissions>
+    <userPermissions>
+        <enabled>true</enabled>
+        <name>PublishKnowledge</name>
+    </userPermissions>
+    <hasActivationRequired>false</hasActivationRequired>
+</PermissionSet>

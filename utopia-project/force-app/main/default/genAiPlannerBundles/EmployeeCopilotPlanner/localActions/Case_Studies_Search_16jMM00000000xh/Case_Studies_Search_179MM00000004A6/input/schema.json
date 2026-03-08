@@ -1,0 +1,22 @@
+{
+  "required" : [ "Input:Question" ],
+  "unevaluatedProperties" : false,
+  "properties" : {
+    "Input:Question" : {
+      "title" : "Question",
+      "description" : "The question or details a user is looking to have answered",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : true
+    },
+    "citationMode" : {
+      "title" : "Citation Mode",
+      "description" : "Please enter Use Case, Products, Region, Country or LOB details you are looking for",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    }
+  },
+  "lightning:type" : "lightning__objectType",
+  "lightning:textIndexed" : true
+}

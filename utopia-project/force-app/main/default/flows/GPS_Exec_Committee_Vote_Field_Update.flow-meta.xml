@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>58.0</apiVersion>
+    <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
+    <assignments>
+        <name>Copy_1_of_Set_fields_for_vote</name>
+        <label>Set fields for vote</label>
+        <locationX>314</locationX>
+        <locationY>539</locationY>
+        <assignmentItems>
+            <assignToReference>GPS_Update_Project.Id</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>$Record.Project__c</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>GPS_Update_Project.GNG_SE_SVP_Vote__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>GPS_Vote</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Copy_1_of_Update_Project_Record</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
+        <name>Copy_2_of_Set_fields_for_vote</name>
+        <label>Set fields for vote</label>
+        <locationX>578</locationX>
+        <locationY>647</locationY>
+        <assignmentItems>
+            <assignToReference>GPS_Update_Project.Id</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>$Record.Project__c</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>GPS_Update_Project.GPS_SEC_SVP_Vote__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>GPS_Vote</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Copy_2_of_Update_Project_Record</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
+        <name>Copy_3_of_Set_fields_for_vote</name>
+        <label>Set fields for vote</label>
+        <locationX>842</locationX>
+        <locationY>755</locationY>
+        <assignmentItems>
+            <assignToReference>GPS_Update_Project.Id</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>$Record.Project__c</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>GPS_Update_Project.GPS_BU_SVP_Vote__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>GPS_Vote</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Copy_3_of_Update_Project_Record</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
+        <name>GPS_Set_fields_for_vote</name>
+        <label>Set fields for vote</label>
+        <locationX>50</locationX>
+        <locationY>431</locationY>
+        <assignmentItems>
+            <assignToReference>GPS_Update_Project.Id</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>$Record.Project__c</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>GPS_Update_Project.GNG_SVP_Vote__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>GPS_Vote</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>GPS_Update_Project_Record</targetReference>
+        </connector>
+    </assignments>
+    <decisions>
+        <name>GPS_Record_to_update_is_GNG_SVP</name>
+        <label>Record to update is GNG SVP</label>
+        <locationX>297</locationX>
+        <locationY>323</locationY>
+        <defaultConnector>
+            <targetReference>GPS_Record_to_update_is_SE_SVP</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>Default Outcome</defaultConnectorLabel>
+        <rules>
+            <name>GPS_Record_is_GNG_SVP</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>$Record.Committee_Member_Role__c</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <stringValue>GNG SVP</stringValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>GPS_Set_fields_for_vote</targetReference>
+            </connector>
+            <label>Record is GNG SVP</label>
+        </rules>
+    </decisions>
+    <decisions>
+        <name>GPS_Record_to_update_is_SE_SVP</name>
+        <label>Record to update is SE SVP</label>
+        <locationX>545</locationX>
+        <locationY>431</locationY>
+        <defaultConnector>
+            <targetReference>Record_to_update_is_SEC_SVP</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>Default Outcome</defaultConnectorLabel>
+        <rules>
+            <name>GPS_Record_is_SE_SVP</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>$Record.Committee_Member_Role__c</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <stringValue>SE SVP</stringValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Copy_1_of_Set_fields_for_vote</targetReference>
+            </connector>
+            <label>Record is SE SVP</label>
+        </rules>
+    </decisions>
+    <decisions>
+        <name>Record_to_update_is_BU_SVP</name>
+        <label>Record to update is BU SVP</label>
+        <locationX>974</locationX>
+        <locationY>647</locationY>
+        <defaultConnectorLabel>Default Outcome</defaultConnectorLabel>
+        <rules>
+            <name>Record_is_BU_SVP</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>$Record.Committee_Member_Role__c</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <stringValue>BU SVP</stringValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Copy_3_of_Set_fields_for_vote</targetReference>
+            </connector>
+            <label>Record is BU SVP</label>
+        </rules>
+    </decisions>
+    <decisions>
+        <name>Record_to_update_is_SEC_SVP</name>
+        <label>Record to update is SEC VP</label>
+        <locationX>776</locationX>
+        <locationY>539</locationY>
+        <defaultConnector>
+            <targetReference>Record_to_update_is_BU_SVP</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>Default Outcome</defaultConnectorLabel>
+        <rules>
+            <name>GPS_Record_is_SEC_VP</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>$Record.Committee_Member_Role__c</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <stringValue>SEC VP</stringValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Copy_2_of_Set_fields_for_vote</targetReference>
+            </connector>
+            <label>Record is SEC VP</label>
+        </rules>
+    </decisions>
+    <environments>Default</environments>
+    <formulas>
+        <name>GPS_Vote</name>
+        <dataType>String</dataType>
+        <expression>Text($Record.Vote__c)</expression>
+    </formulas>
+    <interviewLabel>Exec. Committee Vote Field Update {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>GPS Exec. Committee Vote Field Update</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>AutoLaunchedFlow</processType>
+    <recordUpdates>
+        <name>Copy_1_of_Update_Project_Record</name>
+        <label>Update Project Record</label>
+        <locationX>314</locationX>
+        <locationY>647</locationY>
+        <inputReference>GPS_Update_Project</inputReference>
+    </recordUpdates>
+    <recordUpdates>
+        <name>Copy_2_of_Update_Project_Record</name>
+        <label>Update Project Record</label>
+        <locationX>578</locationX>
+        <locationY>755</locationY>
+        <inputReference>GPS_Update_Project</inputReference>
+    </recordUpdates>
+    <recordUpdates>
+        <name>Copy_3_of_Update_Project_Record</name>
+        <label>Update Project Record</label>
+        <locationX>842</locationX>
+        <locationY>863</locationY>
+        <inputReference>GPS_Update_Project</inputReference>
+    </recordUpdates>
+    <recordUpdates>
+        <name>GPS_Update_Project_Record</name>
+        <label>Update Project Record</label>
+        <locationX>50</locationX>
+        <locationY>539</locationY>
+        <inputReference>GPS_Update_Project</inputReference>
+    </recordUpdates>
+    <start>
+        <locationX>171</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>GPS_Record_to_update_is_GNG_SVP</targetReference>
+        </connector>
+        <filterLogic>or</filterLogic>
+        <filters>
+            <field>Committee_Member_Role__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <stringValue>SE SVP</stringValue>
+            </value>
+        </filters>
+        <filters>
+            <field>Committee_Member_Role__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <stringValue>SEC VP</stringValue>
+            </value>
+        </filters>
+        <filters>
+            <field>Committee_Member_Role__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <stringValue>GNG SVP</stringValue>
+            </value>
+        </filters>
+        <filters>
+            <field>Committee_Member_Role__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <stringValue>BU SVP</stringValue>
+            </value>
+        </filters>
+        <object>Override_Request__c</object>
+        <recordTriggerType>CreateAndUpdate</recordTriggerType>
+        <triggerType>RecordAfterSave</triggerType>
+    </start>
+    <status>Active</status>
+    <variables>
+        <name>GPS_Update_Project</name>
+        <dataType>SObject</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <objectType>avnio__Project__c</objectType>
+    </variables>
+</Flow>

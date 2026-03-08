@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>64.0</apiVersion>
+    <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
+    <description>Record trigegred flow: when a Knowledge Review Assignment Record is updated, this flow updates active Knowledge Review records with the new reviewers</description>
+    <environments>Default</environments>
+    <interviewLabel>GPS Utopia Update Review Assignments {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>GPS Utopia Update Review Assignments</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>AutoLaunchedFlow</processType>
+    <recordUpdates>
+        <description>looks for an active knowledge review record and updates fields</description>
+        <name>Update_Current_Knowledge_Review</name>
+        <label>Update Current Knowledge Review</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>KnowledgeArticle__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>$Record.KnowledgeArticle__c</elementReference>
+            </value>
+        </filters>
+        <filters>
+            <field>Validation_Status__c</field>
+            <operator>NotEqualTo</operator>
+            <value>
+                <stringValue>Validated</stringValue>
+            </value>
+        </filters>
+        <inputAssignments>
+            <field>Primary_Reviewer__c</field>
+            <value>
+                <elementReference>$Record.Primary_Reviewer__c</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Record_Owner__c</field>
+            <value>
+                <elementReference>$Record.Record_Owner__c</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Secondary_Reviewer__c</field>
+            <value>
+                <elementReference>$Record.Secondary_Reviewer__c</elementReference>
+            </value>
+        </inputAssignments>
+        <object>gps_KnowledgeReview__c</object>
+    </recordUpdates>
+    <start>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Update_Current_Knowledge_Review</targetReference>
+        </connector>
+        <object>gps_Knowledge_Reviewer_Assignments__c</object>
+        <recordTriggerType>Update</recordTriggerType>
+        <triggerType>RecordAfterSave</triggerType>
+    </start>
+    <status>Obsolete</status>
+</Flow>

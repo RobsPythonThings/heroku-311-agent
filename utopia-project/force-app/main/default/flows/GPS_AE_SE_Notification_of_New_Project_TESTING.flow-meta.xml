@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <actionCalls>
+        <name>Test_Send_AE_Email</name>
+        <label>Test Send AE Email</label>
+        <locationX>50</locationX>
+        <locationY>647</locationY>
+        <actionName>emailSimple</actionName>
+        <actionType>emailSimple</actionType>
+        <flowTransactionModel>CurrentTransaction</flowTransactionModel>
+        <inputParameters>
+            <name>emailAddresses</name>
+            <value>
+                <stringValue>jake.blume@noboconsulting.com</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>emailSubject</name>
+            <value>
+                <stringValue>Test Subject AE EMail</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>emailBody</name>
+            <value>
+                <elementReference>New_Project_Email_Body_Template</elementReference>
+            </value>
+        </inputParameters>
+        <nameSegment>emailSimple</nameSegment>
+    </actionCalls>
+    <apiVersion>58.0</apiVersion>
+    <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
+    <assignments>
+        <name>Copy_4_of_Set_Variables_for_Email</name>
+        <label>Set Variables for Email</label>
+        <locationX>50</locationX>
+        <locationY>539</locationY>
+        <assignmentItems>
+            <assignToReference>GPS_Recipient_Email</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>$Record.AE__r.Email</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>GPS_Sender_Name</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <stringValue>Nobo Consulting Test</stringValue>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>GPS_Recipient_Id</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>$Record.AE__c</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Test_Send_AE_Email</targetReference>
+        </connector>
+    </assignments>
+    <decisions>
+        <name>Context</name>
+        <label>Context</label>
+        <locationX>336</locationX>
+        <locationY>323</locationY>
+        <defaultConnectorLabel>Default Outcome</defaultConnectorLabel>
+        <rules>
+            <name>Created</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>ISNEW</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <booleanValue>true</booleanValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Copy_1_of_Check_for_Security_Reviewer_Email</targetReference>
+            </connector>
+            <label>Created</label>
+        </rules>
+    </decisions>
+    <decisions>
+        <name>Copy_1_of_Check_for_Security_Reviewer_Email</name>
+        <label>Check for AE Email</label>
+        <locationX>182</locationX>
+        <locationY>431</locationY>
+        <defaultConnectorLabel>Default Outcome</defaultConnectorLabel>
+        <rules>
+            <name>Copy_1_of_Security_Reviewer_Email_Exists</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>$Record.AE__r.Email</leftValueReference>
+                <operator>IsNull</operator>
+                <rightValue>
+                    <booleanValue>false</booleanValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Copy_4_of_Set_Variables_for_Email</targetReference>
+            </connector>
+            <label>AE Email Exists</label>
+        </rules>
+    </decisions>
+    <environments>Default</environments>
+    <formulas>
+        <name>GPS_Body</name>
+        <dataType>String</dataType>
+        <expression>&quot;pleasereviewnewgpsproject  &quot;&amp;
+{!GPS_Project_URL}</expression>
+    </formulas>
+    <formulas>
+        <name>GPS_HTML_Body</name>
+        <dataType>String</dataType>
+        <expression>&quot;&lt;html&gt;&lt;body&gt;&quot; &amp;
+&quot;You have been assigned a project. Please provide sales rationale &lt;br&gt;&quot;&amp;
+&quot;&lt;a href=&apos;&quot; &amp; {!GPS_Project_URL} &amp;
+&quot;&apos;&gt;Click Here&lt;/a&gt;&quot; &amp;
+&quot;&lt;/body&gt;&lt;?html&gt;&quot;</expression>
+    </formulas>
+    <formulas>
+        <name>GPS_Project_URL</name>
+        <dataType>String</dataType>
+        <expression>&quot;https://qbranch-sfdc--avniopsful.sandbox.lightning.force.com/lightning/r/avnio__Project__c/&quot;&amp;   {!$Record.Id}&amp;&quot;/view&quot;</expression>
+    </formulas>
+    <formulas>
+        <name>ISNEW</name>
+        <dataType>Boolean</dataType>
+        <expression>ISNEW()</expression>
+    </formulas>
+    <formulas>
+        <name>RVP_Email_Exists</name>
+        <dataType>String</dataType>
+        <expression>IF(
+{!$Record.Account_RVP__r.Email} != NULL,
+{!$Record.Account_RVP__r.Email},
+&quot;&quot;
+)</expression>
+    </formulas>
+    <formulas>
+        <name>SE_Email_Exists</name>
+        <dataType>String</dataType>
+        <expression>IF(
+{!$Record.SE__r.Email} != NULL,
+{!$Record.SE__r.Email},
+&quot;&quot;
+)</expression>
+    </formulas>
+    <formulas>
+        <name>SE_First_Last</name>
+        <dataType>String</dataType>
+        <expression>IF(
+{!$Record.SE__c} != NULL,
+&quot;and {!$Record.SE__r.FirstName} {!$Record.SE__r.LastName} &quot;,
+&quot;&quot;
+)</expression>
+    </formulas>
+    <formulas>
+        <name>SE_Manager_Email_Exists</name>
+        <dataType>String</dataType>
+        <expression>IF(
+{!$Record.SE_Manager_User__r.Email} != NULL,
+{!$Record.SE_Manager_User__r.Email},
+&quot;&quot;
+)</expression>
+    </formulas>
+    <interviewLabel>GPS AE/SE Notification of New Project TESTING {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>GPS AE/SE Notification of New Project TESTING</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>AutoLaunchedFlow</processType>
+    <start>
+        <locationX>210</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Context</targetReference>
+        </connector>
+        <object>avnio__Project__c</object>
+        <recordTriggerType>CreateAndUpdate</recordTriggerType>
+        <triggerType>RecordAfterSave</triggerType>
+    </start>
+    <status>Draft</status>
+    <textTemplates>
+        <name>GNG_Complete_Email_Body_Text_Template</name>
+        <isViewedAsPlainText>false</isViewedAsPlainText>
+        <text>&lt;p&gt;Thank you &lt;span style=&quot;background-color: rgb(255, 255, 255); color: rgb(68, 68, 68);&quot;&gt;{!$Record.AE__r.FirstName} {!$Record.AE__r.LastName}&lt;/span&gt; {!SE_First_Last} for completing the request for RFx support. We are currently reviewing your request and will respond with next steps.&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;Project Name: &lt;/strong&gt;&lt;a href=&quot;https://utopia-gps.demo.lightning.force.com/builder_platform_interaction/%7B!$Record.Avnio_Project_URL__c%7D&quot; rel=&quot;noopener noreferrer&quot; target=&quot;_blank&quot;&gt;&lt;strong&gt;{!$Record.avnio__ProjectName__c}&lt;/strong&gt;&lt;/a&gt;&lt;strong&gt; &lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;Sales Organization: {!$Record.Cloud__c}&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;Region: {!$Record.avnio__Region__c}&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;Org62 Opportunity:&lt;/strong&gt;&lt;a href=&quot;https://utopia-gps.demo.lightning.force.com/%7B!$Record.Opportunity__c%7D&quot; rel=&quot;noopener noreferrer&quot; target=&quot;_blank&quot;&gt; {!$Record.Opportunity__r.Name__c} &lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;GPS Project Status: {!$Record.GPS_Project_Status__c}&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;Category: {!$Record.Category__c}&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;Questions Due Date: {!$Record.avnio__QuestionsDue__c}&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;Due Date: &lt;/strong&gt;&lt;strong style=&quot;background-color: rgb(255, 255, 255);&quot;&gt;{!$Record.avnio__DueDate__c}&lt;/strong&gt;&lt;/p&gt;</text>
+    </textTemplates>
+    <textTemplates>
+        <name>GNG_Reminder_Email_Body_Text_Template</name>
+        <isViewedAsPlainText>false</isViewedAsPlainText>
+        <text>&lt;p&gt;Reminder: &lt;span style=&quot;background-color: rgb(255, 255, 255); color: rgb(68, 68, 68);&quot;&gt;{!$Record.AE__r.FirstName} {!$Record.AE__r.LastName}&lt;/span&gt; {!SE_First_Last} we need to keep things moving as the RFx team supports a high volume of RFx. We see that your GNG is in process and has yet to be completed. GNG is to be completed within 2 business days of the release of the RFx. As this day has passed, your request is at risk and we may not be able to support you. Please complete your GNG within 1 business day of this notification.&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;Project Name: &lt;/strong&gt;&lt;a href=&quot;https://utopia-gps.demo.lightning.force.com/builder_platform_interaction/%7B!$Record.Avnio_Project_URL__c%7D&quot; rel=&quot;noopener noreferrer&quot; target=&quot;_blank&quot;&gt;&lt;strong&gt;{!$Record.avnio__ProjectName__c}&lt;/strong&gt;&lt;/a&gt;&lt;strong&gt; &lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;Sales Organization: {!$Record.Cloud__c}&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;Region: {!$Record.avnio__Region__c}&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;Org62 Opportunity:&lt;/strong&gt;&lt;a href=&quot;https://utopia-gps.demo.lightning.force.com/%7B!$Record.Opportunity__c%7D&quot; rel=&quot;noopener noreferrer&quot; target=&quot;_blank&quot;&gt; {!$Record.Opportunity__r.Name__c} &lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;GPS Project Status: {!$Record.GPS_Project_Status__c}&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;Category: {!$Record.Category__c}&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;Questions Due Date: {!$Record.avnio__QuestionsDue__c}&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;Due Date: &lt;/strong&gt;&lt;strong style=&quot;background-color: rgb(255, 255, 255);&quot;&gt;{!$Record.avnio__DueDate__c}&lt;/strong&gt;&lt;/p&gt;</text>
+    </textTemplates>
+    <textTemplates>
+        <name>New_Project_Email_Body_Template</name>
+        <isViewedAsPlainText>true</isViewedAsPlainText>
+        <text>Thank you {!$Record.AE__r.FirstName} {!$Record.AE__r.LastName} for initiating a request for RFx support. We are eager to support you. Please continue to complete your Go/No Go (GNG) along with your SE. Your request along with GNG should be completed within 2 business days of the release of the RFx documents. Once completed, we typically respond to your request within 1 business day or less. As part of the GNG process, your Security Architect will also be reviewing the GNG. Note: Security Review is not required for RFIs as part of GNG. Should you have any questions in completing the GNG, please see Getting to Know Go/No Go. You may also contact us at rfx-gng-support.
+
+
+
+
+
+Project Name: {!$Record.avnio__ProjectName__c} 
+
+Sales Organization: {!$Record.Cloud__c}
+
+Region: {!$Record.avnio__Region__c}
+Org62 Opportunity: {!$Record.Opportunity__c}</text>
+    </textTemplates>
+    <variables>
+        <name>GPS_Org_Wide_Email</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <value>
+            <elementReference>$Setup.Hardcoded_Values__c.Org_Wide_Email__c</elementReference>
+        </value>
+    </variables>
+    <variables>
+        <name>GPS_Project_record_id</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+    <variables>
+        <name>GPS_Recipient_Email</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+    <variables>
+        <name>GPS_Recipient_Id</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+    <variables>
+        <name>GPS_Sender_Name</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <value>
+            <stringValue>Avnio RFP</stringValue>
+        </value>
+    </variables>
+    <variables>
+        <name>GPS_Subject</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <value>
+            <stringValue>Sample Subject</stringValue>
+        </value>
+    </variables>
+    <variables>
+        <name>GPS_Template_ID</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <value>
+            <stringValue>00X5E0000036dJy</stringValue>
+        </value>
+    </variables>
+    <variables>
+        <name>Record</name>
+        <dataType>SObject</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <objectType>avnio__Project__c</objectType>
+    </variables>
+    <variables>
+        <name>Slack_Channel_Email</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <value>
+            <elementReference>$Setup.Hardcoded_Values__c.Triage_Slack_Email_Address__c</elementReference>
+        </value>
+    </variables>
+</Flow>

@@ -1,0 +1,683 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GenAiPromptTemplate xmlns="http://soap.sforce.com/2006/04/metadata">
+    <activeVersionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_16</activeVersionIdentifier>
+    <description>Case Studies Search</description>
+    <developerName>Case_Studies_Search</developerName>
+    <masterLabel>Case Studies Search</masterLabel>
+    <templateVersions>
+        <content>Please answer this question: {!$Input:Question}
+
+Add this disclaimer on top of each response: &quot;NOTE: if you feel the answer below is not accurate, please downvote and provide feedback.&quot;
+
+Try to figure out what Salesforce product the question is referencing. Then make sure that your answer includes case studies that explicitly reference that product in the Products__c field of the information below.
+
+Return only one record per account. Pick the last updated record.
+
+Title each entry with (Name)(https://utopia-gps.demo.lightning.force.com/{recordId})
+
+Below title, structure each entry with bullets:
+- Account Name: Try to figure out which customer this case study applies to. Us the overview and name fields to try and extract the name of the account
+- Sharing Permissions: Put the value from the Sharing_Permissions__c field here
+- Region: list the value from the Region__c field here
+- Products: List the products from the Products__c field here
+- Use Case: List the value from the Use_Cases__c field here
+- Overview: summarize the contents of the Overview__c field in 1 or 2 sentences.
+
+After extracting this information, make sure you have 3 distinct case studies for 3 distinct accounts.
+
+Use this information to answer the question: {!$EinsteinSearch:Default_Case_Studies_c_Home_Retriever_1Cx_co1c56b2f9e.results}
+</content>
+        <inputs>
+            <apiName>Question</apiName>
+            <definition>primitive://String</definition>
+            <masterLabel>Question</masterLabel>
+            <referenceName>Input:Question</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultOpenAIGPT4OmniMini</primaryModel>
+        <status>Published</status>
+        <templateDataProviders>
+            <definition>invocable://getEinsteinRetrieverResults/Default_Case_Studies_c_Home_Retriever_1Cx_co1c56b2f9e</definition>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>searchText</parameterName>
+                <valueExpression>{!$Input:Question}</valueExpression>
+            </parameters>
+            <referenceName>EinsteinSearch:Default_Case_Studies_c_Home_Retriever_1Cx_co1c56b2f9e</referenceName>
+        </templateDataProviders>
+        <versionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_1</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>Please answer this question: {!$Input:Question}
+
+Add this disclaimer on top of each response: &quot;NOTE: if you feel the answer below is not accurate, please downvote and provide feedback.&quot;
+
+Try to figure out what Salesforce product the question is referencing. Then make sure that your answer includes case studies that explicitly reference that product in the Products__c field of the information below.
+
+Return only one record per account. Pick the last updated record.
+
+Title each entry with (Name)(https://utopia-gps.demo.lightning.force.com/{recordId})
+
+Below title, structure each entry with bullets:
+- Account Name: Try to figure out which customer this case study applies to. Us the overview and name fields to try and extract the name of the account
+- Sharing Permissions: Put the value from the Sharing_Permissions__c field here
+- Region: list the value from the Region__c field here
+- Products: List the products from the Products__c field here
+- Use Case: List the value from the Use_Cases__c field here
+- Overview: summarize the contents of the Overview__c field in 1 or 2 sentences.
+
+After extracting this information, make sure you have 3 distinct case studies for 3 distinct accounts.
+
+Use this information to answer the question: {!$EinsteinSearch:Default_Case_Studies_c_Home_Retriever_1Cx_co1c56b2f9e.results}
+</content>
+        <inputs>
+            <apiName>Question</apiName>
+            <definition>primitive://String</definition>
+            <masterLabel>Question</masterLabel>
+            <referenceName>Input:Question</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultVertexAIGemini20Flash001</primaryModel>
+        <status>Published</status>
+        <templateDataProviders>
+            <definition>invocable://getEinsteinRetrieverResults/Default_Case_Studies_c_Home_Retriever_1Cx_co1c56b2f9e</definition>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>searchText</parameterName>
+                <valueExpression>{!$Input:Question}</valueExpression>
+            </parameters>
+            <referenceName>EinsteinSearch:Default_Case_Studies_c_Home_Retriever_1Cx_co1c56b2f9e</referenceName>
+        </templateDataProviders>
+        <versionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_2</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>Please answer this question: {!$Input:Question}
+
+Add this disclaimer on top of each response: &quot;NOTE: if you feel the answer below is not accurate, please downvote and provide feedback.&quot;
+
+Try to figure out what Salesforce product the question is referencing. Then make sure that your answer includes case studies that explicitly reference that product in the Products__c field of the information below.
+
+Return only one record per account. Pick the last updated record.
+
+Title each entry with (Name)(https://utopia-gps.demo.lightning.force.com/{recordId})
+
+Below title, structure each entry with bullets:
+- Account Name: Try to figure out which customer this case study applies to. Us the overview and name fields to try and extract the name of the account
+- Sharing Permissions: Put the value from the Sharing_Permissions__c field here
+- Region: list the value from the Region__c field here
+- Products: List the products from the Products__c field here
+- Use Case: List the value from the Use_Cases__c field here
+- Overview: summarize the contents of the Overview__c field in 1 or 2 sentences.
+
+After extracting this information, make sure you have 3 distinct case studies for 3 distinct accounts.
+
+Use this information to answer the question: {!$EinsteinSearch:Default_Case_Studies_c_Home_Retriever_1Cx_co1c56b2f9e.results}
+</content>
+        <inputs>
+            <apiName>Question</apiName>
+            <definition>primitive://String</definition>
+            <masterLabel>Question</masterLabel>
+            <referenceName>Input:Question</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultVertexAIGemini20Flash001</primaryModel>
+        <status>Published</status>
+        <templateDataProviders>
+            <definition>invocable://getEinsteinRetrieverResults/Default_Case_Studies_c_Home_Retriever_1Cx_co1c56b2f9e</definition>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>searchText</parameterName>
+                <valueExpression>{!$Input:Question}</valueExpression>
+            </parameters>
+            <referenceName>EinsteinSearch:Default_Case_Studies_c_Home_Retriever_1Cx_co1c56b2f9e</referenceName>
+        </templateDataProviders>
+        <versionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_3</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>Please answer this question: {!$Input:Question}
+
+Add this disclaimer on top of each response: &quot;NOTE: if you feel the answer below is not accurate, please downvote and provide feedback.&quot;
+
+Try to figure out what Salesforce product the question is referencing. Then make sure that your answer includes case studies that explicitly reference that product in the Products__c field of the information below.
+
+Return only one record per account. Pick the last updated record.
+
+Title each entry with (Name)(https://utopia-gps.demo.lightning.force.com/lightning/r/Case_Studies__c/{recordId})
+
+Below title, structure each entry with bullets:
+- Account Name: Try to figure out which customer this case study applies to. Us the overview and name fields to try and extract the name of the account
+- Sharing Permissions: Put the value from the Sharing_Permissions__c field here
+- Region: list the value from the Region__c field here
+- Products: List the products from the Products__c field here
+- Use Case: List the value from the Use_Cases__c field here
+- Overview: summarize the contents of the Overview__c field in 1 or 2 sentences.
+
+After extracting this information, make sure you have 3 distinct case studies for 3 distinct accounts.
+
+Use this information to answer the question: {!$EinsteinSearch:Default_Case_Studies_c_Home_Retriever_1Cx_co1c56b2f9e.results}
+</content>
+        <inputs>
+            <apiName>Question</apiName>
+            <definition>primitive://String</definition>
+            <masterLabel>Question</masterLabel>
+            <referenceName>Input:Question</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultOpenAIGPT4OmniMini</primaryModel>
+        <status>Published</status>
+        <templateDataProviders>
+            <definition>invocable://getEinsteinRetrieverResults/Default_Case_Studies_c_Home_Retriever_1Cx_co1c56b2f9e</definition>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>searchText</parameterName>
+                <valueExpression>{!$Input:Question}</valueExpression>
+            </parameters>
+            <referenceName>EinsteinSearch:Default_Case_Studies_c_Home_Retriever_1Cx_co1c56b2f9e</referenceName>
+        </templateDataProviders>
+        <versionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_4</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>Please answer this question: {!$Input:Question}
+
+Add this disclaimer on top of each response: &quot;NOTE: if you feel the answer below is not accurate, please downvote and provide feedback.&quot;
+
+Try to figure out what Salesforce product the question is referencing. Then make sure that your answer includes case studies that explicitly reference that product in the Products__c field of the information below.
+
+Return only one record per account. Pick the last updated record.
+
+Title each entry with (Name)(https://utopia-gps.demo.lightning.force.com/lightning/r/Case_Studies__c/{recordId})
+
+Below title, structure each entry with bullets:
+- Account Name: Try to figure out which customer this case study applies to. Us the overview and name fields to try and extract the name of the account
+- Sharing Permissions: Put the value from the Sharing_Permissions__c field here
+- Region: list the value from the Region__c field here
+- Products: List the products from the Products__c field here
+- Use Case: List the value from the Use_Cases__c field here
+- Overview: summarize the contents of the Overview__c field in 1 or 2 sentences.
+
+After extracting this information, make sure you have 3 distinct case studies for 3 distinct accounts.
+
+Use this information to answer the question: {!$EinsteinSearch:Default_Case_Studies_c_Home_Retriever_1Cx_co1c56b2f9e.results}
+</content>
+        <inputs>
+            <apiName>Question</apiName>
+            <definition>primitive://String</definition>
+            <masterLabel>Question</masterLabel>
+            <referenceName>Input:Question</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultOpenAIGPT4OmniMini</primaryModel>
+        <status>Published</status>
+        <templateDataProviders>
+            <definition>invocable://getEinsteinRetrieverResults/Default_Case_Studies_c_Home_Retriever_1Cx_co1c56b2f9e</definition>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>searchText</parameterName>
+                <valueExpression>{!$Input:Question}</valueExpression>
+            </parameters>
+            <referenceName>EinsteinSearch:Default_Case_Studies_c_Home_Retriever_1Cx_co1c56b2f9e</referenceName>
+        </templateDataProviders>
+        <versionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_5</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>Please answer this question: {!$Input:Question}
+
+Add this disclaimer on top of each response: &quot;NOTE: if you feel the answer below is not accurate, please downvote and provide feedback.&quot;
+
+Try to figure out what Salesforce product the question is referencing. Then make sure that your answer includes case studies that explicitly reference that product in the Products__c field of the information below.
+
+Return only one record per account. Pick the last updated record.
+
+Title each entry with (Name)(https://utopia-gps.demo.lightning.force.com/lightning/r/Case_Studies__c/{recordId})
+
+Below title, structure each entry with bullets:
+- Account Name: Try to figure out which customer this case study applies to. Us the overview and name fields to try and extract the name of the account
+- Sharing Permissions: Put the value from the Sharing_Permissions__c field here
+- Region: list the value from the Region__c field here
+- Products: List the products from the Products__c field here
+- Use Case: List the value from the Use_Cases__c field here
+- Overview: summarize the contents of the Overview__c field in 1 or 2 sentences.
+
+After extracting this information, make sure you have 3 distinct case studies for 3 distinct accounts.
+
+Use this information to answer the question: {!$EinsteinSearch:Default_Case_Studies_c_Home_Retriever_1Cx_co1c56b2f9e.results}
+
+</content>
+        <inputs>
+            <apiName>Question</apiName>
+            <definition>primitive://String</definition>
+            <masterLabel>Question</masterLabel>
+            <referenceName>Input:Question</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultVertexAIGemini20Flash001</primaryModel>
+        <status>Published</status>
+        <templateDataProviders>
+            <definition>invocable://getEinsteinRetrieverResults/Default_Case_Studies_c_Home_Retriever_1Cx_co1c56b2f9e</definition>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>searchText</parameterName>
+                <valueExpression>{!$Input:Question}</valueExpression>
+            </parameters>
+            <referenceName>EinsteinSearch:Default_Case_Studies_c_Home_Retriever_1Cx_co1c56b2f9e</referenceName>
+        </templateDataProviders>
+        <versionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_6</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>Please answer this question: {!$Input:Question}
+
+Add this disclaimer on top of each response: &quot;NOTE: if you feel the answer below is not accurate, please downvote and provide feedback.&quot;
+
+Try to figure out what Salesforce product the question is referencing. Then make sure that your answer includes case studies that explicitly reference that product in the Products__c field of the information below.  
+
+Return only one record per account. Pick the last updated record. 
+
+Title each entry with (Name)(https://utopia-gps--af1.sandbox.my.salesforce-setup.com/{recordId})
+
+Below title, structure each entry with bullets: 
+- Account Name: Try to figure out which customer this case study applies to. Use the overview and name fields to try and extract the name of the account
+- Sharing Permissions: Put the value from the Sharing_Permissions__c field here
+- Region: list the value from the Region__c field here
+- Products: List the products from the Products__c field here
+- Use Case: List the value from the Use_Cases__c field here
+- Overview: summarize the contents of the Overview__c field in 1 or 2 sentences.
+
+After extracting this information, make sure you have 3 distinct case studies for 3 distinct accounts.  
+
+Use this information to answer the question: {!$EinsteinSearch:Default_Case_Studies_c_Version2_Retriever_1Cx_co101996b01.results}
+
+</content>
+        <inputs>
+            <apiName>Question</apiName>
+            <definition>primitive://String</definition>
+            <masterLabel>Question</masterLabel>
+            <referenceName>Input:Question</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultVertexAIGemini20Flash001</primaryModel>
+        <status>Draft</status>
+        <templateDataProviders>
+            <definition>invocable://getEinsteinRetrieverResults/Default_Case_Studies_c_Version2_Retriever_1Cx_co101996b01</definition>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>searchText</parameterName>
+                <valueExpression>{!$Input:Question}</valueExpression>
+            </parameters>
+            <referenceName>EinsteinSearch:Default_Case_Studies_c_Version2_Retriever_1Cx_co101996b01</referenceName>
+        </templateDataProviders>
+        <versionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_9</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>Please answer this question: {!$Input:Question}
+
+Add this disclaimer on top of each response: &quot;NOTE: if you feel the answer below is not accurate, please downvote and provide feedback.&quot;
+
+Try to figure out what Salesforce product the question is referencing. Then make sure that your answer includes case studies that explicitly reference that product in the Products__c field of the information below.
+
+Return only one record per account. Pick the last updated record.
+
+Title each entry with (Name)(https://utopia-gps.demo.lightning.force.com/lightning/r/Case_Studies__c/{recordId})
+
+Below title, structure each entry with bullets:
+- Account Name: Try to figure out which customer this case study applies to. Us the overview and name fields to try and extract the name of the account
+- Sharing Permissions: Put the value from the Sharing_Permissions__c field here
+- Region: list the value from the Region__c field here
+- Products: List the products from the Products__c field here
+- Use Case: List the value from the Use_Cases__c field here
+- Overview: summarize the contents of the Overview__c field in 1 or 2 sentences.
+
+After extracting this information, make sure you have 3 distinct case studies for 3 distinct accounts.
+
+Use this information to answer the question: {!$EinsteinSearch:Case_Studies_c_Home_Retriever_1Cx_co18fa1899d.results}
+
+</content>
+        <inputs>
+            <apiName>Question</apiName>
+            <definition>primitive://String</definition>
+            <masterLabel>Question</masterLabel>
+            <referenceName>Input:Question</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultVertexAIGemini20Flash001</primaryModel>
+        <status>Published</status>
+        <templateDataProviders>
+            <definition>invocable://getEinsteinRetrieverResults/Case_Studies_c_Home_Retriever_1Cx_co18fa1899d</definition>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>searchText</parameterName>
+                <valueExpression>{!$Input:Question}</valueExpression>
+            </parameters>
+            <referenceName>EinsteinSearch:Case_Studies_c_Home_Retriever_1Cx_co18fa1899d</referenceName>
+        </templateDataProviders>
+        <versionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_10</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>Please answer this question: {!$Input:Question}
+
+Add this disclaimer on top of each response: &quot;NOTE: if you feel the answer below is not accurate, please downvote and provide feedback.&quot;
+
+Try to figure out what Salesforce product the question is referencing. Then make sure that your answer includes case studies that explicitly reference that product in the Products__c field of the information below.
+
+Return only one record per account. Pick the last updated record.
+
+Title each entry with (Name)(https://utopia-gps.demo.lightning.force.com/lightning/r/Case_Studies__c/{recordId}/view)
+
+Below title, structure each entry with bullets:
+- Account Name: Try to figure out which customer this case study applies to. Us the overview and name fields to try and extract the name of the account
+- Sharing Permissions: Put the value from the Sharing_Permissions__c field here
+- Region: list the value from the Region__c field here
+- Products: List the products from the Products__c field here
+- Use Case: List the value from the Use_Cases__c field here
+- Overview: summarize the contents of the Overview__c field in 1 or 2 sentences.
+
+After extracting this information, make sure you have 3 distinct case studies for 3 distinct accounts.
+
+Use this information to answer the question: {!$EinsteinSearch:Default_Case_Studies_c_Home_Retriever_1Cx_co1c56b2f9e.results}
+
+</content>
+        <inputs>
+            <apiName>Question</apiName>
+            <definition>primitive://String</definition>
+            <masterLabel>Question</masterLabel>
+            <referenceName>Input:Question</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultOpenAIGPT4OmniMini</primaryModel>
+        <status>Published</status>
+        <templateDataProviders>
+            <definition>invocable://getEinsteinRetrieverResults/Default_Case_Studies_c_Home_Retriever_1Cx_co1c56b2f9e</definition>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>searchText</parameterName>
+                <valueExpression>{!$Input:Question}</valueExpression>
+            </parameters>
+            <referenceName>EinsteinSearch:Default_Case_Studies_c_Home_Retriever_1Cx_co1c56b2f9e</referenceName>
+        </templateDataProviders>
+        <versionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_11</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>Please answer this question: {!$Input:Question}
+
+Add this disclaimer on top of each response: &quot;NOTE: If I was not able to find an exact match, I&apos;m recommending the next closest options. You can ask me again, using fewer criteria, which will allow me to look for more options. If you still feel the answer below is not accurate, please downvote and provide feedback.&quot;
+
+Try to figure out what Salesforce product the question is referencing. Then make sure that your answer includes case studies that explicitly reference that product in the Products__c field of the information below.
+
+Return only one record per account. Pick the last updated record.
+
+Generate your response using HTML rich text.
+
+Do not mention &quot;```html&quot; on top.
+
+Title each entry with clickable hyperlink: value: Name - hyperlink: https://utopia-gps.demo.lightning.force.com/lightning/r/Case_Studies__c/{recordId}/view
+
+Below title, structure each entry with bullets:
+- Account Name: Try to figure out which customer this case study applies to. Us the overview and name fields to try and extract the name of the account
+- Sharing Permissions: Put the value from the Sharing_Permissions__c field here
+- Region: list the value from the Region__c field here
+- Products: List the products from the Products__c field here
+- Use Case: List the value from the Use_Cases__c field here
+- Overview: summarize the contents of the Overview__c field in 1 or 2 sentences.
+
+Format each entry as follow: &lt;b&gt;Title&lt;/b&gt;&lt;br /&gt;&lt;b&gt;Account Name:&lt;/b&gt; (value)&lt;br /&gt;&lt;b&gt;Sharing Permissions:&lt;/b&gt; (value)&lt;br /&gt;&lt;b&gt;Region:&lt;/b&gt; (value)&lt;br /&gt;&lt;b&gt;Products:&lt;/b&gt; (value)&lt;br /&gt;&lt;b&gt;Use Case:&lt;/b&gt; (value)&lt;br /&gt;&lt;b&gt;Overview:&lt;/b&gt; (value)
+
+Avoid line spacing in each line of each entry, make it look like a record card.
+
+After extracting this information, make sure you have 3 distinct case studies for 3 distinct accounts. If no record match the full ask of the question, do not return any record.
+
+Try to replicate a record card per each record in the answer.
+
+Use this information to answer the question: {!$EinsteinSearch:Default_Case_Studies_c_Home_Retriever_1Cx_co1c56b2f9e.results}
+
+</content>
+        <inputs>
+            <apiName>Question</apiName>
+            <definition>primitive://String</definition>
+            <masterLabel>Question</masterLabel>
+            <referenceName>Input:Question</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultOpenAIGPT4OmniMini</primaryModel>
+        <status>Published</status>
+        <templateDataProviders>
+            <definition>invocable://getEinsteinRetrieverResults/Default_Case_Studies_c_Home_Retriever_1Cx_co1c56b2f9e</definition>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>searchText</parameterName>
+                <valueExpression>{!$Input:Question}</valueExpression>
+            </parameters>
+            <referenceName>EinsteinSearch:Default_Case_Studies_c_Home_Retriever_1Cx_co1c56b2f9e</referenceName>
+        </templateDataProviders>
+        <versionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_12</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>Please answer this question: {!$Input:Question}
+
+Add this disclaimer on top of each response: &quot;NOTE: If I was not able to find an exact match, I&apos;m recommending the next closest options. You can ask me again, using fewer criteria, which will allow me to look for more options. If you still feel the answer below is not accurate, please downvote and provide feedback.&quot;
+
+Try to figure out what Salesforce product the question is referencing. Then make sure that your answer includes case studies that explicitly reference that product in the Products__c field of the information below.
+
+Return only one record per account. Pick the last updated record.
+
+Generate your response using HTML rich text.
+
+Do not mention &quot;```html&quot; on top.
+
+Title each entry with clickable hyperlink: value: Name - hyperlink: https://utopia-gps.demo.lightning.force.com/lightning/r/Case_Studies__c/{recordId}/view
+
+Below title, structure each entry with bullets:
+- Account Name: Try to figure out which customer this case study applies to. Us the overview and name fields to try and extract the name of the account
+- Sharing Permissions: Put the value from the Sharing_Permissions__c field here
+- Region: list the value from the Region__c field here
+- Products: List the products from the Products__c field here
+- Use Case: List the value from the Use_Cases__c field here
+- Overview: summarize the contents of the Overview__c field in 1 or 2 sentences.
+
+Format each entry as follow: &lt;b&gt;Title&lt;/b&gt;&lt;br /&gt;&lt;b&gt;Account Name:&lt;/b&gt; (value)&lt;br /&gt;&lt;b&gt;Sharing Permissions:&lt;/b&gt; (value)&lt;br /&gt;&lt;b&gt;Region:&lt;/b&gt; (value)&lt;br /&gt;&lt;b&gt;Products:&lt;/b&gt; (value)&lt;br /&gt;&lt;b&gt;Use Case:&lt;/b&gt; (value)&lt;br /&gt;&lt;b&gt;Overview:&lt;/b&gt; (value)
+
+Avoid line spacing in each line of each entry, make it look like a record card.
+
+After extracting this information, make sure you have 3 distinct case studies for 3 distinct accounts. If no record match the full ask of the question, do not return any record.
+
+Try to replicate a record card per each record in the answer.
+
+Use this information to answer the question: {!$EinsteinSearch:Case_Studies_c_Home_Retriever_1Cx_co18fa1899d.results}
+
+</content>
+        <inputs>
+            <apiName>Question</apiName>
+            <definition>primitive://String</definition>
+            <masterLabel>Question</masterLabel>
+            <referenceName>Input:Question</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultOpenAIGPT4OmniMini</primaryModel>
+        <status>Published</status>
+        <templateDataProviders>
+            <definition>invocable://getEinsteinRetrieverResults/Case_Studies_c_Home_Retriever_1Cx_co18fa1899d</definition>
+            <label>Case_Studies__c_Home Retriever</label>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>searchText</parameterName>
+                <valueExpression>{!$Input:Question}</valueExpression>
+            </parameters>
+            <referenceName>EinsteinSearch:Case_Studies_c_Home_Retriever_1Cx_co18fa1899d</referenceName>
+        </templateDataProviders>
+        <versionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_13</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>You are a highly effective search assistant specializing in Salesforce case studies. Your goal is to find the most relevant case studies based on the user&apos;s query, prioritize exact matches, and provide clear alternatives if exact matches are not found.
+
+**User&apos;s Request:** {!$Input:Question}
+
+**Search Instructions:**
+
+1. **Product Identification:** First, analyze the user&apos;s query (`{!$Input:Question}`) to identify the specific Salesforce product being referenced (e.g., Sales Cloud, Service Cloud, Marketing Cloud, Tableau, Mulesoft, etc.). This product must be explicitly present in the `Products__c` field of the case study results.
+
+2. **Case Study Retrieval:**
+{!$EinsteinSearch:Case_Studies_c_Home_Retriever_1Cx_co18fa1899d.results}
+
+3. **Filtering and Prioritization:**
+    * **Exact Match Preference:** Prioritize case studies that are an exact match for the identified Salesforce product and other key criteria from the user&apos;s query.
+ of distinct case studies to a maximum of 3. If no records fully match the user&apos;s criteria
+    * **One Record Per Account:** Return only one case study per unique account. If multiple records exist for the same account, select the one with the most recent `LastModifiedDate`.
+    * **Maximum Results:** Limit the total number of distinct case studies to a maximum of 3. If no records fully match the user&apos;s criteria (especially the explicit product reference), return no records.
+
+**Output Formatting (HTML Rich Text):**
+&lt;b&gt;&lt;a href=&quot;[https://utopia-gps--af1.sandbox.my.salesforce-setup.com/](https://utopia-gps--af1.sandbox.my.salesforce-setup.com/){recordId}&quot;&gt;{Name}&lt;/a&gt;&lt;/b&gt;&lt;br /&gt;
+&lt;b&gt;Account Name:&lt;/b&gt; {Extract account name from Overview__c or Name field}&lt;br /&gt;
+&lt;b&gt;Sharing Permissions:&lt;/b&gt; {Sharing_Permissions__c value}&lt;br /&gt;
+&lt;b&gt;Region:&lt;/b&gt; {Region__c value}&lt;br /&gt;
+&lt;b&gt;Products:&lt;/b&gt; {Products__c value}&lt;br /&gt;
+&lt;b&gt;Use Case:&lt;/b&gt; {Use_Cases__c value}&lt;br /&gt;
+&lt;b&gt;Overview:&lt;/b&gt; {Summarize Overview__c in 1-2 sentences}&lt;br /&gt;
+&lt;b&gt;Match Quality:&lt;/b&gt; {Assess the match quality as &quot;High,&quot; &quot;Medium,&quot; or &quot;Low&quot;}. Reason: {Provide a one-sentence reason for the score, e.g., &quot;The case study directly mentions all keywords from your query and the specified Salesforce product.&quot; or &quot;The case study mentions the specified product but only some of the additional keywords.&quot;}&lt;br /&gt;&lt;br /&gt;
+
+**Line Spacing:**
+Do not add any line spacing in between each line of each entry.
+
+**Disclaimer (Conditionally Displayed):**
+If, after performing the search and filtering, you were unable to find an *exact match* for the identified Salesforce product or the full criteria of the user&apos;s query, prepend the entire response with the following HTML disclaimer:&lt;p&gt;&lt;b&gt;NOTE:&lt;/b&gt; If I was not able to find an exact match, I&apos;m recommending the next closest options. You can ask me again, using fewer criteria, which will allow me to look for more options. If you still feel the answer below is not accurate, please downvote and provide feedback.&lt;/p&gt;&lt;br&gt;
+
+</content>
+        <inputs>
+            <apiName>Question</apiName>
+            <definition>primitive://String</definition>
+            <masterLabel>Question</masterLabel>
+            <referenceName>Input:Question</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultOpenAIGPT4OmniMini</primaryModel>
+        <status>Draft</status>
+        <templateDataProviders>
+            <definition>invocable://getEinsteinRetrieverResults/Case_Studies_c_Home_Retriever_1Cx_co18fa1899d</definition>
+            <label>Case_Studies__c_Home Retriever</label>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>searchText</parameterName>
+                <valueExpression>{!$Input:Question}</valueExpression>
+            </parameters>
+            <referenceName>EinsteinSearch:Case_Studies_c_Home_Retriever_1Cx_co18fa1899d</referenceName>
+        </templateDataProviders>
+        <versionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_14</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>You are a highly effective search assistant specializing in Salesforce case studies. Your goal is to find the most relevant case studies based on the user&apos;s query, prioritize exact matches, and provide clear alternatives if exact matches are not found.
+
+**User&apos;s Request:** {!$Input:Question}
+
+**Search Instructions:**
+
+1. **Product Identification:** First, analyze the user&apos;s query (`{!$Input:Question}`) to identify the specific Salesforce product being referenced (e.g., Sales Cloud, Service Cloud, Marketing Cloud, Tableau, Mulesoft, etc.). This product must be explicitly present in the `Products__c` field of the case study results.
+
+2. **Case Study Retrieval:**
+{!$EinsteinSearch:Case_Studies_c_Home_Retriever_1Cx_co18fa1899d.results}
+
+3. **Filtering and Prioritization:**
+    * **Exact Match Preference:** Prioritize case studies that are an exact match for the identified Salesforce product and other key criteria from the user&apos;s query.
+ of distinct case studies to a maximum of 3. If no records fully match the user&apos;s criteria
+    * **One Record Per Account:** Return only one case study per unique account. If multiple records exist for the same account, select the one with the most recent `LastModifiedDate`.
+    * **Maximum Results:** Limit the total number of distinct case studies to a maximum of 3. If no records fully match the user&apos;s criteria (especially the explicit product reference), return no records.
+
+**Output Formatting (HTML Rich Text):**
+&lt;b&gt;&lt;a href=&quot;[https://utopia-gps.demo.lightning.force.com/lightning/r/Case_Studies__c](https://utopia-gps.demo.lightning.force.com/lightning/r/Case_Studies__c/{recordId}/view)&quot;&gt;{Name}&lt;/a&gt;&lt;/b&gt;&lt;br /&gt;
+&lt;b&gt;Account Name:&lt;/b&gt; {Extract account name from Overview__c or Name field}&lt;br /&gt;
+&lt;b&gt;Sharing Permissions:&lt;/b&gt; {Sharing_Permissions__c value}&lt;br /&gt;
+&lt;b&gt;Region:&lt;/b&gt; {Region__c value}&lt;br /&gt;
+&lt;b&gt;Products:&lt;/b&gt; {Products__c value}&lt;br /&gt;
+&lt;b&gt;Use Case:&lt;/b&gt; {Use_Cases__c value}&lt;br /&gt;
+&lt;b&gt;Overview:&lt;/b&gt; {Summarize Overview__c in 1-2 sentences}&lt;br /&gt;
+&lt;b&gt;Match Quality:&lt;/b&gt; {Assess the match quality as &quot;High,&quot; &quot;Medium,&quot; or &quot;Low&quot;}. Reason: {Provide a one-sentence reason for the score, e.g., &quot;The case study directly mentions all keywords from your query and the specified Salesforce product.&quot; or &quot;The case study mentions the specified product but only some of the additional keywords.&quot;}&lt;br /&gt;&lt;br /&gt;
+
+**Line Spacing:**
+Do not add any line spacing in between each line of each entry.
+
+**Disclaimer (Conditionally Displayed):**
+If, after performing the search and filtering, you were unable to find an *exact match* for the identified Salesforce product or the full criteria of the user&apos;s query, prepend the entire response with the following HTML disclaimer:&lt;p&gt;&lt;b&gt;NOTE:&lt;/b&gt; If I was not able to find an exact match, I&apos;m recommending the next closest options. You can ask me again, using fewer criteria, which will allow me to look for more options. If you still feel the answer below is not accurate, please downvote and provide feedback.&lt;/p&gt;&lt;br&gt;
+
+</content>
+        <inputs>
+            <apiName>Question</apiName>
+            <definition>primitive://String</definition>
+            <masterLabel>Question</masterLabel>
+            <referenceName>Input:Question</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultOpenAIGPT4OmniMini</primaryModel>
+        <status>Published</status>
+        <templateDataProviders>
+            <definition>invocable://getEinsteinRetrieverResults/Case_Studies_c_Home_Retriever_1Cx_co18fa1899d</definition>
+            <label>Case_Studies__c_Home Retriever</label>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>searchText</parameterName>
+                <valueExpression>{!$Input:Question}</valueExpression>
+            </parameters>
+            <referenceName>EinsteinSearch:Case_Studies_c_Home_Retriever_1Cx_co18fa1899d</referenceName>
+        </templateDataProviders>
+        <versionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_15</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>You are a highly effective search assistant specializing in Salesforce case studies. Your goal is to find the most relevant case studies based on the user&apos;s query, prioritize exact matches, and provide clear alternatives if exact matches are not found.
+
+**User&apos;s Request:** {!$Input:Question}
+
+**Search Instructions:**
+
+1. **Product Identification:** First, analyze the user&apos;s query (`{!$Input:Question}`) to identify the specific Salesforce product being referenced (e.g., Sales Cloud, Service Cloud, Marketing Cloud, Tableau, Mulesoft, etc.). This product must be explicitly present in the `Products__c` field of the case study results.
+
+2. **Case Study Retrieval:**
+{!$EinsteinSearch:Case_Studies_c_Home_Retriever_1Cx_co18fa1899d.results}
+
+3. **Filtering and Prioritization:**
+    * **Exact Match Preference:** Prioritize case studies that are an exact match for the identified Salesforce product and other key criteria from the user&apos;s query.
+ of distinct case studies to a maximum of 3. If no records fully match the user&apos;s criteria
+    * **One Record Per Account:** Return only one case study per unique account. If multiple records exist for the same account, select the one with the most recent `LastModifiedDate`.
+    * **Maximum Results:** Limit the total number of distinct case studies to a maximum of 3. If no records fully match the user&apos;s criteria (especially the explicit product reference), return no records.
+
+**Output Formatting (HTML Rich Text):**
+Generate a list of case studies. For each case study, produce a single line of text with HTML breaks (`&lt;br /&gt;`) embedded within it. Do not use separate lines for each field. The entire case study entry must be a single string. Add a single line break (`&lt;br /&gt;`) between each full case study entry.
+&lt;b&gt;&lt;a href=&quot;[https://utopia-gps.demo.lightning.force.com/lightning/r/Case_Studies__c](https://utopia-gps.demo.lightning.force.com/lightning/r/Case_Studies__c/{recordId}/view)&quot;&gt;{Name}&lt;/a&gt;&lt;/b&gt;&lt;br /&gt;&lt;b&gt;Account Name:&lt;/b&gt; {Extract account name from Overview__c or Name field}&lt;br /&gt;&lt;b&gt;Sharing Permissions:&lt;/b&gt; {Sharing_Permissions__c value}&lt;br /&gt;&lt;b&gt;Region:&lt;/b&gt; {Region__c value}&lt;br /&gt;&lt;b&gt;Products:&lt;/b&gt; {Products__c value}&lt;br /&gt;&lt;b&gt;Use Case:&lt;/b&gt; {Use_Cases__c value}&lt;br /&gt;&lt;b&gt;Overview:&lt;/b&gt; {Summarize Overview__c in 1-2 sentences}&lt;br /&gt;&lt;b&gt;Match Quality:&lt;/b&gt; {Assess the match quality as &quot;High,&quot; &quot;Medium,&quot; or &quot;Low&quot;}. Reason: {Provide a one-sentence reason for the score, e.g., &quot;The case study directly mentions all keywords from your query and the specified Salesforce product.&quot; or &quot;The case study mentions the specified product but only some of the additional keywords.&quot;}&lt;br /&gt;&lt;br /&gt;
+
+
+**Disclaimer (Conditionally Displayed):**
+If, after performing the search and filtering, you were unable to find an *exact match* for the identified Salesforce product or the full criteria of the user&apos;s query, prepend the entire response with the following HTML disclaimer:&lt;p&gt;&lt;b&gt;NOTE:&lt;/b&gt; If I was not able to find an exact match, I&apos;m recommending the next closest options. You can ask me again, using fewer criteria, which will allow me to look for more options. If you still feel the answer below is not accurate, please downvote and provide feedback.&lt;/p&gt;&lt;br&gt;
+
+</content>
+        <inputs>
+            <apiName>Question</apiName>
+            <definition>primitive://String</definition>
+            <masterLabel>Question</masterLabel>
+            <referenceName>Input:Question</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultOpenAIGPT4OmniMini</primaryModel>
+        <status>Published</status>
+        <templateDataProviders>
+            <definition>invocable://getEinsteinRetrieverResults/Case_Studies_c_Home_Retriever_1Cx_co18fa1899d</definition>
+            <label>Case_Studies__c_Home Retriever</label>
+            <parameters>
+                <definition>primitive://String</definition>
+                <isRequired>true</isRequired>
+                <parameterName>searchText</parameterName>
+                <valueExpression>{!$Input:Question}</valueExpression>
+            </parameters>
+            <referenceName>EinsteinSearch:Case_Studies_c_Home_Retriever_1Cx_co18fa1899d</referenceName>
+        </templateDataProviders>
+        <versionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_16</versionIdentifier>
+    </templateVersions>
+    <type>einstein_gpt__flex</type>
+    <visibility>Global</visibility>
+</GenAiPromptTemplate>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <actionCalls>
+        <name>Initiate_Updates</name>
+        <label>Initiate Updates</label>
+        <locationX>176</locationX>
+        <locationY>134</locationY>
+        <actionName>UpdateArticlesForNewRelease</actionName>
+        <actionType>apex</actionType>
+        <flowTransactionModel>Automatic</flowTransactionModel>
+        <nameSegment>UpdateArticlesForNewRelease</nameSegment>
+        <offset>0</offset>
+    </actionCalls>
+    <apiVersion>63.0</apiVersion>
+    <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
+    <customProperties>
+        <name>ScreenProgressIndicator</name>
+        <value>
+            <stringValue>{&quot;location&quot;:&quot;top&quot;,&quot;type&quot;:&quot;simple&quot;}</stringValue>
+        </value>
+    </customProperties>
+    <description>This flow will launch batch jobs that generate new draft articles for the PS Section Names below against Jarvis
+
+Section: Artificial Intelligence
+Section: Business Intelligence and Data Exploration
+Section: CRM Sales Force Automation
+Section: Customer Service &amp; Support
+Section: Digital Experience
+Section: Ease of Administration
+Section: Enterprise Collaboration
+Section: Extensibility
+Section: Field Service
+Section: General Application Capability
+Section: Infrastructure and Security
+Section: Integration
+Section: Licensing, Permitting, and Inspection
+Section: Mobile
+Section: MuleSoft
+Section: Public Sector Solutions
+Section: Reporting and Dashboards
+Section: Slack
+Section: Tableau</description>
+    <environments>Default</environments>
+    <interviewLabel>Create Draft Articles via Jarvis {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>Create Draft Articles via Jarvis</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>Flow</processType>
+    <start>
+        <locationX>50</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Initiate_Updates</targetReference>
+        </connector>
+    </start>
+    <status>Active</status>
+</Flow>

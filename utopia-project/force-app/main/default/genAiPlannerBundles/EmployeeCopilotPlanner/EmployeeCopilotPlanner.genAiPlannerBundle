@@ -1,0 +1,802 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GenAiPlannerBundle xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <attributeMappings>
+        <attributeName>Article_Translation_16jMM00000000xh.GPS_Agent_Translation2_179MM00000004A5.input_KnowledgeArticleId</attributeName>
+        <attributeType>CustomPluginFunctionAttribute</attributeType>
+        <mappingTargetName>currentRecordId</mappingTargetName>
+        <mappingType>Variable</mappingType>
+    </attributeMappings>
+    <description>Planner for ReAct-based Employee copilot.</description>
+    <localActionLinks>
+        <genAiFunctionName>AnswerQuestionsWithKnowledge_16jMM00000000xh</genAiFunctionName>
+    </localActionLinks>
+    <localTopicLinks>
+        <genAiPluginName>Article_Translation_16jMM00000000xh</genAiPluginName>
+    </localTopicLinks>
+    <localTopicLinks>
+        <genAiPluginName>Case_Studies_Search_16jMM00000000xh</genAiPluginName>
+    </localTopicLinks>
+    <localTopicLinks>
+        <genAiPluginName>GeneralCRM</genAiPluginName>
+    </localTopicLinks>
+    <localTopicLinks>
+        <genAiPluginName>GeneralFAQ</genAiPluginName>
+    </localTopicLinks>
+    <localTopicLinks>
+        <genAiPluginName>OOTBSingleRecordSummary</genAiPluginName>
+    </localTopicLinks>
+    <localTopics>
+        <fullName>Article_Translation_16jMM00000000xh</fullName>
+        <aiPluginUtterances>
+            <developerName>utterance_translatea0</developerName>
+            <language>en_US</language>
+            <masterLabel>utterance_translatea0</masterLabel>
+            <utterance>translate article</utterance>
+        </aiPluginUtterances>
+        <canEscalate>false</canEscalate>
+        <description>Handles requests related to translating  knowledge articles into different languages. Useful for users needing content in their preferred language.</description>
+        <developerName>Article_Translation_16jMM00000000xh</developerName>
+        <genAiPluginInstructions>
+            <description>If the user does not provide a target language for translation, then ask the user for a language.</description>
+            <developerName>instruction_ifauserreq0</developerName>
+            <language>en_US</language>
+            <masterLabel>instruction_ifauserreq0</masterLabel>
+            <sortOrder>1</sortOrder>
+        </genAiPluginInstructions>
+        <genAiPluginInstructions>
+            <description>If the translation service is unavailable, inform the user and suggest alternative ways to get the article translated.</description>
+            <developerName>instruction_ifthetrans1</developerName>
+            <language>en_US</language>
+            <masterLabel>instruction_ifthetrans1</masterLabel>
+            <sortOrder>2</sortOrder>
+        </genAiPluginInstructions>
+        <genAiPluginInstructions>
+            <description>If the user is not on a knowledge article record page then ask what article they want translated</description>
+            <developerName>instruction_iftheuseri2</developerName>
+            <language>en_US</language>
+            <masterLabel>instruction_iftheuseri2</masterLabel>
+            <sortOrder>3</sortOrder>
+        </genAiPluginInstructions>
+        <genAiPluginInstructions>
+            <description>Use the currentRecordId as the Article to be translated</description>
+            <developerName>instruction_usethecurr3</developerName>
+            <language>en_US</language>
+            <masterLabel>instruction_usethecurr3</masterLabel>
+            <sortOrder>4</sortOrder>
+        </genAiPluginInstructions>
+        <genAiPluginInstructions>
+            <description>When a customer is unsure about the languages, provide a list of supported languages for translation.</description>
+            <developerName>instruction_whenacusto4</developerName>
+            <language>en_US</language>
+            <masterLabel>instruction_whenacusto4</masterLabel>
+            <sortOrder>5</sortOrder>
+        </genAiPluginInstructions>
+        <language>en_US</language>
+        <localActionLinks>
+            <functionName>GPS_Agent_Translation2_179MM00000004A5</functionName>
+        </localActionLinks>
+        <localActions>
+            <fullName>GPS_Agent_Translation2_179MM00000004A5</fullName>
+            <description>Flow for agent to translate knowledge articles</description>
+            <developerName>GPS_Agent_Translation2_179MM00000004A5</developerName>
+            <invocationTarget>GPS_Agent_Translation</invocationTarget>
+            <invocationTargetType>flow</invocationTargetType>
+            <isConfirmationRequired>false</isConfirmationRequired>
+            <isIncludeInProgressIndicator>true</isIncludeInProgressIndicator>
+            <localDeveloperName>GPS_Agent_Translation2</localDeveloperName>
+            <mappingAttributes>
+                <label>KnowledgeArticleId</label>
+                <name>input_KnowledgeArticleId</name>
+                <parameterName>KnowledgeArticleId</parameterName>
+                <parameterType>input</parameterType>
+            </mappingAttributes>
+            <masterLabel>GPS - Agent Translation2</masterLabel>
+            <progressIndicatorMessage>Translating</progressIndicatorMessage>
+            <source>GPS_Agent_Translation2</source>
+        </localActions>
+        <localDeveloperName>Article_Translation</localDeveloperName>
+        <masterLabel>Article Translation</masterLabel>
+        <pluginType>Topic</pluginType>
+        <scope>Your job is only to assist users in translating  knowledge articles. Do not provide translations for non-article content or handle requests outside of translation.</scope>
+    </localTopics>
+    <localTopics>
+        <fullName>OOTBSingleRecordSummary</fullName>
+        <aiPluginUtterances>
+            <developerName>utterance_0_1757607511600</developerName>
+            <language xsi:nil="true"/>
+            <masterLabel>utterance_0_1757607511600</masterLabel>
+            <utterance>Give me a quick summary of this record.</utterance>
+        </aiPluginUtterances>
+        <aiPluginUtterances>
+            <developerName>utterance_1_1757607511600</developerName>
+            <language xsi:nil="true"/>
+            <masterLabel>utterance_1_1757607511600</masterLabel>
+            <utterance>Provide an overview of this record.</utterance>
+        </aiPluginUtterances>
+        <aiPluginUtterances>
+            <developerName>utterance_2_1757607511600</developerName>
+            <language xsi:nil="true"/>
+            <masterLabel>utterance_2_1757607511600</masterLabel>
+            <utterance>Share highlights for this record.</utterance>
+        </aiPluginUtterances>
+        <canEscalate>false</canEscalate>
+        <description>This topic is to help the user generate an out of the box summary for a SINGLE record. Use this topic when the user is requesting to summarize a single record without any additional instructions or specific filtering instructions.</description>
+        <developerName>OOTBSingleRecordSummary</developerName>
+        <genAiPluginInstructions>
+            <description>Always try to ask clarifying questions when trying to resolve the record</description>
+            <developerName>instruction_0_1757607511599</developerName>
+            <language xsi:nil="true"/>
+            <masterLabel>instruction_0_1757607511599</masterLabel>
+            <sortOrder>0</sortOrder>
+        </genAiPluginInstructions>
+        <language>en_US</language>
+        <localActionLinks>
+            <functionName>IdentifyObjectByName_179MM00000002bJ</functionName>
+        </localActionLinks>
+        <localActionLinks>
+            <functionName>IdentifyRecordByName_179MM00000002bJ</functionName>
+        </localActionLinks>
+        <localActionLinks>
+            <functionName>SummarizeRecord_179MM00000002bJ</functionName>
+        </localActionLinks>
+        <localActionLinks>
+            <functionName>QueryRecords_179MM00000002bJ</functionName>
+        </localActionLinks>
+        <localActionLinks>
+            <functionName>QueryRecordsWithAggregate_179MM00000002bJ</functionName>
+        </localActionLinks>
+        <localActions>
+            <fullName>IdentifyObjectByName_179MM00000002bJ</fullName>
+            <description>Finds the Salesforce object API name by extracting an object name from the user input.</description>
+            <developerName>IdentifyObjectByName_179MM00000002bJ</developerName>
+            <invocationTarget>identifyObject</invocationTarget>
+            <invocationTargetType>standardInvocableAction</invocationTargetType>
+            <isConfirmationRequired>false</isConfirmationRequired>
+            <isIncludeInProgressIndicator>true</isIncludeInProgressIndicator>
+            <localDeveloperName>IdentifyObjectByName</localDeveloperName>
+            <masterLabel>Identify Object by Name</masterLabel>
+            <source>EmployeeCopilot__IdentifyObjectByName</source>
+        </localActions>
+        <localActions>
+            <fullName>IdentifyRecordByName_179MM00000002bJ</fullName>
+            <description>Searches for Salesforce CRM records by name and returns a list of matching Salesforce CRM record IDs.</description>
+            <developerName>IdentifyRecordByName_179MM00000002bJ</developerName>
+            <invocationTarget>identifyRecordByName</invocationTarget>
+            <invocationTargetType>standardInvocableAction</invocationTargetType>
+            <isConfirmationRequired>false</isConfirmationRequired>
+            <isIncludeInProgressIndicator>true</isIncludeInProgressIndicator>
+            <localDeveloperName>IdentifyRecordByName</localDeveloperName>
+            <masterLabel>Identify Record by Name</masterLabel>
+            <source>EmployeeCopilot__IdentifyRecordByName</source>
+        </localActions>
+        <localActions>
+            <fullName>SummarizeRecord_179MM00000002bJ</fullName>
+            <description>Summarizes a single Salesforce CRM record. You must call summarizeRecord only if the user explicitly asks for a summary (e.g: &apos;Summary&apos;, &apos;Recap&apos;, &apos;Highlights&apos;). This action should be called only when there isn&apos;t a more specific summarization action.</description>
+            <developerName>SummarizeRecord_179MM00000002bJ</developerName>
+            <invocationTarget>getRecordSummarizationPrompt</invocationTarget>
+            <invocationTargetType>standardInvocableAction</invocationTargetType>
+            <isConfirmationRequired>false</isConfirmationRequired>
+            <isIncludeInProgressIndicator>true</isIncludeInProgressIndicator>
+            <localDeveloperName>SummarizeRecord</localDeveloperName>
+            <masterLabel>Summarize Record</masterLabel>
+            <progressIndicatorMessage>Summarizing</progressIndicatorMessage>
+            <source>EmployeeCopilot__SummarizeRecord</source>
+        </localActions>
+        <localActions>
+            <fullName>QueryRecords_179MM00000002bJ</fullName>
+            <description>Finds and retrieves Salesforce CRM records based on user input and specific conditions, such as field values. This action automatically identifies the correct records and object type. e.g. &apos;Find all open opportunities created in the last 5 days sorted by created date.&apos;</description>
+            <developerName>QueryRecords_179MM00000002bJ</developerName>
+            <invocationTarget>queryRecords</invocationTarget>
+            <invocationTargetType>standardInvocableAction</invocationTargetType>
+            <isConfirmationRequired>false</isConfirmationRequired>
+            <isIncludeInProgressIndicator>true</isIncludeInProgressIndicator>
+            <localDeveloperName>QueryRecords</localDeveloperName>
+            <masterLabel>Query Records</masterLabel>
+            <source>EmployeeCopilot__QueryRecords</source>
+        </localActions>
+        <localActions>
+            <fullName>QueryRecordsWithAggregate_179MM00000002bJ</fullName>
+            <description>Answers aggregation questions (such as count, sum, max, min, or average) about Salesforce CRM data based on the user input and specific conditions, such as field values. For example &apos;Find the number of open opportunities created in the last 5 days.&apos;</description>
+            <developerName>QueryRecordsWithAggregate_179MM00000002bJ</developerName>
+            <invocationTarget>queryRecordsWithAggregate</invocationTarget>
+            <invocationTargetType>standardInvocableAction</invocationTargetType>
+            <isConfirmationRequired>false</isConfirmationRequired>
+            <isIncludeInProgressIndicator>true</isIncludeInProgressIndicator>
+            <localDeveloperName>QueryRecordsWithAggregate</localDeveloperName>
+            <masterLabel>Query Records with Aggregate</masterLabel>
+            <source>EmployeeCopilot__QueryRecordsWithAggregate</source>
+        </localActions>
+        <masterLabel>Single Record Summary</masterLabel>
+        <pluginType>Topic</pluginType>
+        <scope>Your job is to provide a rich summary of a Salesforce CRM record</scope>
+        <source>EmployeeCopilot__OOTBSingleRecordSummary</source>
+    </localTopics>
+    <localTopics>
+        <fullName>Case_Studies_Search_16jMM00000000xh</fullName>
+        <aiPluginUtterances>
+            <developerName>utterance_dowehavesu0</developerName>
+            <language xsi:nil="true"/>
+            <masterLabel>utterance_dowehavesu0</masterLabel>
+            <utterance>Do we have 3 success stories with a process improvement use case?</utterance>
+        </aiPluginUtterances>
+        <aiPluginUtterances>
+            <developerName>utterance_providecas1</developerName>
+            <language xsi:nil="true"/>
+            <masterLabel>utterance_providecas1</masterLabel>
+            <utterance>Provide 3 case studies describing a Grants Management solution within the EMEA region</utterance>
+        </aiPluginUtterances>
+        <aiPluginUtterances>
+            <developerName>utterance_providecus2</developerName>
+            <language xsi:nil="true"/>
+            <masterLabel>utterance_providecus2</masterLabel>
+            <utterance>Provide 4 customer reference with MuleSoft as a product</utterance>
+        </aiPluginUtterances>
+        <canEscalate>false</canEscalate>
+        <description>Search for Case_Studies__c based on various fields such as Products__c, Use_Cases__c, Region__c, Country__c, Overview__c and/or Line_of_Business__c</description>
+        <developerName>Case_Studies_Search_16jMM00000000xh</developerName>
+        <genAiPluginInstructions>
+            <description>Always Include sources or links to sources in your response when available from the case study records</description>
+            <developerName>instruction_alwaysincl0</developerName>
+            <language xsi:nil="true"/>
+            <masterLabel>instruction_alwaysincl0</masterLabel>
+            <sortOrder>0</sortOrder>
+        </genAiPluginInstructions>
+        <genAiPluginInstructions>
+            <description>If a user provides specific fields like Product, Use Case, Region, Line of Business, or Account Name always use those to refine the search and query records.</description>
+            <developerName>instruction_ifauserpro1</developerName>
+            <language xsi:nil="true"/>
+            <masterLabel>instruction_ifauserpro1</masterLabel>
+            <sortOrder>0</sortOrder>
+        </genAiPluginInstructions>
+        <genAiPluginInstructions>
+            <description>If the user&apos;s input is unclear or too broad, prompt the user for additional details to refine the search. Offer synonyms or closely related terms to the user&apos;s input, and request confirmation to ensure the accuracy of the search results. Consult the LLM for synonyms.</description>
+            <developerName>instruction_iftheusers2</developerName>
+            <language xsi:nil="true"/>
+            <masterLabel>instruction_iftheusers2</masterLabel>
+            <sortOrder>0</sortOrder>
+        </genAiPluginInstructions>
+        <genAiPluginInstructions>
+            <description>If the user&apos;s search criteria do not return any values in the fields Products~c, Use_Cases~c, Region~c, Country~c, and/or Line_of_Business~c within the Case_Studies~c record, search for keywords within the Overview~c Rich Text Area field for keywords.</description>
+            <developerName>instruction_iftheusers3</developerName>
+            <language xsi:nil="true"/>
+            <masterLabel>instruction_iftheusers3</masterLabel>
+            <sortOrder>0</sortOrder>
+        </genAiPluginInstructions>
+        <genAiPluginInstructions>
+            <description>Refine search by Products__c based on user utterances such as &apos;Product,&apos; &apos;Products,&apos; &apos;BOM,&apos; or any related synonyms to ensure accurate matching records.</description>
+            <developerName>instruction_refinesear4</developerName>
+            <language xsi:nil="true"/>
+            <masterLabel>instruction_refinesear4</masterLabel>
+            <sortOrder>0</sortOrder>
+        </genAiPluginInstructions>
+        <genAiPluginInstructions>
+            <description>Refine search by Use_Cases__c based on user utterances such as &apos;Use Case,&apos; &apos;Use Cases,&apos; &apos;Solution,&apos; &apos;Solutions,&apos; or any related synonyms to ensure accurate matching records.</description>
+            <developerName>instruction_refinesear5</developerName>
+            <language xsi:nil="true"/>
+            <masterLabel>instruction_refinesear5</masterLabel>
+            <sortOrder>0</sortOrder>
+        </genAiPluginInstructions>
+        <genAiPluginInstructions>
+            <description>Refine search by Region__c based on user utterances such as &apos;Region,&apos; &apos;Geography,&apos; or any related synonyms to ensure accurate matching records.</description>
+            <developerName>instruction_refinesear6</developerName>
+            <language xsi:nil="true"/>
+            <masterLabel>instruction_refinesear6</masterLabel>
+            <sortOrder>0</sortOrder>
+        </genAiPluginInstructions>
+        <genAiPluginInstructions>
+            <description>Refine search by Country__c based on user utterances such as &apos;Country,&apos; or any related synonyms to ensure accurate matching records.</description>
+            <developerName>instruction_refinesear7</developerName>
+            <language xsi:nil="true"/>
+            <masterLabel>instruction_refinesear7</masterLabel>
+            <sortOrder>0</sortOrder>
+        </genAiPluginInstructions>
+        <genAiPluginInstructions>
+            <description>Refine search by Line_of_Business__c based on user utterances such as &apos;Line of Business,&apos; &apos;Industry,&apos; or any related synonyms to ensure accurate matching records.</description>
+            <developerName>instruction_refinesear8</developerName>
+            <language xsi:nil="true"/>
+            <masterLabel>instruction_refinesear8</masterLabel>
+            <sortOrder>0</sortOrder>
+        </genAiPluginInstructions>
+        <genAiPluginInstructions>
+            <description>Return only one result per each account. Pick the newest or last updated if more than one record per account.</description>
+            <developerName>instruction_returnonly9</developerName>
+            <language xsi:nil="true"/>
+            <masterLabel>instruction_returnonly9</masterLabel>
+            <sortOrder>0</sortOrder>
+        </genAiPluginInstructions>
+        <genAiPluginInstructions>
+            <description>When searching for values in the Use_Cases__c field, always consider the following synonyms:
+- search for &apos;Contact Center&apos; when terms such as &apos;contact center&apos; and &apos;call center&apos; are prompted.
+- search for &apos;Loans and Grants Management&apos; when terms such as &apos;grants management&apos;, &apos;benefits management&apos;, &apos;grants&apos;, &apos;subsidy&apos;, &apos;loans&apos;, and &apos;loans management&apos; are prompted.
+- search for &apos;Data-Driven Decisions&apos; when terms such as &apos;data-driven decisions&apos;, &apos;reporting&apos;, and &apos;data visualization&apos; are prompted.
+- search for &apos;Relationship Management / CRM&apos; when terms such as &apos;relationship management&apos;, &apos;CRM&apos;, and &apos;data management&apos; are prompted.
+If no synonyms is found, consult LLM for synonyms</description>
+            <developerName>instruction_whensearch10</developerName>
+            <language xsi:nil="true"/>
+            <masterLabel>instruction_whensearch10</masterLabel>
+            <sortOrder>0</sortOrder>
+        </genAiPluginInstructions>
+        <genAiPluginInstructions>
+            <description>Your job is to help the user find a relevant Case Study. Search for Case_Studies__c based on user utterances including: &apos;Case Studies&apos;, &apos;Case Study&apos;, &apos;Customer References&apos;, &apos;Customer Reference&apos;, &apos;Customer Stories&apos;, &apos;Customer Story&apos;, &apos;Success Stories&apos;, &apos;Success Story&apos;, &apos;Customer Wins&apos;, &apos;Customer Win&apos;, &apos;Stories&apos;, &apos;Story&apos;, &apos;References&apos;, &apos;Reference&apos;.</description>
+            <developerName>instruction_yourjobist11</developerName>
+            <language xsi:nil="true"/>
+            <masterLabel>instruction_yourjobist11</masterLabel>
+            <sortOrder>0</sortOrder>
+        </genAiPluginInstructions>
+        <language>en_US</language>
+        <localActionLinks>
+            <functionName>Case_Studies_Search_179MM00000004A6</functionName>
+        </localActionLinks>
+        <localActions>
+            <fullName>Case_Studies_Search_179MM00000004A6</fullName>
+            <description>Your task is to query case study records and return records that match the search criteria so that the user can click the source and open the records</description>
+            <developerName>Case_Studies_Search_179MM00000004A6</developerName>
+            <invocationTarget>Case_Studies_Search</invocationTarget>
+            <invocationTargetType>generatePromptResponse</invocationTargetType>
+            <isConfirmationRequired>false</isConfirmationRequired>
+            <isIncludeInProgressIndicator>false</isIncludeInProgressIndicator>
+            <localDeveloperName>Case_Studies_Search</localDeveloperName>
+            <masterLabel>Case Studies Search</masterLabel>
+            <source>Case_Studies_Search</source>
+        </localActions>
+        <localDeveloperName>Case_Studies_Search</localDeveloperName>
+        <masterLabel>Case Studies Search</masterLabel>
+        <pluginType>Topic</pluginType>
+        <scope>Your job is only to search for customer references/case studies (Case_Studies__c records) based on user queries and provide relevant results. Do not attempt to handle unrelated inquiries. Users may search for Case_Studies__c records using details such as products, use cases, region, country, line of business, and/or words included in the overview field.</scope>
+    </localTopics>
+    <localTopics>
+        <fullName>GeneralFAQ</fullName>
+        <aiPluginUtterances>
+            <developerName>utterance_0_1757607465836</developerName>
+            <language xsi:nil="true"/>
+            <masterLabel>utterance_0_1757607465836</masterLabel>
+            <utterance>Provide Salesforce superior uptime</utterance>
+        </aiPluginUtterances>
+        <canEscalate>false</canEscalate>
+        <description>This agent is an intelligent assistant for Salesforce products and business processes. It follows a strict sequential retrieval strategy: it MUST first attempt to resolve the user&apos;s query using the &quot;Answer Questions with Knowledge&quot; action. ONLY if that action yields no relevant articles or insufficient information, the agent is authorized to then invoke the &quot;ask&quot; action to retrieve technical or system-level data from the Jarvis engine.</description>
+        <developerName>GeneralFAQ</developerName>
+        <genAiPluginInstructions>
+            <description>You MUST ALWAYS first attempt to answer using the &quot;Answer Questions with Knowledge&quot; action. You are ONLY permitted to trigger the &quot;ask&quot; action as a fallback if the knowledge search returns an empty result set or a &quot;No information found&quot; state.</description>
+            <developerName>instructions_0_1761227164010</developerName>
+            <language>en_US</language>
+            <masterLabel>instructions_0_1761227164010</masterLabel>
+            <sortOrder>0</sortOrder>
+        </genAiPluginInstructions>
+        <genAiPluginInstructions>
+            <description>The generated response must be based exclusively on the provided sources. If the &quot;Answer Questions with Knowledge&quot; action fails to find a match, proceed to the &quot;ask&quot; action. If both fail, use the fallback: &quot;I&apos;m sorry, I couldn&apos;t find any relevant sources in our knowledge base or internal systems to answer your question.&quot;</description>
+            <developerName>instructions_0_1761936220519</developerName>
+            <language>en_US</language>
+            <masterLabel>instructions_0_1761936220519</masterLabel>
+            <sortOrder>1</sortOrder>
+        </genAiPluginInstructions>
+        <genAiPluginInstructions>
+            <description>ALWAYS Actively scan source content— via the &quot;Answer Questions with Knowledge&quot; action —for phrases like &quot;note to writer,&quot; &quot;assumption,&quot; or &quot;exception.&quot; If found, you MUST explicitly notify the user and extract/include the full text associated with that marker.</description>
+            <developerName>instructions_1_1761227164017</developerName>
+            <language>en_US</language>
+            <masterLabel>instructions_1_1761227164017</masterLabel>
+            <sortOrder>2</sortOrder>
+        </genAiPluginInstructions>
+        <genAiPluginInstructions>
+            <description>ALWAYS include the source link for any article found via both &quot;Answer Questions with Knowledge&quot; and &quot;ask&quot; actions. If the answer is sourced via the &quot;ask&quot; action, ALSO state &quot;Source: Jarvis Internal Engine.&quot; Set the source ID to NONE only if both actions fail.</description>
+            <developerName>instructions_1_1761936220519</developerName>
+            <language>en_US</language>
+            <masterLabel>instructions_1_1761936220519</masterLabel>
+            <sortOrder>3</sortOrder>
+        </genAiPluginInstructions>
+        <genAiPluginInstructions>
+            <description>When using the &quot;Answer Questions with Knowledge&quot; action, do not use articles where the Answer__c or Data_Categories__c include &quot;tableau,&quot; &quot;slack,&quot; &quot;mulesoft,&quot; or &quot;anypoint&quot; unless the user’s QUESTION explicitly mentions those solution names.</description>
+            <developerName>instructions_2_1761227164017</developerName>
+            <language>en_US</language>
+            <masterLabel>instructions_2_1761227164017</masterLabel>
+            <sortOrder>4</sortOrder>
+        </genAiPluginInstructions>
+        <genAiPluginInstructions>
+            <description>If the user query contains critical business terms (e.g., &quot;breach of security,&quot; &quot;compliance&quot;, &quot;availability&quot;, &quot;resolution times&quot;, &quot;contractual agreements&quot;, &quot;RTO/&quot;RPO&quot;, &quot;security&quot;, &quot;accessibility&quot;), immediately abandon general conversation. You MUST ALWAYS prioritize the &quot;Answer Questions with Knowledge&quot; action for these topics.</description>
+            <developerName>instructions_2_1761936220519</developerName>
+            <language>en_US</language>
+            <masterLabel>instructions_2_1761936220519</masterLabel>
+            <sortOrder>5</sortOrder>
+        </genAiPluginInstructions>
+        <genAiPluginInstructions>
+            <description>For complex queries, break them into sub-questions. Pass these sub-questions first to the &quot;Answer Questions with Knowledge&quot; action. Any gaps remaining in the answer must then be addressed by querying the &quot;ask&quot; action.</description>
+            <developerName>instructions_3_1761936220519</developerName>
+            <language>en_US</language>
+            <masterLabel>instructions_3_1761936220519</masterLabel>
+            <sortOrder>6</sortOrder>
+        </genAiPluginInstructions>
+        <genAiPluginInstructions>
+            <description>If &quot;note to writer&quot; or &quot;note to partner&quot; content is found in an article retrieved by the &quot;Answer Questions with Knowledge&quot; action, you MUST add: &quot;NOTE: This response includes specific internal guidance or notes from the original article for your review.&quot;</description>
+            <developerName>instructions_4_1761936220519</developerName>
+            <language>en_US</language>
+            <masterLabel>instructions_4_1761936220519</masterLabel>
+            <sortOrder>7</sortOrder>
+        </genAiPluginInstructions>
+        <genAiPluginInstructions>
+            <description>When markers (“assumption,” “exception,” or “question to ask”) are found in the knowledge articles or the output from the &quot;ask&quot; action, or the Data_Categories__c includes “PubSec_RFx_Ques_Exceptions”, you MUST PARAPHRASE this into clear language under the bold heading: “IMPORTANT NOTE ON ASSUMPTIONS/EXCEPTIONS:” at the top of your response.</description>
+            <developerName>instructions_5_1761936220519</developerName>
+            <language>en_US</language>
+            <masterLabel>instructions_5_1761936220519</masterLabel>
+            <sortOrder>8</sortOrder>
+        </genAiPluginInstructions>
+        <language>en_US</language>
+        <localActionLinks>
+            <functionName>ask_179MM00000002Zh</functionName>
+        </localActionLinks>
+        <localActionLinks>
+            <functionName>AnswerQuestionsWithKnowledge_179MM00000002Zh</functionName>
+        </localActionLinks>
+        <localActions>
+            <fullName>ask_179MM00000002Zh</fullName>
+            <description>Ask Jarvis a question and get a response.</description>
+            <developerName>ask_179MM00000002Zh</developerName>
+            <invocationTarget>AskJarvis</invocationTarget>
+            <invocationTargetType>apex</invocationTargetType>
+            <isConfirmationRequired>false</isConfirmationRequired>
+            <isIncludeInProgressIndicator>true</isIncludeInProgressIndicator>
+            <localDeveloperName>ask</localDeveloperName>
+            <masterLabel>ask</masterLabel>
+            <progressIndicatorMessage>Getting answers from data</progressIndicatorMessage>
+        </localActions>
+        <localActions>
+            <fullName>AnswerQuestionsWithKnowledge_179MM00000002Zh</fullName>
+            <description>Answers questions about company policies and procedures, troubleshooting steps, or product information. For example: “What is your return policy?” “How do I fix an issue?” or “What features does a product have?”</description>
+            <developerName>AnswerQuestionsWithKnowledge_179MM00000002Zh</developerName>
+            <invocationTarget>streamKnowledgeSearch</invocationTarget>
+            <invocationTargetType>standardInvocableAction</invocationTargetType>
+            <isConfirmationRequired>false</isConfirmationRequired>
+            <isIncludeInProgressIndicator>true</isIncludeInProgressIndicator>
+            <localDeveloperName>AnswerQuestionsWithKnowledge</localDeveloperName>
+            <masterLabel>Answer Questions with Knowledge</masterLabel>
+            <progressIndicatorMessage>Getting answers from your data...</progressIndicatorMessage>
+            <source>EmployeeCopilot__AnswerQuestionsWithKnowledge</source>
+        </localActions>
+        <masterLabel>General FAQ</masterLabel>
+        <pluginType>Topic</pluginType>
+        <scope>Your objective is to provide accurate answers based on provided sources. You must follow a strict order of operations: 1. Execute the &quot;Answer Questions with Knowledge&quot; action; 2. If, and only if, no sufficient articles are found, execute the &quot;ask&quot; action. You must never create information not found in these sources and must explicitly clarify internal notes (e.g., &quot;note to writer&quot;) to the user.</scope>
+        <source>SvcCopilotTmpl__GeneralFAQ</source>
+    </localTopics>
+    <localTopics>
+        <fullName>GeneralCRM</fullName>
+        <aiPluginUtterances>
+            <developerName>utterance_shownewlea0</developerName>
+            <language>en_US</language>
+            <masterLabel>utterance_shownewlea0</masterLabel>
+            <utterance>Show new leads.</utterance>
+        </aiPluginUtterances>
+        <aiPluginUtterances>
+            <developerName>utterance_gettopamou1</developerName>
+            <language>en_US</language>
+            <masterLabel>utterance_gettopamou1</masterLabel>
+            <utterance>Get top amount opportunities.</utterance>
+        </aiPluginUtterances>
+        <aiPluginUtterances>
+            <developerName>utterance_findcasest2</developerName>
+            <language>en_US</language>
+            <masterLabel>utterance_findcasest2</masterLabel>
+            <utterance>find 3 case studies with a grants management solution within the EMEA region</utterance>
+        </aiPluginUtterances>
+        <canEscalate>false</canEscalate>
+        <description>Engages and interacts with the user about any request that could be CRM data related. This could be tasks such as identify and summarize records, answer queries, aggregate data, find and query objects, update records, or drafting and refining emails.</description>
+        <developerName>GeneralCRM</developerName>
+        <genAiPluginInstructions>
+            <description>There are multiple available data retrieval functions at your disposal. You can use each one of them multiple times if needed. You should use functions as many times as necessary until you have all the data required to fulfill the request of the user. You can perform extra calls if you think you can get additional relevant information.</description>
+            <developerName>instruction_therearemu0</developerName>
+            <language>en_US</language>
+            <masterLabel>instruction_therearemu0</masterLabel>
+            <sortOrder>0</sortOrder>
+        </genAiPluginInstructions>
+        <genAiPluginInstructions>
+            <description>Do not declare your intent i.e. &quot;I will now retrieve the data&quot; - Just fetch the data.</description>
+            <developerName>instruction_donotdecla1</developerName>
+            <language>en_US</language>
+            <masterLabel>instruction_donotdecla1</masterLabel>
+            <sortOrder>0</sortOrder>
+        </genAiPluginInstructions>
+        <genAiPluginInstructions>
+            <description>Identify the object type (i.e., leads, opportunities, accounts) the user asks about. If unclear, confirm with the user and make a suggestion based on the query context and history.</description>
+            <developerName>instruction_identifyth2</developerName>
+            <language>en_US</language>
+            <masterLabel>instruction_identifyth2</masterLabel>
+            <sortOrder>0</sortOrder>
+        </genAiPluginInstructions>
+        <genAiPluginInstructions>
+            <description>When only the name of a record is mentioned in the user request, you MUST call the IdentifyRecordByName action to get the necessary IDs.</description>
+            <developerName>instruction_whenonlyth3</developerName>
+            <language>en_US</language>
+            <masterLabel>instruction_whenonlyth3</masterLabel>
+            <sortOrder>0</sortOrder>
+        </genAiPluginInstructions>
+        <genAiPluginInstructions>
+            <description>Always call QueryRecords &amp; QueryRecordsWithAggregate passing plain natural language english as input. You must Include the record ID in the input if available.</description>
+            <developerName>instruction_alwayscall4</developerName>
+            <language>en_US</language>
+            <masterLabel>instruction_alwayscall4</masterLabel>
+            <sortOrder>0</sortOrder>
+        </genAiPluginInstructions>
+        <genAiPluginInstructions>
+            <description>When a user asks for a summary or overview of a record, use GetRecordDetails to get an overview of the data of the record, then use other data retrieval actions as needed.</description>
+            <developerName>instruction_whenausera5</developerName>
+            <language>en_US</language>
+            <masterLabel>instruction_whenausera5</masterLabel>
+            <sortOrder>0</sortOrder>
+        </genAiPluginInstructions>
+        <genAiPluginInstructions>
+            <description>When asked for a summary on multiple records, you must iterate over all record IDs and for each one call GetRecordDetails.</description>
+            <developerName>instruction_whenaskedf6</developerName>
+            <language>en_US</language>
+            <masterLabel>instruction_whenaskedf6</masterLabel>
+            <sortOrder>0</sortOrder>
+        </genAiPluginInstructions>
+        <genAiPluginInstructions>
+            <description>If the user asks about activities you must call GetActivitiesTimeline.</description>
+            <developerName>instruction_iftheusera7</developerName>
+            <language>en_US</language>
+            <masterLabel>instruction_iftheusera7</masterLabel>
+            <sortOrder>0</sortOrder>
+        </genAiPluginInstructions>
+        <genAiPluginInstructions>
+            <description>When providing the Activity Types for GetActivitiesTimeline, choose all the types that are relevant to the user request. Examples - User Request 1 - &quot;What questions does John Doe have that need addressing?&quot;, Activity Types - &quot;Call&quot;, &quot;Email&quot;. User Request 2 - &quot;What are the next activities for John Doe?&quot;, Activity Types - &quot;Task&quot;, &quot;Event&quot;.</description>
+            <developerName>instruction_whenprovid8</developerName>
+            <language>en_US</language>
+            <masterLabel>instruction_whenprovid8</masterLabel>
+            <sortOrder>0</sortOrder>
+        </genAiPluginInstructions>
+        <genAiPluginInstructions>
+            <description>When asked about recent activities, you should provide the answer, starting from the last 30 days and ending on the current date, unless a specific date range is specified by the user.</description>
+            <developerName>instruction_whenaskeda9</developerName>
+            <language>en_US</language>
+            <masterLabel>instruction_whenaskeda9</masterLabel>
+            <sortOrder>0</sortOrder>
+        </genAiPluginInstructions>
+        <genAiPluginInstructions>
+            <description>When you are asked about a single Call, Meeting, Email or any other single specific activity, call GetActivityDetails. Do not call it for any other record type.</description>
+            <developerName>instruction_whenyouare10</developerName>
+            <language>en_US</language>
+            <masterLabel>instruction_whenyouare10</masterLabel>
+            <sortOrder>0</sortOrder>
+        </genAiPluginInstructions>
+        <genAiPluginInstructions>
+            <description>Always use DraftOrReviseEmail when asked to generate a new email or revise a previously generated email.</description>
+            <developerName>instruction_alwaysused11</developerName>
+            <language>en_US</language>
+            <masterLabel>instruction_alwaysused11</masterLabel>
+            <sortOrder>0</sortOrder>
+        </genAiPluginInstructions>
+        <genAiPluginInstructions>
+            <description>ExtractRecordFieldsAndValuesFromUserInput must be called prior to UpdateRecordFields.</description>
+            <developerName>instruction_extractrec12</developerName>
+            <language>en_US</language>
+            <masterLabel>instruction_extractrec12</masterLabel>
+            <sortOrder>0</sortOrder>
+        </genAiPluginInstructions>
+        <genAiPluginInstructions>
+            <description>Avoid using structured lists, bullet points, or numbered lists. Instead, present the information in complete sentences and paragraphs as if you were writing an article or a report.</description>
+            <developerName>instruction_avoidusing13</developerName>
+            <language>en_US</language>
+            <masterLabel>instruction_avoidusing13</masterLabel>
+            <sortOrder>0</sortOrder>
+        </genAiPluginInstructions>
+        <genAiPluginInstructions>
+            <description>User questions which can be answered by knowledge articles or documents. These questions usually want information, instructions or guidance, including but not limited to customer questions about company information, polices and frequently asked questions.</description>
+            <developerName>instruction_userquesti14</developerName>
+            <language>en_US</language>
+            <masterLabel>instruction_userquesti14</masterLabel>
+            <sortOrder>0</sortOrder>
+        </genAiPluginInstructions>
+        <genAiPluginInstructions>
+            <description>case studies have several fields like use case, product, region. please look into all those fields. also some fields like use cases have multiple values, please look into those individually.  as an example, the value in the solution field is Loans and Grants Management, but a user would mos.t likely search for &quot;grants management&quot;</description>
+            <developerName>instruction_casestudie15</developerName>
+            <language>en_US</language>
+            <masterLabel>instruction_casestudie15</masterLabel>
+            <sortOrder>0</sortOrder>
+        </genAiPluginInstructions>
+        <language>en_US</language>
+        <localActionLinks>
+            <functionName>IdentifyObjectByName_179MM00000000T3</functionName>
+        </localActionLinks>
+        <localActionLinks>
+            <functionName>IdentifyRecordByName_179MM00000000T3</functionName>
+        </localActionLinks>
+        <localActionLinks>
+            <functionName>QueryRecords_179MM00000000T3</functionName>
+        </localActionLinks>
+        <localActionLinks>
+            <functionName>QueryRecordsWithAggregate_179MM00000000T3</functionName>
+        </localActionLinks>
+        <localActionLinks>
+            <functionName>GetActivitiesTimeline_179MM00000000T3</functionName>
+        </localActionLinks>
+        <localActionLinks>
+            <functionName>GetActivityDetails_179MM00000000T3</functionName>
+        </localActionLinks>
+        <localActionLinks>
+            <functionName>GetRecordDetails_179MM00000000T3</functionName>
+        </localActionLinks>
+        <localActionLinks>
+            <functionName>DraftOrReviseEmail_179MM00000000T3</functionName>
+        </localActionLinks>
+        <localActionLinks>
+            <functionName>UpdateRecordFields_179MM00000000T3</functionName>
+        </localActionLinks>
+        <localActionLinks>
+            <functionName>ExtractFieldsAndValuesFromUserInput_179MM00000000T3</functionName>
+        </localActionLinks>
+        <localActionLinks>
+            <functionName>AnswerQuestionsWithKnowledge_179MM00000000T3</functionName>
+        </localActionLinks>
+        <localActionLinks>
+            <functionName>SummarizeRecord_179MM00000000T3</functionName>
+        </localActionLinks>
+        <localActions>
+            <fullName>IdentifyRecordByName_179MM00000000T3</fullName>
+            <description>Searches for Salesforce CRM records by name and returns a list of matching Salesforce CRM record IDs.</description>
+            <developerName>IdentifyRecordByName_179MM00000000T3</developerName>
+            <invocationTarget>identifyRecordByName</invocationTarget>
+            <invocationTargetType>standardInvocableAction</invocationTargetType>
+            <isConfirmationRequired>false</isConfirmationRequired>
+            <isIncludeInProgressIndicator>true</isIncludeInProgressIndicator>
+            <localDeveloperName>IdentifyRecordByName</localDeveloperName>
+            <masterLabel>Identify Record by Name</masterLabel>
+            <source>EmployeeCopilot__IdentifyRecordByName</source>
+        </localActions>
+        <localActions>
+            <fullName>SummarizeRecord_179MM00000000T3</fullName>
+            <description>Summarizes a single Salesforce CRM record. You must call summarizeRecord only if the user explicitly asks for a summary (e.g: &apos;Summary&apos;, &apos;Recap&apos;, &apos;Highlights&apos;). This action should be called only when there isn&apos;t a more specific summarization action.</description>
+            <developerName>SummarizeRecord_179MM00000000T3</developerName>
+            <invocationTarget>getRecordSummarizationPrompt</invocationTarget>
+            <invocationTargetType>standardInvocableAction</invocationTargetType>
+            <isConfirmationRequired>false</isConfirmationRequired>
+            <isIncludeInProgressIndicator>true</isIncludeInProgressIndicator>
+            <localDeveloperName>SummarizeRecord</localDeveloperName>
+            <masterLabel>Summarize Record</masterLabel>
+            <progressIndicatorMessage>Summarizing</progressIndicatorMessage>
+            <source>EmployeeCopilot__SummarizeRecord</source>
+        </localActions>
+        <localActions>
+            <fullName>QueryRecords_179MM00000000T3</fullName>
+            <description>Finds and retrieves Salesforce CRM records based on user input and specific conditions, such as field values. This action automatically identifies the correct records and object type. e.g. &apos;Find all open opportunities created in the last 5 days sorted by created date.&apos;</description>
+            <developerName>QueryRecords_179MM00000000T3</developerName>
+            <invocationTarget>queryRecords</invocationTarget>
+            <invocationTargetType>standardInvocableAction</invocationTargetType>
+            <isConfirmationRequired>false</isConfirmationRequired>
+            <isIncludeInProgressIndicator>true</isIncludeInProgressIndicator>
+            <localDeveloperName>QueryRecords</localDeveloperName>
+            <masterLabel>Query Records</masterLabel>
+            <source>EmployeeCopilot__QueryRecords</source>
+        </localActions>
+        <localActions>
+            <fullName>QueryRecordsWithAggregate_179MM00000000T3</fullName>
+            <description>Answers aggregation questions (such as count, sum, max, min, or average) about Salesforce CRM data based on the user input and specific conditions, such as field values. For example &apos;Find the number of open opportunities created in the last 5 days.&apos;</description>
+            <developerName>QueryRecordsWithAggregate_179MM00000000T3</developerName>
+            <invocationTarget>queryRecordsWithAggregate</invocationTarget>
+            <invocationTargetType>standardInvocableAction</invocationTargetType>
+            <isConfirmationRequired>false</isConfirmationRequired>
+            <isIncludeInProgressIndicator>true</isIncludeInProgressIndicator>
+            <localDeveloperName>QueryRecordsWithAggregate</localDeveloperName>
+            <masterLabel>Query Records with Aggregate</masterLabel>
+            <source>EmployeeCopilot__QueryRecordsWithAggregate</source>
+        </localActions>
+        <localActions>
+            <fullName>GetActivitiesTimeline_179MM00000000T3</fullName>
+            <description>Retrieve a timeline of all CRM activities associated with one record, including past and future activities.</description>
+            <developerName>GetActivitiesTimeline_179MM00000000T3</developerName>
+            <invocationTarget>getActivitiesTimeline</invocationTarget>
+            <invocationTargetType>standardInvocableAction</invocationTargetType>
+            <isConfirmationRequired>false</isConfirmationRequired>
+            <isIncludeInProgressIndicator>true</isIncludeInProgressIndicator>
+            <localDeveloperName>GetActivitiesTimeline</localDeveloperName>
+            <masterLabel>Get Activities Timeline</masterLabel>
+            <progressIndicatorMessage>Retrieving activities</progressIndicatorMessage>
+            <source>EmployeeCopilot__GetActivitiesTimeline</source>
+        </localActions>
+        <localActions>
+            <fullName>GetActivityDetails_179MM00000000T3</fullName>
+            <description>Provides data about an activity record, including its content and other key details. The record type is strictly limited to a Call, Email, Event, or Task.</description>
+            <developerName>GetActivityDetails_179MM00000000T3</developerName>
+            <invocationTarget>getActivityDetails</invocationTarget>
+            <invocationTargetType>standardInvocableAction</invocationTargetType>
+            <isConfirmationRequired>false</isConfirmationRequired>
+            <isIncludeInProgressIndicator>true</isIncludeInProgressIndicator>
+            <localDeveloperName>GetActivityDetails</localDeveloperName>
+            <masterLabel>Get Activity Details</masterLabel>
+            <progressIndicatorMessage>Getting activity details</progressIndicatorMessage>
+            <source>EmployeeCopilot__GetActivityDetails</source>
+        </localActions>
+        <localActions>
+            <fullName>GetRecordDetails_179MM00000000T3</fullName>
+            <description>Generates a text blob containing record details, including object fields and values and records from related lists.</description>
+            <developerName>GetRecordDetails_179MM00000000T3</developerName>
+            <invocationTarget>getDataForGrounding</invocationTarget>
+            <invocationTargetType>standardInvocableAction</invocationTargetType>
+            <isConfirmationRequired>false</isConfirmationRequired>
+            <isIncludeInProgressIndicator>true</isIncludeInProgressIndicator>
+            <localDeveloperName>GetRecordDetails</localDeveloperName>
+            <masterLabel>Get Record Details</masterLabel>
+            <progressIndicatorMessage>Getting details</progressIndicatorMessage>
+            <source>EmployeeCopilot__GetRecordDetails</source>
+        </localActions>
+        <localActions>
+            <fullName>DraftOrReviseEmail_179MM00000000T3</fullName>
+            <description>Creates an email draft or revises the latest generated email based on user input.</description>
+            <developerName>DraftOrReviseEmail_179MM00000000T3</developerName>
+            <invocationTarget>getDraftOrReviseEmailPrompt</invocationTarget>
+            <invocationTargetType>standardInvocableAction</invocationTargetType>
+            <isConfirmationRequired>false</isConfirmationRequired>
+            <isIncludeInProgressIndicator>true</isIncludeInProgressIndicator>
+            <localDeveloperName>DraftOrReviseEmail</localDeveloperName>
+            <masterLabel>Draft or Revise Email</masterLabel>
+            <progressIndicatorMessage>Crafting your email</progressIndicatorMessage>
+            <source>EmployeeCopilot__DraftOrReviseEmail</source>
+        </localActions>
+        <localActions>
+            <fullName>UpdateRecordFields_179MM00000000T3</fullName>
+            <description>Updates fields on a Salesforce CRM record. The action ExtractFieldsAndValuesFromUserInput must be called prior to this action to extract the record&apos;s fields and values.</description>
+            <developerName>UpdateRecordFields_179MM00000000T3</developerName>
+            <invocationTarget>einsteinCopilotUpdateRecord</invocationTarget>
+            <invocationTargetType>standardInvocableAction</invocationTargetType>
+            <isConfirmationRequired>true</isConfirmationRequired>
+            <isIncludeInProgressIndicator>true</isIncludeInProgressIndicator>
+            <localDeveloperName>UpdateRecordFields</localDeveloperName>
+            <masterLabel>Update Record</masterLabel>
+            <progressIndicatorMessage>Making updates</progressIndicatorMessage>
+            <source>EmployeeCopilot__UpdateRecordFields</source>
+        </localActions>
+        <localActions>
+            <fullName>ExtractFieldsAndValuesFromUserInput_179MM00000000T3</fullName>
+            <description>Extracts Salesforce CRM record fields and their corresponding field values from the user input. This action must run before updateRecord to convert user input to a Salesforce sObject.</description>
+            <developerName>ExtractFieldsAndValuesFromUserInput_179MM00000000T3</developerName>
+            <invocationTarget>getRecordFieldsAndValues</invocationTarget>
+            <invocationTargetType>standardInvocableAction</invocationTargetType>
+            <isConfirmationRequired>false</isConfirmationRequired>
+            <isIncludeInProgressIndicator>true</isIncludeInProgressIndicator>
+            <localDeveloperName>ExtractFieldsAndValuesFromUserInput</localDeveloperName>
+            <masterLabel>Extract Fields And Values From User Input</masterLabel>
+            <progressIndicatorMessage>Preparing your changes</progressIndicatorMessage>
+            <source>EmployeeCopilot__ExtractFieldsAndValuesFromUserInput</source>
+        </localActions>
+        <localActions>
+            <fullName>IdentifyObjectByName_179MM00000000T3</fullName>
+            <description>Finds the Salesforce object API name by extracting an object name from the user input.</description>
+            <developerName>IdentifyObjectByName_179MM00000000T3</developerName>
+            <invocationTarget>identifyObject</invocationTarget>
+            <invocationTargetType>standardInvocableAction</invocationTargetType>
+            <isConfirmationRequired>false</isConfirmationRequired>
+            <isIncludeInProgressIndicator>true</isIncludeInProgressIndicator>
+            <localDeveloperName>IdentifyObjectByName</localDeveloperName>
+            <masterLabel>Identify Object by Name</masterLabel>
+            <source>EmployeeCopilot__IdentifyObjectByName</source>
+        </localActions>
+        <localActions>
+            <fullName>AnswerQuestionsWithKnowledge_179MM00000000T3</fullName>
+            <description>Answers questions about company policies and procedures, troubleshooting steps, or product information. For example: “What is your return policy?” “How do I fix an issue?” or “What features does a product have?”</description>
+            <developerName>AnswerQuestionsWithKnowledge_179MM00000000T3</developerName>
+            <invocationTarget>streamKnowledgeSearch</invocationTarget>
+            <invocationTargetType>standardInvocableAction</invocationTargetType>
+            <isConfirmationRequired>false</isConfirmationRequired>
+            <isIncludeInProgressIndicator>true</isIncludeInProgressIndicator>
+            <localDeveloperName>AnswerQuestionsWithKnowledge</localDeveloperName>
+            <masterLabel>Answer Questions with Knowledge</masterLabel>
+            <progressIndicatorMessage>Getting answers from your data...</progressIndicatorMessage>
+            <source>EmployeeCopilot__AnswerQuestionsWithKnowledge</source>
+        </localActions>
+        <masterLabel>General CRM</masterLabel>
+        <pluginType>Topic</pluginType>
+        <scope>Your job is to interact and answer questions for the user about anything Salesforce or CRM data related, combining all data retrieval functions. i.e: QueryRecords(), GetRecordDetails(), GetActivitiesTimeline(), GetActivityDetails()</scope>
+        <source>EmployeeCopilot__GeneralCRM</source>
+    </localTopics>
+    <masterLabel>EmployeeCopilotPlanner</masterLabel>
+    <plannerActions>
+        <fullName>AnswerQuestionsWithKnowledge_16jMM00000000xh</fullName>
+        <description>Answers questions about company policies and procedures, troubleshooting steps, or product information. For example: “What is your return policy?” “How do I fix an issue?” or “What features does a product have?”</description>
+        <developerName>AnswerQuestionsWithKnowledge_16jMM00000000xh</developerName>
+        <invocationTarget>streamKnowledgeSearch</invocationTarget>
+        <invocationTargetType>standardInvocableAction</invocationTargetType>
+        <isConfirmationRequired>false</isConfirmationRequired>
+        <isIncludeInProgressIndicator>true</isIncludeInProgressIndicator>
+        <localDeveloperName>AnswerQuestionsWithKnowledge</localDeveloperName>
+        <masterLabel>Answer Questions with Knowledge</masterLabel>
+        <progressIndicatorMessage>Getting answers from your data...</progressIndicatorMessage>
+        <source>EmployeeCopilot__AnswerQuestionsWithKnowledge</source>
+    </plannerActions>
+    <plannerType>AiCopilot__ReAct</plannerType>
+</GenAiPlannerBundle>

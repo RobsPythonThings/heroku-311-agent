@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <actionCalls>
+        <name>Get_Serialized_Data_for_the_Flow</name>
+        <label>Get Serialized Data for the Flow</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <actionName>FlowJsonSerializer</actionName>
+        <actionType>apex</actionType>
+        <connector>
+            <targetReference>Prompt_Instructions</targetReference>
+        </connector>
+        <flowTransactionModel>CurrentTransaction</flowTransactionModel>
+        <inputParameters>
+            <name>soql</name>
+            <value>
+                <stringValue>Select Id, RFP_Answer_Text__c, RFP_Answer_Value__c, RFP_Pursuit_Question_Bank__c from RFP_Pursuit_Question_Answer_Bank__c</stringValue>
+            </value>
+        </inputParameters>
+        <nameSegment>FlowJsonSerializer</nameSegment>
+        <offset>0</offset>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </actionCalls>
+    <apiVersion>65.0</apiVersion>
+    <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
+    <assignments>
+        <name>Prompt_Instructions</name>
+        <elementSubtype>AddPromptInstructions</elementSubtype>
+        <label>Prompt Instructions</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignmentItems>
+            <assignToReference>$Output.Prompt</assignToReference>
+            <operator>Add</operator>
+            <value>
+                <stringValue>Answer Bank Data:
+{!Get_Serialized_Data_for_the_Flow.json}
+</stringValue>
+            </value>
+        </assignmentItems>
+    </assignments>
+    <environments>Default</environments>
+    <interviewLabel>Prompt Template - Get Answer Bank {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>Prompt Template - Get Answer Bank</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>PromptFlow</processType>
+    <recordLookups>
+        <name>Get_Answer_Bank</name>
+        <label>Get Answer Bank</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Get_Serialized_Data_for_the_Flow</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>IsDeleted</field>
+            <operator>EqualTo</operator>
+            <value>
+                <booleanValue>false</booleanValue>
+            </value>
+        </filters>
+        <getFirstRecordOnly>false</getFirstRecordOnly>
+        <object>RFP_Pursuit_Question_Answer_Bank__c</object>
+        <queriedFields>Id</queriedFields>
+        <queriedFields>RFP_Pursuit_Question_Bank__c</queriedFields>
+        <queriedFields>RFP_Answer_Text__c</queriedFields>
+        <queriedFields>RFP_Answer_Value__c</queriedFields>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <start>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Get_Answer_Bank</targetReference>
+        </connector>
+        <triggerType>Capability</triggerType>
+    </start>
+    <status>Active</status>
+</Flow>

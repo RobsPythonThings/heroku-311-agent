@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>55.0</apiVersion>
+    <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
+    <decisions>
+        <description>make sure an answer is populated before entering a response audit log</description>
+        <name>Check_for_Answer</name>
+        <label>Check for Answer</label>
+        <locationX>182</locationX>
+        <locationY>815</locationY>
+        <defaultConnectorLabel>Default Outcome</defaultConnectorLabel>
+        <rules>
+            <name>Answered</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>$Record.avnio__Answer__c</leftValueReference>
+                <operator>IsNull</operator>
+                <rightValue>
+                    <booleanValue>false</booleanValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Create_Response_Audit_Log</targetReference>
+            </connector>
+            <label>Answered</label>
+        </rules>
+    </decisions>
+    <decisions>
+        <name>Integrated_Record</name>
+        <label>Integrated Record?</label>
+        <locationX>182</locationX>
+        <locationY>323</locationY>
+        <defaultConnector>
+            <targetReference>Next_Review_Date_Already_Set</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>Default Outcome</defaultConnectorLabel>
+        <rules>
+            <name>IS_GSX_Integrated_record</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>$Record.GSX_Integrated_Response__c</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <booleanValue>true</booleanValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Check_for_Answer</targetReference>
+            </connector>
+            <label>IS GSX Integrated record?</label>
+        </rules>
+    </decisions>
+    <decisions>
+        <name>Next_Review_Date_Already_Set</name>
+        <label>Next Review Date Already Set?</label>
+        <locationX>336</locationX>
+        <locationY>431</locationY>
+        <defaultConnector>
+            <targetReference>Update_Date_Fields</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>No</defaultConnectorLabel>
+        <rules>
+            <name>Yes</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>$Record.avnio__NextReviewDate__c</leftValueReference>
+                <operator>IsNull</operator>
+                <rightValue>
+                    <booleanValue>false</booleanValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Update_Auto_Submit_for_cycle_review</targetReference>
+            </connector>
+            <label>Yes</label>
+        </rules>
+    </decisions>
+    <description>Create an Audit Log Record and stamp the Response Date fields</description>
+    <environments>Default</environments>
+    <formulas>
+        <description>formula to determine next review date</description>
+        <name>fNextReviewDate</name>
+        <dataType>Date</dataType>
+        <expression>CASE({!$Record.Review_Cycle__c}
+,&quot;In Days&quot;, {!$Flow.CurrentDate} + {!$Record.Review_Cycle_Length__c}
+,&quot;In Months&quot;, ADDMONTHS({!$Flow.CurrentDate} ,{!$Record.Review_Cycle_Length__c})
+,&quot;Quarterly&quot;, ADDMONTHS({!$Flow.CurrentDate} ,3)
+,&quot;Product Release&quot;, ADDMONTHS({!$Flow.CurrentDate} ,4)
+,&quot;Semi-Annually&quot;, ADDMONTHS({!$Flow.CurrentDate} ,6)
+,&quot;Annually&quot;, ADDMONTHS({!$Flow.CurrentDate} ,12)
+,null)</expression>
+    </formulas>
+    <formulas>
+        <name>fReviewerRole</name>
+        <dataType>String</dataType>
+        <expression>IF(CASESAFEID({!$User.Id}) = {!$Record.OwnerId}, &quot;Content Owner&quot;,
+   IF(CASESAFEID({!$User.Id}) = {!$Record.avnio__PrimaryReviewerId__c} , &quot;Primary Reviewer&quot;,
+   IF(CASESAFEID({!$User.Id}) = {!$Record.avnio__SecondaryReviewerId__c} , &quot;Secondary Reviewer&quot;,{!$User.Title}))
+)</expression>
+    </formulas>
+    <interviewLabel>Response on Create {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>Response on Create</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>AutoLaunchedFlow</processType>
+    <recordCreates>
+        <description>create a response audit log to store details about the answer change: who, when, what</description>
+        <name>Create_Response_Audit_Log</name>
+        <label>Create Response Audit Log</label>
+        <locationX>50</locationX>
+        <locationY>923</locationY>
+        <inputAssignments>
+            <field>Response__c</field>
+            <value>
+                <elementReference>$Record.Id</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Review_Date__c</field>
+            <value>
+                <elementReference>$Flow.CurrentDateTime</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Review_Result__c</field>
+            <value>
+                <stringValue>Initial Version</stringValue>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Reviewed_By__c</field>
+            <value>
+                <elementReference>$User.Id</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Revised_Version__c</field>
+            <value>
+                <elementReference>$Record.avnio__Answer__c</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Role_of_Reviewer__c</field>
+            <value>
+                <elementReference>fReviewerRole</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Version_Number__c</field>
+            <value>
+                <numberValue>1.0</numberValue>
+            </value>
+        </inputAssignments>
+        <object>Response_Audit_Log__c</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordCreates>
+    <recordUpdates>
+        <name>Update_Auto_Submit_for_cycle_review</name>
+        <label>Update Auto Submit for cycle review</label>
+        <locationX>204</locationX>
+        <locationY>539</locationY>
+        <connector>
+            <targetReference>Check_for_Answer</targetReference>
+        </connector>
+        <inputAssignments>
+            <field>avnio__IsAutoSubmitForReviewCycle__c</field>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>avnio__IsVisibletoAssistant__c</field>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </inputAssignments>
+        <inputReference>$Record</inputReference>
+    </recordUpdates>
+    <recordUpdates>
+        <description>update the Next Review Date and Last Edited Date field on the Response record</description>
+        <name>Update_Date_Fields</name>
+        <label>Update Date Fields</label>
+        <locationX>468</locationX>
+        <locationY>539</locationY>
+        <connector>
+            <targetReference>Check_for_Answer</targetReference>
+        </connector>
+        <inputAssignments>
+            <field>avnio__IsAutoSubmitForReviewCycle__c</field>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>avnio__IsVisibletoAssistant__c</field>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>avnio__NextReviewDate__c</field>
+            <value>
+                <elementReference>fNextReviewDate</elementReference>
+            </value>
+        </inputAssignments>
+        <inputReference>$Record</inputReference>
+    </recordUpdates>
+    <start>
+        <locationX>56</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Integrated_Record</targetReference>
+        </connector>
+        <object>avnio__Response__c</object>
+        <recordTriggerType>Create</recordTriggerType>
+        <triggerType>RecordAfterSave</triggerType>
+    </start>
+    <status>Active</status>
+</Flow>

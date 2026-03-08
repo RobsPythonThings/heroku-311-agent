@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GenAiPromptTemplate xmlns="http://soap.sforce.com/2006/04/metadata">
+    <activeVersionIdentifier>fZJqCRNf80jiZQFtLf0cSYRO0U0FvbEQxPiezEC3ZXg=_2</activeVersionIdentifier>
+    <description>Compare two answers and provide a score back on how different / similar they are</description>
+    <developerName>Compare_Two_Answers</developerName>
+    <masterLabel>Compare Two Answers</masterLabel>
+    <templateVersions>
+        <content>As a government proposal analyst, analyze these two answers provide a similarity score from 0-100 and list all the differences in content, reasoning, and conclusion. Be specific and provide examples.  Return the numerical score as the first part of the response.
+
+Answers to analyze and compare:
+{!$Input:Answer1}
+{!$Input:Answer2}
+</content>
+        <inputs>
+            <apiName>Answer1</apiName>
+            <definition>primitive://String</definition>
+            <masterLabel>Answer1</masterLabel>
+            <referenceName>Input:Answer1</referenceName>
+            <required>true</required>
+        </inputs>
+        <inputs>
+            <apiName>Answer2</apiName>
+            <definition>primitive://String</definition>
+            <masterLabel>Answer2</masterLabel>
+            <referenceName>Input:Answer2</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultOpenAIGPT4</primaryModel>
+        <status>Published</status>
+        <versionIdentifier>fZJqCRNf80jiZQFtLf0cSYRO0U0FvbEQxPiezEC3ZXg=_1</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>As a government proposal analyst, analyze these two answers provide a similarity score from 0-100 and list all the differences in content, reasoning, and conclusion. Be specific and provide examples.  Return the numerical score as the first part of the response.
+
+Answers to analyze and compare:
+{!$Input:Answer1}
+{!$Input:Answer2}
+</content>
+        <inputs>
+            <apiName>Answer1</apiName>
+            <definition>primitive://String</definition>
+            <masterLabel>Answer1</masterLabel>
+            <referenceName>Input:Answer1</referenceName>
+            <required>true</required>
+        </inputs>
+        <inputs>
+            <apiName>Answer2</apiName>
+            <definition>primitive://String</definition>
+            <masterLabel>Answer2</masterLabel>
+            <referenceName>Input:Answer2</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultVertexAIGemini20FlashLite001</primaryModel>
+        <status>Published</status>
+        <versionIdentifier>fZJqCRNf80jiZQFtLf0cSYRO0U0FvbEQxPiezEC3ZXg=_2</versionIdentifier>
+    </templateVersions>
+    <type>einstein_gpt__flex</type>
+    <visibility>Global</visibility>
+</GenAiPromptTemplate>

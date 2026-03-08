@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>55.0</apiVersion>
+    <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
+    <description>updates the Project status from &quot;Qualification&quot; to &quot;Kickoff&quot; when assigned to a user on create (or from a queue to a user)</description>
+    <environments>Default</environments>
+    <interviewLabel>Project Qualified {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>Project Qualified</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>AutoLaunchedFlow</processType>
+    <recordUpdates>
+        <description>update the project status to &quot;Accepted&quot;</description>
+        <name>Update_Project_Status</name>
+        <label>Update Project Status</label>
+        <locationX>176</locationX>
+        <locationY>311</locationY>
+        <inputAssignments>
+            <field>avnio__Status__c</field>
+            <value>
+                <stringValue>Kickoff</stringValue>
+            </value>
+        </inputAssignments>
+        <inputReference>$Record</inputReference>
+    </recordUpdates>
+    <start>
+        <locationX>50</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Update_Project_Status</targetReference>
+        </connector>
+        <filterFormula>(ISNEW() &amp;&amp; BEGINS({!$Record.OwnerId},&quot;005&quot;) &amp;&amp; ISPICKVAL({!$Record.avnio__Status__c}, &quot;Qualification&quot;))
+||
+(ISPICKVAL({!$Record.avnio__Status__c}, &quot;Qualification&quot;) &amp;&amp; BEGINS({!$Record__Prior.OwnerId}, &quot;00G&quot;) &amp;&amp; BEGINS({!$Record.OwnerId},&quot;005&quot;))</filterFormula>
+        <object>avnio__Project__c</object>
+        <recordTriggerType>CreateAndUpdate</recordTriggerType>
+        <triggerType>RecordBeforeSave</triggerType>
+    </start>
+    <status>Active</status>
+</Flow>

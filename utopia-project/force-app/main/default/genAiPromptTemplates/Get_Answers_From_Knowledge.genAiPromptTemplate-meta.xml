@@ -1,0 +1,530 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GenAiPromptTemplate xmlns="http://soap.sforce.com/2006/04/metadata">
+    <activeVersionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_15</activeVersionIdentifier>
+    <description>Gets answers from knowledge based on an input question</description>
+    <developerName>Get_Answers_From_Knowledge</developerName>
+    <masterLabel>Get Answers From Knowledge</masterLabel>
+    <templateVersions>
+        <content>Question or Requirement:
+{!$Input:Query}
+
+Product or Category:
+{!$Input:RetrieverIdOrName}
+
+&quot;&quot;&quot;Instructions:
+- Answer ONLY using Salesforce Knowledge content. 
+- Return just the answer (no pleasantries, no follow-ups, no inline citations). 
+- If knowledge is insufficient, say so. 
+- List all the sources
+- Keep the answer to 500 words
+&quot;&quot;&quot;
+</content>
+        <inputs>
+            <apiName>Query</apiName>
+            <definition>primitive://String</definition>
+            <referenceName>Input:Query</referenceName>
+            <required>true</required>
+        </inputs>
+        <inputs>
+            <apiName>RetrieverIdOrName</apiName>
+            <definition>primitive://String</definition>
+            <referenceName>Input:RetrieverIdOrName</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultOpenAIGPT4OmniMini</primaryModel>
+        <status>Published</status>
+        <versionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_1</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>Question or Requirement:
+{!$Input:Query}
+
+Product or Category:
+{!$Input:RetrieverIdOrName}
+
+&quot;&quot;&quot;Instructions:
+- Answer ONLY using Salesforce Knowledge content. 
+- Return just the answer (no pleasantries, no follow-ups, no inline citations). 
+- If knowledge is insufficient, say so. 
+- List all the sources
+- Keep the answer to 500 words
+&quot;&quot;&quot;
+</content>
+        <inputs>
+            <apiName>Query</apiName>
+            <definition>primitive://String</definition>
+            <referenceName>Input:Query</referenceName>
+            <required>true</required>
+        </inputs>
+        <inputs>
+            <apiName>RetrieverIdOrName</apiName>
+            <definition>primitive://String</definition>
+            <referenceName>Input:RetrieverIdOrName</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultVertexAIGeminiPro25</primaryModel>
+        <status>Published</status>
+        <versionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_2</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>Question or Requirement:
+{!$Input:Query}
+
+Product or Category:
+{!$Input:RetrieverIdOrName}
+
+&quot;&quot;&quot;Instructions:
+- Answer ONLY using Salesforce Knowledge content.
+- Return only the answer (no pleasantries, no follow-ups, no summaries).
+- Keep all citations that support the answer.
+- If knowledge is insufficient, state that clearly.
+- Remove disclaimers, HTML tags, and any “powered by Jarvis” text.
+- Ensure the response is clean and relevant (no random or unrelated content).
+- List all the sources.
+- Keep the answer within 500 words.
+&quot;&quot;&quot;
+
+</content>
+        <inputs>
+            <apiName>Query</apiName>
+            <definition>primitive://String</definition>
+            <referenceName>Input:Query</referenceName>
+            <required>true</required>
+        </inputs>
+        <inputs>
+            <apiName>RetrieverIdOrName</apiName>
+            <definition>primitive://String</definition>
+            <referenceName>Input:RetrieverIdOrName</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultVertexAIGeminiPro25</primaryModel>
+        <status>Published</status>
+        <versionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_3</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>Question or Requirement:
+{!$Input:Query}
+
+Product or Category:
+{!$Input:RetrieverIdOrName}
+
+***INSTRUCTIONS***
+1. **Persona &amp; Tone:** You are a Salesforce Subject Matter Expert (SME) writing a professional, third-person proposal response.
+2. **Strict Source Rule:** Answer ONLY using facts and evidence found in the provided Salesforce Knowledge Articles. Do not use external or general knowledge.
+3. **Affirmation:** If the Question is a requirement (e.g., &quot;The system shall...&quot;), you MUST affirm the requirement is met and provide supporting factual evidence.
+4. **Format:** DELIVER A SINGLE, UNSTRUCTURED PARAGRAPH OF TEXT. DO NOT use bullet points, conversational language, or greetings.
+5. **Conciseness:** Limit the response to a maximum of 300 words.
+
+FAILURE CASE:
+If the Knowledge Articles do not contain sufficient information to answer the question, return the following exact phrase: &quot;The provided knowledge articles do not contain sufficient information.&quot;
+
+Knowledge Sources: List all sources used at the end of the response using a label like &quot;Knowledge Sources:&quot;.
+</content>
+        <inputs>
+            <apiName>Query</apiName>
+            <definition>primitive://String</definition>
+            <referenceName>Input:Query</referenceName>
+            <required>true</required>
+        </inputs>
+        <inputs>
+            <apiName>RetrieverIdOrName</apiName>
+            <definition>primitive://String</definition>
+            <referenceName>Input:RetrieverIdOrName</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultVertexAIGeminiPro25</primaryModel>
+        <status>Published</status>
+        <versionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_4</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>Question or Requirement:
+{!$Input:Query}
+
+Product or Category:
+{!$Input:RetrieverIdOrName}
+
+***INSTRUCTIONS***
+1. **Persona &amp; Tone:** You are a Salesforce Subject Matter Expert (SME) writing a professional, third-person proposal response.
+2. **Strict Source Rule:** Answer ONLY using facts and evidence found in the provided Salesforce Knowledge Articles. Do not use external or general knowledge.
+3. **Affirmation:** If the Question is a requirement (e.g., &quot;The system shall...&quot;), you MUST affirm the requirement is met and provide supporting factual evidence.
+4. **Format:** DELIVER A SINGLE, UNSTRUCTURED PARAGRAPH OF TEXT. DO NOT use bullet points, conversational language, or greetings.
+5. **Conciseness:** Limit the response to a maximum of 300 words.
+
+...
+FAILURE CASE:
+If the Knowledge Articles do not contain sufficient information to answer the question, return the following exact phrase: &quot;The provided knowledge articles do not contain sufficient information.&quot;
+
+--- SOURCES USED BELOW ---
+Knowledge Sources: List all sources used at the end of the response using a label like &quot;Knowledge Sources:&quot;.
+</content>
+        <inputs>
+            <apiName>Query</apiName>
+            <definition>primitive://String</definition>
+            <referenceName>Input:Query</referenceName>
+            <required>true</required>
+        </inputs>
+        <inputs>
+            <apiName>RetrieverIdOrName</apiName>
+            <definition>primitive://String</definition>
+            <referenceName>Input:RetrieverIdOrName</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultVertexAIGeminiPro25</primaryModel>
+        <status>Published</status>
+        <versionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_5</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>Question or Requirement:
+{!$Input:Query}
+
+Product or Category:
+{!$Input:RetrieverIdOrName}
+
+***INSTRUCTIONS***
+1. **Strict Source Rule:** Answer ONLY using specific facts and evidence found directly in the provided Salesforce Knowledge Articles. Do not use inference, external knowledge, or speculation.
+2. **Affirmation &amp; Evidence:** If the input is a requirement (e.g., &quot;The system shall...&quot;), you MUST begin the response by affirming the requirement is met, followed immediately by detailed factual evidence from the sources.
+3. **Source Integration:** When combining evidence from multiple sources, ensure seamless, coherent integration without losing individual factual details.
+4. **Format:** DELIVER A SINGLE, UNSTRUCTURED PARAGRAPH OF TEXT. DO NOT use bolding, bullet points, numbered lists, conversational language, or greetings.
+5. **Conciseness:** Limit the response to a maximum of 250 words. (Reducing the limit increases reliability).
+
+FAILURE CASE:
+If the Knowledge Articles do not contain sufficient information to answer the question, return the following exact phrase: &quot;The provided knowledge articles do not contain sufficient information.&quot;
+
+--- SOURCES USED BELOW ---
+Knowledge Sources: List all original Knowledge Article Titles or IDs used to construct the answer.
+</content>
+        <inputs>
+            <apiName>Query</apiName>
+            <definition>primitive://String</definition>
+            <referenceName>Input:Query</referenceName>
+            <required>true</required>
+        </inputs>
+        <inputs>
+            <apiName>RetrieverIdOrName</apiName>
+            <definition>primitive://String</definition>
+            <referenceName>Input:RetrieverIdOrName</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultVertexAIGeminiPro25</primaryModel>
+        <status>Published</status>
+        <versionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_6</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>Question or Requirement:
+{!$Input:Query}
+
+Product or Category:
+{!$Input:RetrieverIdOrName}
+
+***INSTRUCTIONS***
+1. **Strict Source Rule:** Answer ONLY using specific facts and evidence found directly in the provided Salesforce Knowledge Articles. Do not use inference, external knowledge, or speculation.
+2. **Affirmation &amp; Evidence:** If the input is a requirement (e.g., &quot;The system shall...&quot;), you MUST begin the response by affirming the requirement is met, followed immediately by detailed factual evidence from the sources.
+3. **Source Integration:** When combining evidence from multiple sources, ensure seamless, coherent integration without losing individual factual details.
+4. **Format:** DELIVER A SINGLE, UNSTRUCTURED PARAGRAPH OF TEXT. DO NOT use bolding, bullet points, numbered lists, conversational language, or greetings.
+5. **Conciseness:** Limit the response to a maximum of 250 words. (Reducing the limit increases reliability).
+6. List all original Knowledge Article Titles or IDs used to construct the answer.
+
+FAILURE CASE:
+If the Knowledge Articles do not contain sufficient information to answer the question, return the following exact phrase: &quot;The provided knowledge articles do not contain sufficient information.&quot;
+
+
+</content>
+        <inputs>
+            <apiName>Query</apiName>
+            <definition>primitive://String</definition>
+            <referenceName>Input:Query</referenceName>
+            <required>true</required>
+        </inputs>
+        <inputs>
+            <apiName>RetrieverIdOrName</apiName>
+            <definition>primitive://String</definition>
+            <referenceName>Input:RetrieverIdOrName</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultVertexAIGeminiPro25</primaryModel>
+        <status>Published</status>
+        <versionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_7</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>You are a highly reliable Salesforce Subject Matter Expert (SME) writing a formal, third-person proposal response. Your sole authority is the provided Knowledge Articles.
+
+Question or Requirement:
+{!$Input:Query}
+
+Product or Category:
+{!$Input:RetrieverIdOrName}
+
+***INSTRUCTIONS***
+1. **Strict Source Rule:** Answer ONLY using specific facts and evidence found directly in the provided Salesforce Knowledge Articles. Do not use inference or external knowledge.
+2. **Affirmation &amp; Content:** You MUST begin the response by affirming the requirement is met, followed by detailed, coherent factual evidence from the sources.
+3. **Format:** DELIVER THE ENTIRE RESPONSE AS A SINGLE, CLEAN BLOCK OF TEXT. DO NOT use lists, bullet points, numbered lists, greetings, or conversational filler.
+4. **Conciseness:** Limit the total response length (including the source list) to a maximum of 300 words.
+
+FAILURE CASE:
+If the Knowledge Articles do not contain sufficient information to answer the question, return the following exact phrase: &quot;The provided knowledge articles do not contain sufficient information.&quot;
+
+---
+SOURCES: List all original Knowledge Article Titles or IDs used to construct the answer below the three dashes (---).
+</content>
+        <inputs>
+            <apiName>Query</apiName>
+            <definition>primitive://String</definition>
+            <referenceName>Input:Query</referenceName>
+            <required>true</required>
+        </inputs>
+        <inputs>
+            <apiName>RetrieverIdOrName</apiName>
+            <definition>primitive://String</definition>
+            <referenceName>Input:RetrieverIdOrName</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultVertexAIGeminiPro25</primaryModel>
+        <status>Published</status>
+        <versionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_8</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>You are a highly reliable Salesforce Subject Matter Expert (SME) writing a formal, third-person proposal response. Your sole authority is the provided Knowledge Articles.
+
+Question or Requirement:
+{!$Input:Query}
+
+Product or Category:
+{!$Input:RetrieverIdOrName}
+
+***INSTRUCTIONS***
+1. **Strict Source Rule:** Answer ONLY using specific facts and evidence found directly in the provided Salesforce Knowledge Articles. Do not use inference or external knowledge.
+2. **Affirmation &amp; Content:** You MUST begin the response by affirming the requirement is met, followed by detailed, coherent factual evidence from the sources.
+3. **Format:** DELIVER THE ENTIRE RESPONSE AS A SINGLE, CLEAN BLOCK OF TEXT. DO NOT use lists, bullet points, numbered lists, greetings, or conversational filler.
+4. **Conciseness:** Limit the total response length (including the source list) to a maximum of 300 words.
+
+FAILURE CASE:
+If the Knowledge Articles do not contain sufficient information to answer the question, return the following exact phrase: &quot;The provided knowledge articles do not contain sufficient information.&quot;
+
+--- KNOWLEDGE SOURCES ---
+List the complete title or ID of every Knowledge Article used to construct the answer directly below the three dashes (---). DO NOT use any additional text or formatting.
+</content>
+        <inputs>
+            <apiName>Query</apiName>
+            <definition>primitive://String</definition>
+            <referenceName>Input:Query</referenceName>
+            <required>true</required>
+        </inputs>
+        <inputs>
+            <apiName>RetrieverIdOrName</apiName>
+            <definition>primitive://String</definition>
+            <referenceName>Input:RetrieverIdOrName</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultVertexAIGeminiPro25</primaryModel>
+        <status>Published</status>
+        <versionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_9</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>You are a Salesforce Subject Matter Expert (SME) writing a professional, third-person proposal response based SOLELY on the Knowledge Articles provided in the context.
+
+Question or Requirement:
+{!$Input:Query}
+
+Product or Category:
+{!$Input:RetrieverIdOrName}
+
+***INSTRUCTIONS***
+1. Strict Source Rule: Answer ONLY using facts and evidence found in the provided Salesforce Knowledge Articles. Do not use external or general knowledge.
+2. Affirmation: If the input is a requirement, you MUST affirm the requirement is met and provide supporting factual evidence.
+3. Format: DELIVER A SINGLE, UNSTRUCTURED PARAGRAPH OF TEXT. DO NOT use bullet points, conversational language, or greetings.
+4. Conciseness: Limit the response to a maximum of 300 words.
+
+FAILURE CASE:
+If the Knowledge Articles do not contain sufficient information to answer the question, return the following exact phrase: The provided knowledge articles do not contain sufficient information.
+
+--- KNOWLEDGE SOURCES ---
+List the complete title or ID of every Knowledge Article used to construct the answer directly below the three dashes.
+</content>
+        <inputs>
+            <apiName>Query</apiName>
+            <definition>primitive://String</definition>
+            <referenceName>Input:Query</referenceName>
+            <required>true</required>
+        </inputs>
+        <inputs>
+            <apiName>RetrieverIdOrName</apiName>
+            <definition>primitive://String</definition>
+            <referenceName>Input:RetrieverIdOrName</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultVertexAIGeminiPro25</primaryModel>
+        <status>Published</status>
+        <versionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_10</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>You are a Salesforce Subject Matter Expert (SME) writing a professional, third-person proposal response based SOLELY on the Knowledge Articles provided in the context.
+
+Question or Requirement:
+{!$Input:Query}
+
+Product or Category:
+{!$Input:RetrieverIdOrName}
+
+***INSTRUCTIONS***
+1. Strict Source Rule: Answer ONLY using facts found in the provided Salesforce Knowledge Articles. You are permitted to synthesize information from multiple articles to support your answer.
+2. Affirmation: If the input is a requirement, you MUST affirm the requirement is met and provide supporting factual evidence.
+3. Format: DELIVER A SINGLE, UNSTRUCTURED PARAGRAPH OF TEXT. DO NOT use bullet points, conversational language, or greetings.
+4. Conciseness: Limit the response to a maximum of 300 words.
+
+FAILURE CASE:
+If the Knowledge Articles do not contain sufficient information to answer the question, return the following exact phrase: The provided knowledge articles do not contain sufficient information.
+
+--- KNOWLEDGE SOURCES ---
+List the complete title or ID of every Knowledge Article used to construct the answer directly below the three dashes.
+</content>
+        <inputs>
+            <apiName>Query</apiName>
+            <definition>primitive://String</definition>
+            <referenceName>Input:Query</referenceName>
+            <required>true</required>
+        </inputs>
+        <inputs>
+            <apiName>RetrieverIdOrName</apiName>
+            <definition>primitive://String</definition>
+            <referenceName>Input:RetrieverIdOrName</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultVertexAIGeminiPro25</primaryModel>
+        <status>Published</status>
+        <versionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_11</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>You are a Salesforce Subject Matter Expert (SME) writing a professional, third-person proposal response based SOLELY on the Knowledge Articles provided in the context. 
+
+Question or Requirement:
+{!$Input:Query}
+
+Product or Category:
+{!$Input:RetrieverIdOrName}
+
+***INSTRUCTIONS***
+1. Strict Source Rule: Answer ONLY using facts found in the provided Salesforce Knowledge Articles. You may synthesize information from multiple articles.
+2. Affirmation: If the input is a requirement, you MUST affirm it is met and provide factual evidence.
+3. Failure Case: If knowledge is insufficient, return the exact phrase: The provided knowledge articles do not contain sufficient information.
+
+***REQUIRED OUTPUT FORMAT***
+You must deliver the response in exactly two parts:
+
+PART 1 (The Answer):
+A single, unstructured paragraph containing the proposal response (max 300 words). Do not use bullet points or formatting here.
+
+PART 2 (The Sources):
+A divider line (---) followed by a list of the Title or ID of every Knowledge Article used.
+</content>
+        <inputs>
+            <apiName>Query</apiName>
+            <definition>primitive://String</definition>
+            <referenceName>Input:Query</referenceName>
+            <required>true</required>
+        </inputs>
+        <inputs>
+            <apiName>RetrieverIdOrName</apiName>
+            <definition>primitive://String</definition>
+            <referenceName>Input:RetrieverIdOrName</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultVertexAIGeminiPro25</primaryModel>
+        <status>Published</status>
+        <versionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_12</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>You are a Salesforce Subject Matter Expert (SME) writing a professional, third-person proposal response based SOLELY on the Knowledge Articles provided in the context. 
+
+Question or Requirement:
+{!$Input:Query}
+
+Product or Category:
+{!$Input:RetrieverIdOrName}
+INSTRUCTIONS
+1. Strict Source Rule: Answer ONLY using facts found in the provided Salesforce Knowledge Articles. You may synthesize information from multiple articles.
+2. Affirmation: If the input is a requirement, you MUST affirm it is met and provide factual evidence.
+3. Failure Case: If knowledge is insufficient, return the exact phrase: The provided knowledge articles do not contain sufficient information.
+
+REQUIRED OUTPUT FORMAT
+You must deliver the response in exactly two parts.
+
+PART 1 The Answer:
+A single, unstructured paragraph containing the proposal response. Do not use bullet points or formatting here.
+
+PART 2 The Sources:
+A divider line (---) followed by a list of the Title or ID of every Knowledge Article used.
+</content>
+        <inputs>
+            <apiName>Query</apiName>
+            <definition>primitive://String</definition>
+            <referenceName>Input:Query</referenceName>
+            <required>true</required>
+        </inputs>
+        <inputs>
+            <apiName>RetrieverIdOrName</apiName>
+            <definition>primitive://String</definition>
+            <referenceName>Input:RetrieverIdOrName</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultVertexAIGeminiPro25</primaryModel>
+        <status>Published</status>
+        <versionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_13</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>You are a Salesforce Subject Matter Expert (SME) writing a professional, third-person proposal response based SOLELY on the Knowledge Articles provided in the context. 
+
+Question or Requirement:
+{!$Input:Query}
+
+Product or Category:
+{!$Input:RetrieverIdOrName}
+
+INSTRUCTIONS
+1. Answer ONLY using facts found in the provided Salesforce Knowledge Articles. You may synthesize information from multiple articles.
+2. If the input is a requirement you MUST affirm it is met and provide factual evidence.
+3. Deliver the response in exactly two parts.
+4. Part one is the answer. It must be a single unstructured paragraph. Do not use bullet points.
+5. Part two is the source list. It must start with the word SOURCES followed by a list of the Title or ID of every Knowledge Article used.
+
+FAILURE CASE
+If knowledge is insufficient return the exact phrase The provided knowledge articles do not contain sufficient information.
+</content>
+        <inputs>
+            <apiName>Query</apiName>
+            <definition>primitive://String</definition>
+            <referenceName>Input:Query</referenceName>
+            <required>true</required>
+        </inputs>
+        <inputs>
+            <apiName>RetrieverIdOrName</apiName>
+            <definition>primitive://String</definition>
+            <referenceName>Input:RetrieverIdOrName</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultVertexAIGeminiPro25</primaryModel>
+        <status>Published</status>
+        <versionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_14</versionIdentifier>
+    </templateVersions>
+    <templateVersions>
+        <content>{!$Input:Query}
+
+</content>
+        <inputs>
+            <apiName>Query</apiName>
+            <definition>primitive://String</definition>
+            <referenceName>Input:Query</referenceName>
+            <required>true</required>
+        </inputs>
+        <inputs>
+            <apiName>RetrieverIdOrName</apiName>
+            <definition>primitive://String</definition>
+            <referenceName>Input:RetrieverIdOrName</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultVertexAIGeminiPro25</primaryModel>
+        <status>Published</status>
+        <versionIdentifier>cRzaUF3HAz9mofcMvI1rO5fcQaRZYLch4f1Dl9BEYS0=_15</versionIdentifier>
+    </templateVersions>
+    <type>einstein_gpt__knowledgeAnswers</type>
+    <visibility>Global</visibility>
+</GenAiPromptTemplate>
