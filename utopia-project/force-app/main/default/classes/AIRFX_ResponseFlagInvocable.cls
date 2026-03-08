@@ -291,6 +291,35 @@ public with sharing class AIRFX_ResponseFlagInvocable {
                     decision.ruleId = rule.id;
                     return decision;
                 }
+                when 'NUMERIC_TIERED_MIN' {
+                    // 3-tier: < threshold = GREEN, threshold..upper = YELLOW, > upper = RED
+                    Decimal reqValue = extractNumber(qLower, rule.numericUnit);
+                    if (reqValue == null) {
+                        decision.flag = FLAG_YELLOW;
+                        decision.reason = 'Detected ' + rule.id + ' topic but could not extract numeric value from requirement. Human review needed.';
+                        decision.ruleId = rule.id + '_PARSE_FAIL';
+                        return decision;
+                    }
+                    if (reqValue > rule.numericUpperThreshold) {
+                        decision.flag = FLAG_RED;
+                        decision.reason = 'Requirement: ' + reqValue + rule.numericUnit
+                            + '. Salesforce maximum achievable: ' + rule.numericUpperThreshold + rule.numericUnit
+                            + '. ' + rule.reason;
+                        decision.ruleId = rule.id;
+                    } else if (reqValue >= rule.numericThreshold) {
+                        decision.flag = FLAG_YELLOW;
+                        decision.reason = 'Requirement: ' + reqValue + rule.numericUnit
+                            + '. ' + rule.alternativeReason;
+                        decision.ruleId = rule.id;
+                    } else {
+                        decision.flag = FLAG_GREEN;
+                        decision.reason = 'Requirement: ' + reqValue + rule.numericUnit
+                            + '. Salesforce commits to: ' + rule.numericThreshold + rule.numericUnit
+                            + '. Requirement met.';
+                        decision.ruleId = rule.id;
+                    }
+                    return decision;
+                }
                 when 'NUMERIC_MIN' {
                     // SF commits to a minimum. If requirement asks for MORE, Red.
                     Decimal reqValue = extractNumber(qLower, rule.numericUnit);
@@ -525,11 +554,14 @@ public with sharing class AIRFX_ResponseFlagInvocable {
         // NUMERIC RULES
         // =================================================================
 
-        // UPTIME / AVAILABILITY — 99.7% without approval, 99.9% with
-        rules.add(numericMin('UPTIME',
+        // UPTIME / AVAILABILITY — 3-tier: <99.7 GREEN, 99.7-99.9 YELLOW, >99.9 RED
+        CapabilityRule uptimeRule = new CapabilityRule('UPTIME',
             new List<String>{'uptime', 'availability', '% sla', 'percent sla', 'percent uptime', 'percent availability'},
-            99.7, '%',
-            'Salesforce commits to 99.7% uptime. 99.9% available with approval only. Any requirement above 99.7% must be escalated.'));
+            'NUMERIC_TIERED_MIN', 99.7, '%', null,
+            'Salesforce cannot exceed 99.9% uptime. Requirements above 99.9% cannot be met.');
+        uptimeRule.numericUpperThreshold = 99.9;
+        uptimeRule.alternativeReason = 'Salesforce standard SLA commits to 99.7% uptime. Requirements up to 99.9% may be achievable with explicit approval \u2014 please engage your AE.';
+        rules.add(uptimeRule);
 
         // RPO — 4 hours (lower = more demanding)
         rules.add(numericMax('RPO',
@@ -902,9 +934,11 @@ public with sharing class AIRFX_ResponseFlagInvocable {
         public List<String> keywords;
         public String ruleType;         // BINARY_CANNOT, BINARY_CAN, BINARY_CAN_DIFFERENTLY, NUMERIC_MIN, NUMERIC_MAX, CONDITIONAL_DATA_RESIDENCY
         public Decimal numericThreshold;
+        public Decimal numericUpperThreshold; // For tiered rules: values between threshold and upper are YELLOW
         public String numericUnit;
         public String productFilter;    // null = all, GOV_CLOUD, COMMERCIAL
         public String reason;
+        public String alternativeReason; // For tiered rules: YELLOW reason text
         public List<String> excludeKeywords;
 
         public CapabilityRule(String id, List<String> keywords, String ruleType,

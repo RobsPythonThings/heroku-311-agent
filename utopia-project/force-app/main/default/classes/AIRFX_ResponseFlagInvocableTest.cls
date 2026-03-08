@@ -46,8 +46,8 @@ private class AIRFX_ResponseFlagInvocableTest {
             'The platform must guarantee 99.995% uptime.',
             'Salesforce provides 99.95% uptime...', '', ''
         );
-        System.assertEquals('Red', d.flag, 'Uptime 99.995% exceeds SF 99.7% — must be Red');
-        System.assert(d.reason.contains('99.7'), 'Reason should reference our 99.7% commitment');
+        System.assertEquals('Red', d.flag, 'Uptime 99.995% exceeds SF 99.9% max — must be Red');
+        System.assert(d.reason.contains('99.9'), 'Reason should reference our 99.9% maximum');
         System.assertEquals('UPTIME', d.ruleId);
     }
 
@@ -61,21 +61,22 @@ private class AIRFX_ResponseFlagInvocableTest {
     }
 
     @IsTest
-    static void uptime_999_shouldBeRed() {
+    static void uptime_999_shouldBeYellow() {
         AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
             'The system must maintain 99.9% uptime as measured monthly.',
             '', '', ''
         );
-        System.assertEquals('Red', d.flag, '99.9% > 99.7% = Red (requires approval)');
+        System.assertEquals('Yellow', d.flag, '99.9% is in the 99.7-99.9 approval zone = Yellow');
+        System.assert(d.reason.contains('engage your AE'), 'Should advise engaging AE');
     }
 
     @IsTest
-    static void uptime_997_shouldBeGreen() {
+    static void uptime_997_shouldBeYellow() {
         AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
             'Minimum 99.7% uptime required.',
             '', '', ''
         );
-        System.assertEquals('Green', d.flag, '99.7% == 99.7% = Green');
+        System.assertEquals('Yellow', d.flag, '99.7% is at the threshold = Yellow (needs approval)');
     }
 
     @IsTest
@@ -95,6 +96,60 @@ private class AIRFX_ResponseFlagInvocableTest {
             '', '', ''
         );
         System.assertEquals('Green', d.flag, '95% < 99.7% = Green');
+    }
+
+    @IsTest
+    static void uptime_996_shouldBeGreen() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Platform must maintain 99.6% availability.',
+            '', '', ''
+        );
+        System.assertEquals('Green', d.flag, '99.6% < 99.7% = Green');
+    }
+
+    @IsTest
+    static void uptime_995_shouldBeGreen() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Minimum 99.5% availability required.',
+            '', '', ''
+        );
+        System.assertEquals('Green', d.flag, '99.5% < 99.7% = Green');
+    }
+
+    @IsTest
+    static void uptime_99_shouldBeGreen() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'System must provide 99% availability.',
+            '', '', ''
+        );
+        System.assertEquals('Green', d.flag, '99% < 99.7% = Green');
+    }
+
+    @IsTest
+    static void uptime_998_shouldBeYellow() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'The system must maintain 99.8% uptime.',
+            '', '', ''
+        );
+        System.assertEquals('Yellow', d.flag, '99.8% is in the 99.7-99.9 approval zone = Yellow');
+    }
+
+    @IsTest
+    static void uptime_100_shouldBeRed() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'System must provide 100% availability.',
+            '', '', ''
+        );
+        System.assertEquals('Red', d.flag, '100% > 99.9% = Red');
+    }
+
+    @IsTest
+    static void uptime_9999_shouldBeRed() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Platform requires 99.99% uptime guarantee.',
+            '', '', ''
+        );
+        System.assertEquals('Red', d.flag, '99.99% > 99.9% = Red');
     }
 
     // =========================================================================
@@ -836,7 +891,7 @@ private class AIRFX_ResponseFlagInvocableTest {
             WHERE Id = :resp.Id
         ];
         System.assertEquals('Red', updated.Security_Flag__c);
-        System.assert(updated.Response_Flag_Reason__c.contains('99.7'), 'Reason should mention 99.7%');
+        System.assert(updated.Response_Flag_Reason__c.contains('99.9'), 'Reason should mention 99.9% maximum');
     }
 
     @IsTest(SeeAllData=true)
