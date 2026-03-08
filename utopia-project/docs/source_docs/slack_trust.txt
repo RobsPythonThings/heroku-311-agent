@@ -1,0 +1,37 @@
+Source: https://slack.com/trust/compliance
+Fetched: 2026-03-07
+
+# Slack Trust & Compliance Overview
+
+## Key Compliance Certifications
+
+### International Standards
+- ISO/IEC 27001: Information Security Management System (ISMS)
+- ISO/IEC 27017: Security Controls for Cloud Services
+- ISO/IEC 27018: Protection of Personally Identifiable Information
+- ISO/IEC 27701: Privacy Information Management System
+- ISO/IEC 42001: Artificial intelligence Management system
+- SOC 2 (Type II) and SOC 3 reports
+- GovSlack SOC 2 (Type II) and SOC 3
+
+### Privacy & Cross-Border Standards
+- Global PRP Certification (Privacy Recognition for Processors)
+- Global CBPR Certification (Cross Border Privacy Rules)
+- Cloud Security Alliance (CSA) STAR Registry listing
+
+## Industry-Specific Compliance
+
+- HIPAA: Configurable for electronically protected health information
+- FINRA: 17a-4 compliant configuration available
+- FedRAMP: Moderate authorization; GovSlack has JAB High authorization
+- FERPA: Federal Education Rights and Privacy Act support
+- TISAX: Third-party assessed (Germany)
+- IRAP: Australian Information Security Manual assessment
+- ISMAP: Japanese government cloud security program
+- C5: German Federal Office cloud compliance standards
+- South Korea CSP: Financial security assessment completed
+- Spain ENS: Achieved highest accreditation level
+
+## Core Compliance Offerings
+
+The platform supports GDPR, CCPA, and data residency options with Data Processing Addenda available for customers.

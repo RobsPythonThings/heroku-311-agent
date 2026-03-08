@@ -1,0 +1,79 @@
+Source: https://trust.salesforce.com/en/compliance (redirects to https://compliance.salesforce.com/)
+Fetched: 2026-03-07
+
+# Salesforce Compliance Site Content
+
+## Main Value Proposition
+Salesforce maintains comprehensive compliance certifications and attestations to validate Trust as their #1 value.
+
+## Compliance Categories
+
+**APEC Certification for Processors and Controllers**
+Framework certifying processors and controllers meeting Asia-Pacific Economic Cooperation privacy standards.
+
+**C5 (ISAE 3000)**
+German auditing standard for cloud service providers, with reports available for multiple Salesforce services including Data Cloud, Einstein Platform, Marketing Cloud, Slack, and Tableau Cloud.
+
+**CCCS Assessment - Protected B**
+Canadian cybersecurity framework addressing "Protected B" classification requirements.
+
+**CJIS (Criminal Justice Information Services)**
+U.S. federal standard for handling criminal justice data, applicable to government cloud services.
+
+**CSA STAR (Cloud Security Alliance)**
+Industry framework for cloud security capabilities, with CAIQ assessments and registry documentation available.
+
+**DORA (Digital Operational Resilience Act)**
+EU regulatory requirement for financial service operational resilience, including FAQ and mapping documents.
+
+**DoD IL (Impact Levels) 2, 4, and 5**
+U.S. Department of Defense information assurance certifications at various security levels for government services.
+
+**FedRAMP (Federal Risk and Authorization Management Program)**
+U.S. government authorization for cloud services, available at Moderate and High levels.
+
+**GDPR (General Data Protection Regulation)**
+EU data protection regulation with Data Protection Impact Assessments available.
+
+**HIPAA (Health Insurance Portability and Accountability Act)**
+U.S. healthcare data security standard with documentation for Salesforce Services and Tableau Cloud.
+
+**HITRUST (Health Information Trust Alliance)**
+Healthcare-focused certification combining multiple security frameworks.
+
+**ISO Certifications**
+Multiple ISO standards including:
+- ISO 27001/27017/27018 (information security)
+- ISO 42001 (AI management systems)
+- ISO 9001 (quality management)
+- ISO 22301 (business continuity)
+
+**NEN 7510**
+Dutch healthcare sector security standard.
+
+**NIST SP 800-171**
+U.S. cybersecurity framework for non-federal systems handling controlled unclassified information.
+
+**PCI DSS (Payment Card Industry Data Security Standard)**
+Payment security framework with attestations and network scan reports across multiple regions.
+
+**PrivacyMark**
+Japanese privacy certification program.
+
+**SOC Reports (1, 2, 3)**
+Service Organization Control audits addressing security, availability, processing integrity, confidentiality, and privacy.
+
+**Additional Frameworks**
+- IRAP (Australian security assessment)
+- ISMAP (Japanese cloud assessment)
+- TISAX (German industry security)
+- TX-RAMP (Texas security program)
+- EU Cloud Code of Conduct
+- Spain ENS (Esquema Nacional de Seguridad)
+- WCAG 2.2 AA (accessibility)
+
+## Services Covered
+Compliance documentation extends across 28+ services including Cloud Commerce, Data Cloud, Marketing Cloud, MuleSoft, Heroku, Salesforce Services, Slack, Tableau, and specialized platforms.
+
+## Document Repository
+Over 800 compliance documents available covering security overviews, white papers, attestation letters, assessment reports, and vulnerability testing summaries.

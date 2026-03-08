@@ -157,6 +157,9 @@ public with sharing class AIRFX_ResponseFlagInvocable {
             }
         }
 
+        // Cache CMDT context per country+product pair to avoid SOQL limits
+        Map<String, String> cmdtContextCache = new Map<String, String>();
+
         for (Id recId : idsToProcess) {
             FlagResult fr = new FlagResult();
             fr.responseId = recId;
@@ -190,8 +193,12 @@ public with sharing class AIRFX_ResponseFlagInvocable {
                 fr.ruleId = decision.ruleId;
                 fr.success = true;
 
-                // Build CMDT capability context for prompt template grounding
-                fr.CMDTCapabilityContext = buildCMDTCapabilityContext(country, productType);
+                // Build CMDT capability context — cached per project context
+                String cacheKey = (country != null ? country : '') + '|' + (productType != null ? productType : '');
+                if (!cmdtContextCache.containsKey(cacheKey)) {
+                    cmdtContextCache.put(cacheKey, buildCMDTCapabilityContext(country, productType));
+                }
+                fr.CMDTCapabilityContext = cmdtContextCache.get(cacheKey);
 
                 // Stage the update
                 GPS_ResponseNew__c upd = new GPS_ResponseNew__c(
@@ -404,6 +411,11 @@ public with sharing class AIRFX_ResponseFlagInvocable {
         String qLower = question.toLowerCase();
         String aLower = String.isNotBlank(aiAnswer) ? aiAnswer.toLowerCase() : '';
         Boolean isGovCloud = isGovCloudDeal(productType);
+        Boolean isMuleSoft = isMuleSoftDeal(productType);
+        Boolean isTableau = isTableauDeal(productType);
+
+        // Detect obligation level: mandatory (must/shall) vs optional (should/may)
+        String obligation = detectObligation(qLower);
 
         // Any question reaching the rules passed the security pre-filter
         decision.classification = 'Security';
@@ -421,12 +433,23 @@ public with sharing class AIRFX_ResponseFlagInvocable {
             // Check product filter
             if (rule.productFilter == 'GOV_CLOUD' && !isGovCloud) continue;
             if (rule.productFilter == 'COMMERCIAL' && isGovCloud) continue;
+            if (rule.productFilter == 'MULESOFT' && !isMuleSoft) continue;
+            if (rule.productFilter == 'TABLEAU' && !isTableau) continue;
+            if (rule.productFilter == 'NOT_MULESOFT' && isMuleSoft) continue;
+            if (rule.productFilter == 'NOT_TABLEAU' && isTableau) continue;
 
             // Apply rule based on type
             switch on rule.ruleType {
                 when 'BINARY_CANNOT' {
-                    decision.flag = FLAG_RED;
-                    decision.reason = rule.reason;
+                    if (obligation == 'OPTIONAL') {
+                        // "should"/"may" softens Red → Yellow
+                        decision.flag = FLAG_YELLOW;
+                        decision.reason = rule.reason
+                            + ' (Requirement uses optional language — flagged Yellow instead of Red.)';
+                    } else {
+                        decision.flag = FLAG_RED;
+                        decision.reason = rule.reason;
+                    }
                     decision.ruleId = rule.id;
                     return decision;
                 }
@@ -437,8 +460,15 @@ public with sharing class AIRFX_ResponseFlagInvocable {
                     return decision;
                 }
                 when 'BINARY_CAN_DIFFERENTLY' {
-                    decision.flag = FLAG_YELLOW;
-                    decision.reason = rule.reason;
+                    if (obligation == 'OPTIONAL') {
+                        // "should"/"may" softens Yellow → Green
+                        decision.flag = FLAG_GREEN;
+                        decision.reason = rule.reason
+                            + ' (Requirement uses optional language — Salesforce meets the intent.)';
+                    } else {
+                        decision.flag = FLAG_YELLOW;
+                        decision.reason = rule.reason;
+                    }
                     decision.ruleId = rule.id;
                     return decision;
                 }
@@ -603,6 +633,60 @@ public with sharing class AIRFX_ResponseFlagInvocable {
         String pt = productType.toLowerCase();
         return pt.contains('gov') || pt.contains('government')
             || pt.contains('gcch') || pt.contains('il4') || pt.contains('il5');
+    }
+
+    @TestVisible
+    private static Boolean isMuleSoftDeal(String productType) {
+        if (String.isBlank(productType)) return false;
+        String pt = productType.toLowerCase();
+        return pt.contains('mulesoft') || pt.contains('mule soft') || pt.contains('anypoint');
+    }
+
+    @TestVisible
+    private static Boolean isTableauDeal(String productType) {
+        if (String.isBlank(productType)) return false;
+        String pt = productType.toLowerCase();
+        return pt.contains('tableau');
+    }
+
+    // =========================================================================
+    // OBLIGATION LEVEL DETECTION
+    // =========================================================================
+
+    /**
+     * Detects whether a question uses mandatory language (must/shall)
+     * or optional language (should/may/desirable/preferred).
+     * Returns 'MANDATORY', 'OPTIONAL', or 'NEUTRAL' (no signal).
+     * Mandatory takes precedence if both present.
+     */
+    @TestVisible
+    private static String detectObligation(String qLower) {
+        // Check for mandatory language — word-boundary matching
+        Boolean hasMandatory = false;
+        Boolean hasOptional = false;
+
+        // Mandatory indicators
+        if (qLower.contains(' must ') || qLower.contains(' shall ')
+            || qLower.contains(' required ') || qLower.contains(' mandatory ')
+            || qLower.startsWith('must ') || qLower.startsWith('shall ')
+            || qLower.contains(' is required') || qLower.contains(' are required')
+            || qLower.contains(' will be required') || qLower.contains(' must be ')) {
+            hasMandatory = true;
+        }
+
+        // Optional indicators
+        if (qLower.contains(' should ') || qLower.contains(' may ')
+            || qLower.contains(' desirable') || qLower.contains(' preferred ')
+            || qLower.contains(' optional ') || qLower.contains(' recommended ')
+            || qLower.contains('highly desirable') || qLower.contains(' could ')
+            || qLower.startsWith('should ')) {
+            hasOptional = true;
+        }
+
+        // Mandatory takes precedence if both present
+        if (hasMandatory) return 'MANDATORY';
+        if (hasOptional) return 'OPTIONAL';
+        return 'NEUTRAL';
     }
 
     // =========================================================================
@@ -997,6 +1081,63 @@ public with sharing class AIRFX_ResponseFlagInvocable {
             new List<String>{'us citizen', 'citizen.*support', 'cleared.*support', 'citizenship of support'},
             'BINARY_CANNOT', null, null, 'COMMERCIAL',
             'Only US Government Cloud guarantees citizenship of support. Commercial environments have a global support model.'));
+
+        // =================================================================
+        // MULESOFT PRODUCT RULES
+        // =================================================================
+
+        // MuleSoft on-prem: Anypoint Runtime CAN be deployed on-premises
+        // Must fire before ON_PREM_GENERAL (BINARY_CANNOT) to prevent false Red
+        rules.add(new CapabilityRule('MULESOFT_ON_PREM',
+            new List<String>{'on-premise', 'on premise', 'on-prem', 'self-hosted'},
+            'BINARY_CAN', null, null, 'MULESOFT',
+            'MuleSoft Anypoint Runtime can be deployed on-premises, in customer-managed infrastructure, or in Salesforce-managed cloud (CloudHub). Anypoint Platform control plane is cloud-hosted.'));
+
+        // MuleSoft dedicated: Anypoint Runtime CAN run on dedicated infrastructure
+        rules.add(new CapabilityRule('MULESOFT_DEDICATED',
+            new List<String>{'dedicated hardware', 'dedicated instance', 'dedicated infrastructure', 'dedicated server'},
+            'BINARY_CAN', null, null, 'MULESOFT',
+            'MuleSoft Anypoint Runtime can run on dedicated customer infrastructure. CloudHub 2.0 also supports dedicated VPCs.'));
+
+        // MuleSoft private cloud
+        rules.add(new CapabilityRule('MULESOFT_PRIVATE_CLOUD',
+            new List<String>{'private cloud', 'customer-hosted cloud'},
+            'BINARY_CAN', null, null, 'MULESOFT',
+            'MuleSoft Anypoint Runtime can be deployed in a customer\'s private cloud environment. Anypoint Platform control plane remains cloud-hosted.'));
+
+        // MuleSoft customer VM
+        rules.add(new CapabilityRule('MULESOFT_CUSTOMER_VM',
+            new List<String>{'customer vm', 'customer virtual machine', 'deploy to our vm', 'deploy to agency vm'},
+            'BINARY_CAN', null, null, 'MULESOFT',
+            'MuleSoft Anypoint Runtime can be deployed on customer-managed VMs running supported operating systems.'));
+
+        // =================================================================
+        // TABLEAU PRODUCT RULES
+        // =================================================================
+
+        // Tableau on-prem: Tableau Server CAN be deployed on-premises
+        rules.add(new CapabilityRule('TABLEAU_ON_PREM',
+            new List<String>{'on-premise', 'on premise', 'on-prem', 'self-hosted'},
+            'BINARY_CAN', null, null, 'TABLEAU',
+            'Tableau Server can be deployed on-premises. Tableau Desktop is a local application. Tableau Cloud is the SaaS option.'));
+
+        // Tableau dedicated
+        rules.add(new CapabilityRule('TABLEAU_DEDICATED',
+            new List<String>{'dedicated hardware', 'dedicated instance', 'dedicated infrastructure', 'dedicated server'},
+            'BINARY_CAN', null, null, 'TABLEAU',
+            'Tableau Server can run on dedicated customer hardware. Tableau Cloud runs on Salesforce-managed infrastructure.'));
+
+        // Tableau private cloud
+        rules.add(new CapabilityRule('TABLEAU_PRIVATE_CLOUD',
+            new List<String>{'private cloud', 'customer-hosted cloud'},
+            'BINARY_CAN', null, null, 'TABLEAU',
+            'Tableau Server can be deployed in a customer\'s private cloud. Tableau Cloud is multi-tenant SaaS.'));
+
+        // Tableau customer VM
+        rules.add(new CapabilityRule('TABLEAU_CUSTOMER_VM',
+            new List<String>{'customer vm', 'customer virtual machine', 'deploy to our vm'},
+            'BINARY_CAN', null, null, 'TABLEAU',
+            'Tableau Server can be deployed on customer-managed VMs. Tableau Desktop runs locally on user machines.'));
 
         // DATA RESIDENCY — conditional on country
         rules.add(new CapabilityRule(

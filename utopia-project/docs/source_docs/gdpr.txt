@@ -1,0 +1,70 @@
+Source: https://www.salesforce.com/company/privacy/ (original URL https://www.salesforce.com/privacy/gdpr/ returned 404)
+Fetched: 2026-03-07
+
+# Salesforce Privacy & GDPR Compliance
+
+## Core Privacy Framework
+
+Salesforce's privacy statement emphasizes that "trust is our #1 value" and outlines comprehensive data handling practices. The company acts as a data controller for personal information collected through websites, events, communications, and services where it maintains control over processing purposes.
+
+## Data Collection Categories
+
+Salesforce collects information directly from users through:
+- Contact details (name, email, phone, company)
+- Financial information for transactions
+- Device and usage data (IP addresses, cookies, browser info)
+- Event attendance records including biometric data where explicitly consented
+- Professional employment information
+- Health data during events/office visits (where legally required)
+
+The company also obtains data from external sources including business contact providers, social media platforms, and publicly available information for advertising and lead generation purposes.
+
+## GDPR & International Data Transfers
+
+The organization commits to the EU-U.S. Data Privacy Framework, Swiss-U.S. DPF, and UK Extension, certifying adherence to DPF principles. Personal data may be transferred internationally using standard contractual clauses and other Commission-approved mechanisms.
+
+Key transfer safeguards include:
+- Binding Corporate Rules for EU and UK processors
+- Data Processing Addendum (DPA) availability
+- Compliance with Standard Contractual Clauses for cross-border flows
+
+## Data Subject Rights
+
+Individuals can exercise rights including:
+- Access to held personal information
+- Correction of inaccurate data
+- Deletion requests ("right to be forgotten")
+- Processing restrictions
+- Data portability
+- Objection to processing
+- Withdrawal of consent
+
+Requests can be submitted via privacy form or emailing privacy@salesforce.com. Response timeframe: typically within one month.
+
+## Cookie & Tracking Controls
+
+Users can manage:
+- Required cookies: Essential for functionality (no opt-out)
+- Functional cookies: Analytics and performance (requires consent)
+- Advertising cookies: Behavioral targeting (requires consent)
+
+Cookie preferences are adjustable through footer links on Salesforce websites and individual browser settings.
+
+## Data Sharing Practices
+
+Personal data is shared with:
+- Service providers (IT, analytics, marketing, AI/ML providers)
+- Salesforce affiliates for account management
+- Event sponsors (when registered)
+- Third-party advertising networks
+- Government authorities (when legally required)
+
+## Special Categories & Children
+
+Salesforce processes special category data (biometric, health information) only where explicit consent is obtained or law requires it. The organization does not knowingly collect data from children under 13 without parental consent.
+
+## Contact & Dispute Resolution
+
+Data Protection Officer: privacy@salesforce.com | 1-800-931-7365
+Mailing Address: Salesforce Data Protection Officer, 415 Mission St., San Francisco, CA 94105, USA
+Third-party dispute resolution available through TRUSTe; EU/UK residents can lodge complaints with supervisory authorities.

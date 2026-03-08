@@ -1267,6 +1267,230 @@ private class AIRFX_ResponseFlagInvocableTest {
         System.assertEquals('PREFILTER_NON_SECURITY', d.ruleId);
     }
 
+    // =========================================================================
+    // 13. OBLIGATION LEVEL DETECTION
+    // =========================================================================
+
+    @IsTest
+    static void obligation_must_isMandatory() {
+        System.assertEquals('MANDATORY', AIRFX_ResponseFlagInvocable.detectObligation(
+            'the system must support encryption at rest'));
+    }
+
+    @IsTest
+    static void obligation_shall_isMandatory() {
+        System.assertEquals('MANDATORY', AIRFX_ResponseFlagInvocable.detectObligation(
+            'the contractor shall provide escrow'));
+    }
+
+    @IsTest
+    static void obligation_should_isOptional() {
+        System.assertEquals('OPTIONAL', AIRFX_ResponseFlagInvocable.detectObligation(
+            'the solution should support encryption at rest'));
+    }
+
+    @IsTest
+    static void obligation_may_isOptional() {
+        System.assertEquals('OPTIONAL', AIRFX_ResponseFlagInvocable.detectObligation(
+            'the vendor may provide source code'));
+    }
+
+    @IsTest
+    static void obligation_highlyDesirable_isOptional() {
+        System.assertEquals('OPTIONAL', AIRFX_ResponseFlagInvocable.detectObligation(
+            'highly desirable - the solution provides escrow'));
+    }
+
+    @IsTest
+    static void obligation_noSignal_isNeutral() {
+        System.assertEquals('NEUTRAL', AIRFX_ResponseFlagInvocable.detectObligation(
+            'describe your encryption capabilities'));
+    }
+
+    @IsTest
+    static void obligation_mustOverridesShould() {
+        // If both "must" and "should" appear, mandatory wins
+        System.assertEquals('MANDATORY', AIRFX_ResponseFlagInvocable.detectObligation(
+            'the solution must support tls and should support tls 1.3'));
+    }
+
+    // =========================================================================
+    // 14. OBLIGATION AFFECTS FLAGS
+    // =========================================================================
+
+    @IsTest
+    static void obligation_escrow_should_softensToYellow() {
+        // "should provide escrow" — BINARY_CANNOT but optional → Yellow
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'The vendor should provide source code escrow arrangements.',
+            '', '', ''
+        );
+        System.assertEquals('Yellow', d.flag, 'Optional CANNOT softens Red → Yellow');
+        System.assertEquals('ESCROW', d.ruleId);
+        System.assert(d.reason.contains('optional language'), 'Should note optional language');
+    }
+
+    @IsTest
+    static void obligation_escrow_must_staysRed() {
+        // "must provide escrow" — BINARY_CANNOT + mandatory = Red
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'The vendor must provide source code escrow arrangements.',
+            '', '', ''
+        );
+        System.assertEquals('Red', d.flag, 'Mandatory CANNOT stays Red');
+        System.assertEquals('ESCROW', d.ruleId);
+    }
+
+    @IsTest
+    static void obligation_waf_should_softensToGreen() {
+        // "should deploy WAF" — CAN_DIFFERENTLY but optional → Green
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'The vendor should deploy a web application firewall (WAF).',
+            '', '', ''
+        );
+        System.assertEquals('Green', d.flag, 'Optional CAN_DIFFERENTLY softens Yellow → Green');
+        System.assertEquals('WAF_ALTERNATIVE', d.ruleId);
+        System.assert(d.reason.contains('optional language'), 'Should note optional language');
+    }
+
+    @IsTest
+    static void obligation_waf_must_staysYellow() {
+        // "must deploy WAF" — CAN_DIFFERENTLY + mandatory = Yellow (unchanged)
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'The vendor must deploy a web application firewall (WAF).',
+            '', '', ''
+        );
+        System.assertEquals('Yellow', d.flag, 'Mandatory CAN_DIFFERENTLY stays Yellow');
+        System.assertEquals('WAF_ALTERNATIVE', d.ruleId);
+    }
+
+    @IsTest
+    static void obligation_highlyDesirable_ipv6_softensToYellow() {
+        // "Highly desirable - IPv6" — BINARY_CANNOT + optional → Yellow
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Highly desirable - the solution supports IPv6 addressing.',
+            '', '', ''
+        );
+        System.assertEquals('Yellow', d.flag, 'Highly desirable CANNOT softens Red → Yellow');
+        System.assertEquals('IPV6_FULL', d.ruleId);
+    }
+
+    @IsTest
+    static void obligation_neutral_escrow_staysRed() {
+        // No must/should — defaults to strict (Red for CANNOT)
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Describe your source code escrow arrangements.',
+            '', '', ''
+        );
+        System.assertEquals('Red', d.flag, 'Neutral obligation keeps default Red');
+    }
+
+    // =========================================================================
+    // 15. MULESOFT PRODUCT RULES
+    // =========================================================================
+
+    @IsTest
+    static void mulesoft_onPrem_shouldBeGreen() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Solution must support on-premise deployment.',
+            '', 'MuleSoft', ''
+        );
+        System.assertEquals('Green', d.flag, 'MuleSoft supports on-prem');
+        System.assertEquals('MULESOFT_ON_PREM', d.ruleId);
+        System.assert(d.reason.contains('Anypoint Runtime'), 'Should mention Anypoint Runtime');
+    }
+
+    @IsTest
+    static void mulesoft_dedicatedHardware_shouldBeGreen() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Solution must run on dedicated hardware.',
+            '', 'MuleSoft', ''
+        );
+        System.assertEquals('Green', d.flag, 'MuleSoft supports dedicated hardware');
+        System.assertEquals('MULESOFT_DEDICATED', d.ruleId);
+    }
+
+    @IsTest
+    static void mulesoft_privateCloud_shouldBeGreen() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Solution must be deployed in agency private cloud environment.',
+            '', 'MuleSoft Anypoint', ''
+        );
+        System.assertEquals('Green', d.flag, 'MuleSoft supports private cloud');
+        System.assertEquals('MULESOFT_PRIVATE_CLOUD', d.ruleId);
+    }
+
+    @IsTest
+    static void mulesoft_detection() {
+        System.assert(AIRFX_ResponseFlagInvocable.isMuleSoftDeal('MuleSoft'));
+        System.assert(AIRFX_ResponseFlagInvocable.isMuleSoftDeal('Anypoint Platform'));
+        System.assert(!AIRFX_ResponseFlagInvocable.isMuleSoftDeal('Sales Cloud'));
+        System.assert(!AIRFX_ResponseFlagInvocable.isMuleSoftDeal(null));
+    }
+
+    // =========================================================================
+    // 16. TABLEAU PRODUCT RULES
+    // =========================================================================
+
+    @IsTest
+    static void tableau_onPrem_shouldBeGreen() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Solution must support on-premise deployment.',
+            '', 'Tableau', ''
+        );
+        System.assertEquals('Green', d.flag, 'Tableau supports on-prem');
+        System.assertEquals('TABLEAU_ON_PREM', d.ruleId);
+        System.assert(d.reason.contains('Tableau Server'), 'Should mention Tableau Server');
+    }
+
+    @IsTest
+    static void tableau_dedicatedHardware_shouldBeGreen() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Solution must run on dedicated hardware.',
+            '', 'Tableau Server', ''
+        );
+        System.assertEquals('Green', d.flag, 'Tableau supports dedicated hardware');
+        System.assertEquals('TABLEAU_DEDICATED', d.ruleId);
+    }
+
+    @IsTest
+    static void tableau_privateCloud_shouldBeGreen() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Solution must be deployed in agency private cloud environment.',
+            '', 'Tableau', ''
+        );
+        System.assertEquals('Green', d.flag, 'Tableau supports private cloud');
+        System.assertEquals('TABLEAU_PRIVATE_CLOUD', d.ruleId);
+    }
+
+    @IsTest
+    static void tableau_detection() {
+        System.assert(AIRFX_ResponseFlagInvocable.isTableauDeal('Tableau'));
+        System.assert(AIRFX_ResponseFlagInvocable.isTableauDeal('Tableau Server'));
+        System.assert(!AIRFX_ResponseFlagInvocable.isTableauDeal('Sales Cloud'));
+        System.assert(!AIRFX_ResponseFlagInvocable.isTableauDeal(null));
+    }
+
+    @IsTest
+    static void nonMulesoft_onPrem_staysRed() {
+        // Without MuleSoft product type, on-prem should still be Red
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Solution must support on-premise deployment.',
+            '', 'Sales Cloud', ''
+        );
+        System.assertEquals('Red', d.flag, 'Non-MuleSoft on-prem stays Red');
+    }
+
+    @IsTest
+    static void nonTableau_onPrem_staysRed() {
+        // Without Tableau product type, on-prem should still be Red
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Solution must support on-premise deployment.',
+            '', 'Service Cloud', ''
+        );
+        System.assertEquals('Red', d.flag, 'Non-Tableau on-prem stays Red');
+    }
+
     @IsTest
     static void preFilter_euDataProcessing_shouldNotBeAutoGreened() {
         // "support" in "must support the processing" should NOT trigger
