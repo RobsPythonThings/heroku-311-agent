@@ -799,6 +799,24 @@ public with sharing class AIRFX_ResponseFlagInvocable {
         // NUMERIC RULES
         // =================================================================
 
+        // CIA TRIAD — general security posture questions mentioning "availability" alongside
+        // confidentiality/integrity. Must fire BEFORE UPTIME to prevent false UPTIME_PARSE_FAIL.
+        rules.add(binaryCanDifferently('CIA_TRIAD',
+            new List<String>{'confidentiality.*integrity.*availability', 'integrity.*availability.*confidentiality',
+                'availability.*integrity.*confidentiality', 'non-repudiation'},
+            'Salesforce maintains comprehensive security controls across confidentiality, integrity, and availability. '
+            + 'SOC 2 Type II, ISO 27001, and FedRAMP attestations cover the CIA triad. '
+            + 'Specific controls include AES-256 encryption, MFA, RBAC, audit logging, and 99.9% uptime SLA.'));
+
+        // MAINTENANCE WINDOW — must fire BEFORE UPTIME since "unavailability" contains "availability"
+        rules.add(binaryCanDifferently('MAINTENANCE_WINDOW',
+            new List<String>{'planned unavailability', 'maintenance window', 'maintenance.*outside.*hour',
+                'planned.*maintenance', 'planned.*downtime', 'scheduled maintenance',
+                'scheduled downtime', 'maintenance.*business hour'},
+            'Salesforce performs maintenance during region-specific maintenance windows, '
+            + 'typically outside peak business hours. Customers cannot choose or override maintenance windows. '
+            + 'Major releases are scheduled 3 times per year (Spring, Summer, Winter) and cannot be deferred.'));
+
         // UPTIME / AVAILABILITY — 3-tier: <99.7 GREEN, 99.7-99.9 YELLOW, >99.9 RED
         CapabilityRule uptimeRule = new CapabilityRule('UPTIME',
             new List<String>{'uptime', 'availability', '% sla', 'percent sla', 'percent uptime', 'percent availability'},
@@ -955,11 +973,11 @@ public with sharing class AIRFX_ResponseFlagInvocable {
             'Salesforce does not meet SecNumCloud requirements.'));
 
         rules.add(binaryCannot('CUSTOMER_VM',
-            new List<String>{'customer vm', 'customer virtual machine', 'deploy to our vm', 'deploy to agency vm', 'customer-owned infrastructure'},
+            new List<String>{'customer vm', 'customer virtual machine', 'deploy to our vm', 'deploy to agency vm', 'customer-owned infrastructure', 'our own vm', 'our own virtual machine', 'own virtual machine', 'deploy.*virtual machine', 'deploy.*our.*vm', 'our.*vm'},
             'Salesforce cannot be deployed to a customer VM. Salesforce runs in AWS VMs managed by Salesforce.'));
 
         rules.add(binaryCannot('CUSTOMER_APPROVAL_CHANGES',
-            new List<String>{'customer approval before changes', 'approval before maintenance', 'approve.*before.*upgrade', 'seek.*authorization.*before'},
+            new List<String>{'customer approval before changes', 'approval before maintenance', 'approve.*before.*upgrade', 'seek.*authorization.*before', 'approve.*change.*before', 'approve.*before.*deploy', 'approve.*platform change', 'approval before.*change', 'approve.*before.*change'},
             'Salesforce cannot seek customer approval before making changes. Upgrade and maintenance schedules are set by Salesforce.'));
 
         rules.add(binaryCannot('CUSTOMER_AUDIT_SCHEDULE',
@@ -967,7 +985,7 @@ public with sharing class AIRFX_ResponseFlagInvocable {
             'Salesforce can only allow audits under conditions described in our contracts.'));
 
         rules.add(binaryCannot('DEFER_UPGRADES',
-            new List<String>{'defer upgrade', 'opt out of upgrade', 'skip upgrade', 'choose.*upgrade', 'decline.*upgrade'},
+            new List<String>{'defer upgrade', 'opt out of upgrade', 'skip upgrade', 'choose.*upgrade', 'decline.*upgrade', 'defer.*release', 'delay.*release', 'opt out.*release', 'skip.*release', 'defer.*spring', 'defer.*summer', 'defer.*winter'},
             'Customers cannot defer or choose upgrades. Salesforce has its own release schedule.'));
 
         rules.add(binaryCannot('IPV6_FULL',
@@ -1051,15 +1069,15 @@ public with sharing class AIRFX_ResponseFlagInvocable {
             'Salesforce supports TLS 1.2 and TLS 1.3.'));
 
         rules.add(binaryCan('BYOK',
-            new List<String>{'bring your own key', 'byok', 'customer managed key', 'customer.*encryption key'},
-            'Salesforce offers BYOK. Customers can manage encryption keys (keys must be shared with Salesforce).'));
+            new List<String>{'bring your own key', 'byok', 'customer managed key', 'customer.*encryption key', 'encryption key.*managed', 'encryption key.*controlled', 'manage.*encryption key', 'control.*encryption key'},
+            'Salesforce offers BYOK via Shield Platform Encryption. Customers can manage encryption keys (keys must be shared with Salesforce). AES-256 encryption at rest.'));
 
         rules.add(binaryCan('IL5',
             new List<String>{'il5', 'il-5', 'impact level 5', 'impact level five'},
             'Salesforce core has an IL5 PATO.'));
 
         rules.add(binaryCan('RBAC',
-            new List<String>{'role-based access', 'role based access', 'rbac'},
+            new List<String>{'role-based access', 'role based access', 'rbac', 'role-based.*privilege', 'role based.*privilege', 'role-based.*permission'},
             'Salesforce supports role-based access control (RBAC) within Salesforce.'));
 
         rules.add(binaryCan('PEN_TEST_CUSTOMER',
@@ -1137,7 +1155,7 @@ public with sharing class AIRFX_ResponseFlagInvocable {
         // DATA RESIDENCY — conditional on country
         rules.add(new CapabilityRule(
             'DATA_RESIDENCY',
-            new List<String>{'data residen', 'data sovereign', 'data locali', 'data location', 'hosted in', 'data center location', 'data stored', 'data must reside', 'data shall reside', 'data will reside', 'data reside'},
+            new List<String>{'data residen', 'data sovereign', 'data locali', 'data location', 'hosted in', 'data center location', 'data stored', 'data must reside', 'data shall reside', 'data will reside', 'data reside', 'host.*in', 'org in', 'data.*leave', 'data.*transit', 'data.*cross border', 'data never leave', 'data remain in', 'keep data in'},
             'CONDITIONAL_DATA_RESIDENCY', null, null, null,
             'Salesforce hosts data in 18 Hyperforce regions: US, BR, CA, AU, IN, JP, SG, KR, FR, DE, SE, GB, ID, IE, IL, IT, CH, AE.'));
 
@@ -1247,6 +1265,57 @@ public with sharing class AIRFX_ResponseFlagInvocable {
             'Salesforce employees sign a company-wide confidentiality agreement. '
             + 'Customer-specific NDAs or non-disclosure deeds cannot be individually executed for all personnel. '
             + 'Data protection obligations are covered under the Salesforce DPA and MSA.'));
+
+        // =================================================================
+        // NEW RULES — from P-0042 YELLOW mining (2026-03-08)
+        // =================================================================
+
+        rules.add(binaryCanDifferently('RESPONSE_RECOVERY_TIME',
+            new List<String>{'response.*recovery.*time', 'recovery time.*disruption',
+                'response time.*disruption', 'response time.*outage',
+                'recovery time.*outage', 'standard.*response.*time.*system',
+                'standard.*recovery.*time'},
+            'Salesforce DR targets: RPO 4 hours, RTO 12 hours (SPARC). '
+            + 'Premier Support provides P1 response within 15 minutes 24/7. '
+            + 'Standard Support provides P1 response within 2 hours during business hours. '
+            + 'Customer-specific SLAs on recovery times are not available.'));
+
+        rules.add(binaryCanDifferently('VULNERABILITY_ASSESSMENT',
+            new List<String>{'vulnerability assessment', 'static code analysis', 'dynamic code analysis',
+                'web application scanning', 'code.*security.*analysis', 'code.*vulnerability',
+                'continual vulnerability', 'vulnerability.*scanning', 'application.*scanning'},
+            'Salesforce performs continuous vulnerability assessment including static analysis, dynamic analysis, '
+            + 'and web application scanning as part of its SDLC. Customers may perform their own pen testing. '
+            + 'Detailed results of internal scans are not shared; summary reports are available via the Trust portal.'));
+
+        rules.add(binaryCanDifferently('AUDIT_INFO_ACCESS',
+            new List<String>{'audit information.*available', 'audit.*physical access', 'audit.*logical.*security',
+                'audit.*system log', 'audit data.*available'},
+            'Salesforce provides SOC 2 Type II and ISO 27001 attestations covering physical and logical access controls. '
+            + 'Direct access to physical access logs or infrastructure-level system logs is not available in multi-tenant SaaS. '
+            + 'Application-level audit logs (Setup Audit Trail, Field History, Login History) are available to customers.'));
+
+        rules.add(binaryCan('CHANGE_TRACKING',
+            new List<String>{'track.*system change', 'track.*change.*audit', 'change.*tracking.*audit',
+                'system change.*audit', 'request.*track.*change', 'change.*log'},
+            'Salesforce provides Setup Audit Trail (180-day retention) tracking all configuration and metadata changes. '
+            + 'Field History Tracking (18-month retention) captures field-level data changes. '
+            + 'These logs are accessible via reports, APIs, and Shield Event Monitoring.'));
+
+        rules.add(binaryCanDifferently('AUDIT_ALERTS_USER',
+            new List<String>{'audit.*alert.*user', 'alert.*user activity', 'audits and alerts',
+                'audit.*change.*record', 'alert.*change.*record', 'audit.*export'},
+            'Standard Salesforce provides Setup Audit Trail and Field History Tracking for changes. '
+            + 'With Shield Event Monitoring (add-on), customers get 20+ event types with real-time streaming for SIEM integration. '
+            + 'Native alerting on user activity requires Shield Transaction Security Policies or custom automation.'));
+
+        rules.add(binaryCanDifferently('SECURITY_SETTINGS_MGMT',
+            new List<String>{'manage.*default.*setting.*security', 'disable.*default.*setting',
+                'change.*default.*setting.*risk', 'manage.*security.*setting',
+                'configure.*security.*setting'},
+            'Salesforce provides extensive security configuration: password policies, session settings, IP restrictions, '
+            + 'login hours, OAuth settings, CORS, and CSP. Infrastructure-level settings (SNMP, encryption keys) are '
+            + 'platform-managed and not customer-configurable. Shield Platform Encryption provides customer key management.'));
 
         return rules;
     }

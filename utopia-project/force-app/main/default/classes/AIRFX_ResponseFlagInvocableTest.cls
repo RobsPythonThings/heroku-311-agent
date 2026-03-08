@@ -1491,6 +1491,217 @@ private class AIRFX_ResponseFlagInvocableTest {
         System.assertEquals('Red', d.flag, 'Non-Tableau on-prem stays Red');
     }
 
+    // =========================================================================
+    // 17. ADVERSARIAL TESTS — 20 trick questions designed to find engine flaws
+    // =========================================================================
+
+    @IsTest
+    static void adversarial_negation_noOnPrem() {
+        // "no on-premise" — negation should NOT produce Red
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Confirm that no on-premise deployment is required for your solution.',
+            '', '', ''
+        );
+        System.assertNotEquals('Red', d.flag, 'ADV-01: negation "no on-prem" should not be Red');
+    }
+
+    @IsTest
+    static void adversarial_doubleNegative_encrypt() {
+        // Double negative — "must not fail to encrypt" means "must encrypt"
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'The vendor must not fail to encrypt data at rest.',
+            '', '', ''
+        );
+        System.assertEquals('Green', d.flag, 'ADV-02: double negative encrypt at rest => Green');
+    }
+
+    @IsTest
+    static void adversarial_compound_escrowAndEncrypt() {
+        // Compound question — escrow first-match-wins
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Does the vendor provide source code escrow and encryption at rest?',
+            '', '', ''
+        );
+        System.assertEquals('Red', d.flag, 'ADV-03: compound escrow+encrypt => Red (first match)');
+        System.assertEquals('ESCROW', d.ruleId);
+    }
+
+    @IsTest
+    static void adversarial_misleadingPercentage() {
+        // 99.9% in non-uptime context
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'The solution should protect 99.9 percent of email messages from phishing attacks.',
+            '', '', ''
+        );
+        System.assertNotEquals('UPTIME', d.ruleId, 'ADV-04: 99.9% non-uptime should not match UPTIME');
+    }
+
+    @IsTest
+    static void adversarial_saasNoOnPrem() {
+        // SaaS delivery + no on-premise — should be Green
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Is the solution delivered as SaaS with no on-premise components?',
+            '', '', ''
+        );
+        System.assertEquals('Green', d.flag, 'ADV-05: SaaS+no on-prem => Green');
+    }
+
+    @IsTest
+    static void adversarial_escrowOnMuleSoftDeal() {
+        // Escrow is Red even on MuleSoft deals
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Does the vendor provide source code escrow?',
+            '', 'MuleSoft', ''
+        );
+        System.assertEquals('Red', d.flag, 'ADV-06: escrow still Red on MuleSoft deal');
+    }
+
+    @IsTest
+    static void adversarial_tableauDedicated() {
+        // Tableau + dedicated hardware = Green (not generic Red)
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Solution must run on dedicated hardware.',
+            '', 'Tableau', ''
+        );
+        System.assertEquals('Green', d.flag, 'ADV-07: Tableau+dedicated => Green');
+        System.assertEquals('TABLEAU_DEDICATED', d.ruleId);
+    }
+
+    @IsTest
+    static void adversarial_shouldSoftensEscrow() {
+        // "should" makes BINARY_CANNOT soften to Yellow
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'The vendor should ideally provide source code escrow.',
+            '', '', ''
+        );
+        System.assertEquals('Yellow', d.flag, 'ADV-08: should softens escrow Red => Yellow');
+    }
+
+    @IsTest
+    static void adversarial_tls12() {
+        // TLS 1.2 question — clear Green
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Does the platform support TLS 1.2 for all connections?',
+            '', '', ''
+        );
+        System.assertEquals('Green', d.flag, 'ADV-09: TLS 1.2 => Green');
+    }
+
+    @IsTest
+    static void adversarial_il5GovCloud() {
+        // IL5 on GovCloud — Green
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'The system must support Impact Level 5 data.',
+            '', 'Government Cloud Plus', ''
+        );
+        System.assertEquals('Green', d.flag, 'ADV-10: IL5 GovCloud => Green');
+    }
+
+    @IsTest
+    static void adversarial_dataResidencyAU() {
+        // Data residency in valid Hyperforce country
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'All data must reside within Australia.',
+            '', '', 'AU'
+        );
+        System.assertEquals('Green', d.flag, 'ADV-11: data residency AU => Green');
+    }
+
+    @IsTest
+    static void adversarial_dataResidencyNZ() {
+        // Data residency in invalid country
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'All data must reside within New Zealand.',
+            '', '', 'NZ'
+        );
+        System.assertEquals('Red', d.flag, 'ADV-12: data residency NZ => Red');
+    }
+
+    @IsTest
+    static void adversarial_maySoftensWAF() {
+        // "may" softens CAN_DIFFERENTLY to Green
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'The vendor may provide a web application firewall.',
+            '', '', ''
+        );
+        System.assertEquals('Green', d.flag, 'ADV-13: may softens WAF => Green');
+    }
+
+    @IsTest
+    static void adversarial_supportResponseTime() {
+        // Support ticket question — should NOT be Red
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'What is the support ticket response time for priority 1 issues?',
+            '', '', ''
+        );
+        System.assertNotEquals('Red', d.flag, 'ADV-14: support response time should not be Red');
+    }
+
+    @IsTest
+    static void adversarial_iso27001ScaryPhrasing() {
+        // ISO 27001 with intimidating language
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'The vendor must demonstrate ISO 27001 certification or equivalent.',
+            '', '', ''
+        );
+        System.assertEquals('Green', d.flag, 'ADV-15: ISO 27001 scary phrasing => Green');
+    }
+
+    @IsTest
+    static void adversarial_zeroRPO() {
+        // "zero" RPO — text not numeric — should be Yellow or Red
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'The solution must achieve zero recovery point objective.',
+            '', '', ''
+        );
+        System.assertNotEquals('Green', d.flag, 'ADV-16: zero RPO should not be Green');
+    }
+
+    @IsTest
+    static void adversarial_sbomUnusualPhrasing() {
+        // SBOM with unusual wording
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Provide a complete software bill of materials for all components.',
+            '', '', ''
+        );
+        System.assertEquals('Red', d.flag, 'ADV-17: SBOM unusual phrasing => Red');
+    }
+
+    @IsTest
+    static void adversarial_auditAtAnyTime() {
+        // "right to audit at any time" — two rules compete
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'The contractor must provide right to audit at any time.',
+            '', '', ''
+        );
+        // Either CUSTOMER_AUDIT_SCHEDULE (Red) or RIGHT_TO_AUDIT (Yellow) — both are valid
+        System.assert(d.flag == 'Red' || d.flag == 'Yellow',
+            'ADV-18: audit at any time => Red or Yellow, got ' + d.flag);
+    }
+
+    @IsTest
+    static void adversarial_blankQuestion() {
+        // Blank question — graceful handling
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval('', '', '', '');
+        System.assertEquals('Yellow', d.flag, 'ADV-19: blank => Yellow');
+        System.assertEquals('NO_QUESTION', d.ruleId);
+    }
+
+    @IsTest
+    static void adversarial_muleSoftOnPrem() {
+        // MuleSoft + on-prem = Green
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Can the integration platform be deployed on-premises in our data center?',
+            '', 'MuleSoft Anypoint', ''
+        );
+        System.assertEquals('Green', d.flag, 'ADV-20: MuleSoft on-prem => Green');
+        System.assertEquals('MULESOFT_ON_PREM', d.ruleId);
+    }
+
+    // =========================================================================
+    // 18. EXISTING EDGE CASE TESTS
+    // =========================================================================
+
     @IsTest
     static void preFilter_euDataProcessing_shouldNotBeAutoGreened() {
         // "support" in "must support the processing" should NOT trigger
@@ -1504,5 +1715,164 @@ private class AIRFX_ResponseFlagInvocableTest {
             'EU/EEA data processing question must NOT be auto-greened by pre-filter');
         System.assertNotEquals('PREFILTER_NON_SECURITY', d.ruleId,
             'Should not hit the pre-filter non-security rule');
+    }
+
+    // =========================================================================
+    // 19. ADVERSARIAL TEST FIXES — broadened keywords
+    // =========================================================================
+
+    @IsTest
+    static void adversarial_dataNeverLeavesEU_shouldNotBeGreen() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Can Salesforce guarantee data never leaves the EU?',
+            '', '', ''
+        );
+        System.assertNotEquals('Green', d.flag,
+            'Data residency question about data leaving EU must not be Green');
+    }
+
+    @IsTest
+    static void adversarial_deferSpringRelease_shouldBeRed() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Can we defer the Spring release?',
+            '', '', ''
+        );
+        System.assertEquals('Red', d.flag, 'Deferring releases is a hard no — must be Red');
+        System.assertEquals('DEFER_UPGRADES', d.ruleId);
+    }
+
+    @IsTest
+    static void adversarial_deployOwnVMs_shouldBeRed() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Can we deploy Salesforce on our own virtual machines?',
+            '', '', ''
+        );
+        System.assertEquals('Red', d.flag, 'Customer VMs are a hard no — must be Red');
+        System.assertEquals('CUSTOMER_VM', d.ruleId);
+    }
+
+    @IsTest
+    static void adversarial_approveChanges_shouldBeRed() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Can we approve platform changes before they are deployed?',
+            '', '', ''
+        );
+        System.assertEquals('Red', d.flag, 'Customer approval before changes is a hard no — must be Red');
+        System.assertEquals('CUSTOMER_APPROVAL_CHANGES', d.ruleId);
+    }
+
+    @IsTest
+    static void adversarial_hostInNorway_shouldNotBeGreen() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Can Salesforce host our org in Norway?',
+            '', '', ''
+        );
+        System.assertNotEquals('Green', d.flag,
+            'Norway is not a Hyperforce region — hosting question must not be Green');
+    }
+
+    // =========================================================================
+    // 20. P-0042 YELLOW MINING — new rules from YELLOW analysis
+    // =========================================================================
+
+    @IsTest
+    static void maintenanceWindow_shouldBeYellowCanDiff() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Planned unavailability should only be carried out outside of core productive hours.',
+            '', '', ''
+        );
+        System.assertEquals('Yellow', d.flag);
+        System.assertEquals('MAINTENANCE_WINDOW', d.ruleId);
+    }
+
+    @IsTest
+    static void responseRecoveryTime_shouldBeYellowCanDiff() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'What are the standard response and recovery times in the event of system disruptions?',
+            '', '', ''
+        );
+        System.assertEquals('Yellow', d.flag);
+        System.assertEquals('RESPONSE_RECOVERY_TIME', d.ruleId);
+    }
+
+    @IsTest
+    static void vulnerabilityAssessment_shouldBeYellowCanDiff() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Any development must include a process for continual vulnerability assessment including static code analysis and dynamic code analysis.',
+            '', '', ''
+        );
+        System.assertEquals('Yellow', d.flag);
+        System.assertEquals('VULNERABILITY_ASSESSMENT', d.ruleId);
+    }
+
+    @IsTest
+    static void auditInfoAccess_shouldBeYellowCanDiff() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Audit information, including physical access, logical security controls, and system logs, must be available.',
+            '', '', ''
+        );
+        System.assertEquals('Yellow', d.flag);
+        System.assertEquals('AUDIT_INFO_ACCESS', d.ruleId);
+    }
+
+    @IsTest
+    static void changeTracking_shouldBeGreen() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Ability to request and track system changes and upgrades for audit purposes.',
+            '', '', ''
+        );
+        System.assertEquals('Green', d.flag);
+        System.assertEquals('CHANGE_TRACKING', d.ruleId);
+    }
+
+    @IsTest
+    static void auditAlertsUser_shouldBeYellowCanDiff() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Providing audits and alerts for user activity, including changes to records, exports, and printing.',
+            '', '', ''
+        );
+        System.assertEquals('Yellow', d.flag);
+        System.assertEquals('AUDIT_ALERTS_USER', d.ruleId);
+    }
+
+    @IsTest
+    static void securitySettingsMgmt_shouldBeYellowCanDiff() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Providing the ability to manage, change, and disable default settings that pose a security risk.',
+            '', '', ''
+        );
+        System.assertEquals('Yellow', d.flag);
+        System.assertEquals('SECURITY_SETTINGS_MGMT', d.ruleId);
+    }
+
+    @IsTest
+    static void rbac_privileges_shouldBeGreen() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Provide role-based system access privileges for job seekers, staff, and system administrators.',
+            '', '', ''
+        );
+        System.assertEquals('Green', d.flag);
+        System.assertEquals('RBAC', d.ruleId);
+    }
+
+    @IsTest
+    static void encryptionKeysManagedBy_shouldBeGreen() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Using strong, unique encryption keys that are fully managed and controlled by the Department.',
+            '', '', ''
+        );
+        System.assertEquals('Green', d.flag);
+        System.assertEquals('BYOK', d.ruleId);
+    }
+
+    @IsTest
+    static void ciaTriad_shouldBeYellowNotUptime() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Providing the appropriate level of assurance for maintaining the confidentiality, integrity, availability, and non-repudiation requirements.',
+            '', '', ''
+        );
+        System.assertEquals('Yellow', d.flag);
+        System.assertEquals('CIA_TRIAD', d.ruleId,
+            'Should match CIA_TRIAD, not UPTIME_PARSE_FAIL');
     }
 }

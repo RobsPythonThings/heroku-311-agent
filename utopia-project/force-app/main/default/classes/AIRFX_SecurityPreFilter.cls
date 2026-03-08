@@ -103,7 +103,10 @@ public with sharing class AIRFX_SecurityPreFilter {
         'scan result','scan report',
         'citizen','citizens','us citizen','us citizens','citizenship',
         'reside','jurisdiction','data must reside',
-        'data processing','data transfer','data transferred','transferred outside'
+        'data processing','data transfer','data transferred','transferred outside',
+        'data leave','data transit','data cross border','data never leave','data remain',
+        'defer release','defer upgrade','delay release','skip release',
+        'approve change','approve before','approval before'
     };
 
     public static Result evaluate(String question) {
