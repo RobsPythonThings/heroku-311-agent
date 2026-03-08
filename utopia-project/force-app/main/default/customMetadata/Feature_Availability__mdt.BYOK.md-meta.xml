@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <label>Bring Your Own Key</label>
+    <protected>false</protected>
+    <values>
+        <field>Active__c</field>
+        <value xsi:type="xsd:boolean">false</value>
+    </values>
+    <values>
+        <field>Source_Doc__c</field>
+        <value xsi:type="xsd:string">salesforce.com/platform/shield</value>
+    </values>
+    <values>
+        <field>Source_Date__c</field>
+        <value xsi:type="xsd:date">2026-03-07</value>
+    </values>
+    <values>
+        <field>Confidence__c</field>
+        <value xsi:type="xsd:string">VERIFIED</value>
+    </values>
+    <values>
+        <field>Notes__c</field>
+        <value xsi:type="xsd:string">Requires Shield. Supports AWS KMS.</value>
+    </values>
+    <values>
+        <field>Feature__c</field>
+        <value xsi:type="xsd:string">BYOK (Bring Your Own Key)</value>
+    </values>
+    <values>
+        <field>Included_In_Base__c</field>
+        <value xsi:type="xsd:boolean">false</value>
+    </values>
+    <values>
+        <field>Add_On_Name__c</field>
+        <value xsi:type="xsd:string">Shield Platform Encryption</value>
+    </values>
+    <values>
+        <field>Pricing_Note__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Limitations__c</field>
+        <value xsi:type="xsd:string">Requires Shield. Supports AWS KMS.</value>
+    </values>
+</CustomMetadata>

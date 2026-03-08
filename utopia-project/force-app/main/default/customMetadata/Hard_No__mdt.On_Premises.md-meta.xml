@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <label>On-Premises</label>
+    <protected>false</protected>
+    <values>
+        <field>Active__c</field>
+        <value xsi:type="xsd:boolean">false</value>
+    </values>
+    <values>
+        <field>Source_Doc__c</field>
+        <value xsi:type="xsd:string">Salesforce Trust &amp; Compliance documentation</value>
+    </values>
+    <values>
+        <field>Source_Date__c</field>
+        <value xsi:type="xsd:date">2026-03-07</value>
+    </values>
+    <values>
+        <field>Confidence__c</field>
+        <value xsi:type="xsd:string">VERIFIED</value>
+    </values>
+    <values>
+        <field>Notes__c</field>
+        <value xsi:type="xsd:string">Cloud-only except MuleSoft Runtime and Tableau Desktop</value>
+    </values>
+    <values>
+        <field>Label__c</field>
+        <value xsi:type="xsd:string">On-Premises</value>
+    </values>
+    <values>
+        <field>Keywords__c</field>
+        <value xsi:type="xsd:string">on-premises, on-premise, on-prem, self-hosted</value>
+    </values>
+    <values>
+        <field>Reason__c</field>
+        <value xsi:type="xsd:string">Cloud-only except MuleSoft Runtime and Tableau Desktop</value>
+    </values>
+    <values>
+        <field>Negotiable__c</field>
+        <value xsi:type="xsd:boolean">false</value>
+    </values>
+    <values>
+        <field>Recommended_Response__c</field>
+        <value xsi:type="xsd:string">Salesforce is cloud-only. MuleSoft Anypoint Runtime can be deployed on-premises. Tableau Desktop is a local application. All other products are SaaS-only.</value>
+    </values>
+</CustomMetadata>

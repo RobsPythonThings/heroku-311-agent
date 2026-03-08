@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <label>Defer Upgrades</label>
+    <protected>false</protected>
+    <values>
+        <field>Active__c</field>
+        <value xsi:type="xsd:boolean">false</value>
+    </values>
+    <values>
+        <field>Source_Doc__c</field>
+        <value xsi:type="xsd:string">Salesforce Trust &amp; Compliance documentation</value>
+    </values>
+    <values>
+        <field>Source_Date__c</field>
+        <value xsi:type="xsd:date">2026-03-07</value>
+    </values>
+    <values>
+        <field>Confidence__c</field>
+        <value xsi:type="xsd:string">VERIFIED</value>
+    </values>
+    <values>
+        <field>Notes__c</field>
+        <value xsi:type="xsd:string">3 releases/year, cannot defer</value>
+    </values>
+    <values>
+        <field>Label__c</field>
+        <value xsi:type="xsd:string">Defer Upgrades</value>
+    </values>
+    <values>
+        <field>Keywords__c</field>
+        <value xsi:type="xsd:string">defer upgrade, delay upgrade, opt out of upgrade</value>
+    </values>
+    <values>
+        <field>Reason__c</field>
+        <value xsi:type="xsd:string">3 releases/year, cannot defer</value>
+    </values>
+    <values>
+        <field>Negotiable__c</field>
+        <value xsi:type="xsd:boolean">false</value>
+    </values>
+    <values>
+        <field>Recommended_Response__c</field>
+        <value xsi:type="xsd:string">Salesforce delivers 3 major releases per year (Spring, Summer, Winter). Customers cannot defer or opt out of platform upgrades. Sandbox preview is available before production release.</value>
+    </values>
+</CustomMetadata>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <label>Intrusion Prevention System</label>
+    <protected>false</protected>
+    <values>
+        <field>Active__c</field>
+        <value xsi:type="xsd:boolean">false</value>
+    </values>
+    <values>
+        <field>Source_Doc__c</field>
+        <value xsi:type="xsd:string">Salesforce Trust &amp; Compliance documentation</value>
+    </values>
+    <values>
+        <field>Source_Date__c</field>
+        <value xsi:type="xsd:date">2026-03-07</value>
+    </values>
+    <values>
+        <field>Confidence__c</field>
+        <value xsi:type="xsd:string">VERIFIED</value>
+    </values>
+    <values>
+        <field>Notes__c</field>
+        <value xsi:type="xsd:string">Salesforce uses IDS not IPS</value>
+    </values>
+    <values>
+        <field>Label__c</field>
+        <value xsi:type="xsd:string">Intrusion Prevention System</value>
+    </values>
+    <values>
+        <field>Keywords__c</field>
+        <value xsi:type="xsd:string">intrusion prevention system, IPS</value>
+    </values>
+    <values>
+        <field>Reason__c</field>
+        <value xsi:type="xsd:string">Salesforce uses IDS not IPS</value>
+    </values>
+    <values>
+        <field>Negotiable__c</field>
+        <value xsi:type="xsd:boolean">false</value>
+    </values>
+    <values>
+        <field>Recommended_Response__c</field>
+        <value xsi:type="xsd:string">Salesforce employs Intrusion Detection Systems (IDS) for monitoring. Intrusion Prevention Systems (IPS) are not deployed in the traditional sense; mitigation is handled through WAF, DDoS protection, and security operations.</value>
+    </values>
+</CustomMetadata>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <label>Hyperforce Canada</label>
+    <protected>false</protected>
+    <values>
+        <field>Active__c</field>
+        <value xsi:type="xsd:boolean">false</value>
+    </values>
+    <values>
+        <field>Source_Doc__c</field>
+        <value xsi:type="xsd:string">Salesforce Infrastructure &amp; Sub-processors March 2026</value>
+    </values>
+    <values>
+        <field>Source_Date__c</field>
+        <value xsi:type="xsd:date">2026-03-07</value>
+    </values>
+    <values>
+        <field>Confidence__c</field>
+        <value xsi:type="xsd:string">VERIFIED</value>
+    </values>
+    <values>
+        <field>Notes__c</field>
+        <value xsi:type="xsd:string">Akamai, CloudFront, Cloudflare, Fastly CDN routes globally regardless of org region. Data may transit any country.</value>
+    </values>
+    <values>
+        <field>Country_Code__c</field>
+        <value xsi:type="xsd:string">CA</value>
+    </values>
+    <values>
+        <field>Country_Name__c</field>
+        <value xsi:type="xsd:string">Canada</value>
+    </values>
+    <values>
+        <field>Available__c</field>
+        <value xsi:type="xsd:boolean">true</value>
+    </values>
+    <values>
+        <field>AWS_Region__c</field>
+        <value xsi:type="xsd:string">ca-central-1</value>
+    </values>
+</CustomMetadata>

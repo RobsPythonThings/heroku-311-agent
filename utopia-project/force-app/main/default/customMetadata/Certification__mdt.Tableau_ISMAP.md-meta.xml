@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <label>Tableau Cloud on Hyperforce ISMAP</label>
+    <protected>false</protected>
+    <values>
+        <field>Active__c</field>
+        <value xsi:type="xsd:boolean">false</value>
+    </values>
+    <values>
+        <field>Source_Doc__c</field>
+        <value xsi:type="xsd:string">compliance.salesforce.com</value>
+    </values>
+    <values>
+        <field>Source_Date__c</field>
+        <value xsi:type="xsd:date">2026-03-07</value>
+    </values>
+    <values>
+        <field>Confidence__c</field>
+        <value xsi:type="xsd:string">VERIFIED</value>
+    </values>
+    <values>
+        <field>Notes__c</field>
+        <value xsi:type="xsd:string">Tableau Cloud on Hyperforce ISMAP certified.</value>
+    </values>
+    <values>
+        <field>Product__c</field>
+        <value xsi:type="xsd:string">Tableau Cloud on Hyperforce</value>
+    </values>
+    <values>
+        <field>Certification__c</field>
+        <value xsi:type="xsd:string">ISMAP</value>
+    </values>
+    <values>
+        <field>Level__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Status__c</field>
+        <value xsi:type="xsd:string">CURRENT</value>
+    </values>
+    <values>
+        <field>Scope_Notes__c</field>
+        <value xsi:type="xsd:string">Tableau Cloud on Hyperforce ISMAP certified.</value>
+    </values>
+    <values>
+        <field>Authorized_Since__c</field>
+        <value xsi:nil="true"/>
+    </values>
+</CustomMetadata>
