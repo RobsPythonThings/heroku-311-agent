@@ -565,13 +565,13 @@ public with sharing class AIRFX_ResponseFlagInvocable {
 
         // RPO — 4 hours (lower = more demanding)
         rules.add(numericMax('RPO',
-            new List<String>{'recovery point objective', 'rpo'},
+            new List<String>{'recovery point objective', '\\brpo\\b'},
             4, ' hours',
             'Salesforce RPO is 4 hours. Requirements demanding shorter RPO cannot be met.'));
 
         // RTO — 12 hours (lower = more demanding)
         rules.add(numericMax('RTO',
-            new List<String>{'recovery time objective', 'rto'},
+            new List<String>{'recovery time objective', '\\brto\\b'},
             12, ' hours',
             'Salesforce RTO is 12 hours. Requirements demanding shorter RTO cannot be met.'));
 

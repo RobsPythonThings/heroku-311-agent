@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <GenAiPlannerBundle xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-    <description>AI-powered RFP response agent for Salesforce GPS (Government &amp; Public Sector). Triages government RFP questions using a 64-rule deterministic flag engine, routes content retrieval based on deal context (product, country, framework), and generates grounded answers from triple-source retrieval across Knowledge articles, HECVAT assessments, and compliance whitepapers. Operates on GPS_Project__c records containing 200-500 security and compliance requirements extracted from uploaded RFP documents.</description>
+    <description>AI-powered RFP response agent for Salesforce GPS (Government &amp; Public Sector). Triages government RFP questions using a 74-rule deterministic flag engine, routes content retrieval based on deal context (product, country, framework), and generates grounded answers from triple-source retrieval across Knowledge articles, HECVAT assessments, and compliance whitepapers. Operates on GPS_Project__c records containing 200-500 security and compliance requirements extracted from uploaded RFP documents.</description>
     <localActionLinks>
         <genAiFunctionName>AnswerQuestionsWithKnowledge_16j7x000000ISdl</genAiFunctionName>
     </localActionLinks>
@@ -44,6 +44,24 @@
             <language xsi:nil="true"/>
             <masterLabel>Utterance 6</masterLabel>
             <utterance>Analyze this RFP for compliance risks</utterance>
+        </aiPluginUtterances>
+        <aiPluginUtterances>
+            <developerName>utterance_7</developerName>
+            <language xsi:nil="true"/>
+            <masterLabel>Utterance 7</masterLabel>
+            <utterance>What are the deal blockers on this project?</utterance>
+        </aiPluginUtterances>
+        <aiPluginUtterances>
+            <developerName>utterance_8</developerName>
+            <language xsi:nil="true"/>
+            <masterLabel>Utterance 8</masterLabel>
+            <utterance>Show me the failed requirements</utterance>
+        </aiPluginUtterances>
+        <aiPluginUtterances>
+            <developerName>utterance_9</developerName>
+            <language xsi:nil="true"/>
+            <masterLabel>Utterance 9</masterLabel>
+            <utterance>What requirements can we not meet?</utterance>
         </aiPluginUtterances>
         <canEscalate>false</canEscalate>
         <description>Use this topic when the user asks about triaging an 
@@ -111,6 +129,36 @@ RULES:
             <masterLabel>instructions_0_1772238114016</masterLabel>
             <sortOrder>1</sortOrder>
         </genAiPluginInstructions>
+        <genAiPluginInstructions>
+            <description>RED FLAG DRILL-DOWN:
+When the user asks about red flags, failed requirements, deal blockers, or &quot;what can&apos;t we meet?&quot;:
+
+1. Filter to RED items only. Do NOT re-display GREEN or YELLOW items.
+2. For each RED, present:
+   - The requirement text (truncated to first sentence if long)
+   - Why Salesforce cannot meet it (from Response_Flag_Reason__c)
+   - Whether it is negotiable or a hard no:
+     * Hard no: dedicated hardware, on-premises, source code escrow, IL6, customer VMs, customer-specific NDAs, SBOMs, SecNumCloud, classified data, IPv6, ISO 20000/14001/45001, defer upgrades, customer approval before changes, encryption in memory
+     * Negotiable: service credits (legal can discuss), resolution times (Premier/Signature tiers), right to audit (contract terms), breach notification timing (DSR negotiation), background checks (Gov Cloud option), on-site audits (contract terms)
+   - Recommended next step:
+     * Hard no: &quot;Flag for SE review — recommend alternative language or take exception&quot;
+     * Negotiable: &quot;Engage legal/AE — this may be addressable through contract negotiation or product add-on&quot;
+3. End with a deal risk summary:
+   - Total RED count
+   - How many are hard nos vs negotiable
+   - Recommended action: e.g. &quot;3 hard nos and 2 negotiable items. Recommend SE review before responding. The negotiable items may be resolvable with legal engagement.&quot;
+
+YELLOW FLAG DISTINCTION:
+Yellow flags come in two types:
+- BINARY_CAN_DIFFERENTLY (ruleId is NOT &apos;NO_MATCH&apos;): Salesforce meets the intent but not the letter. These have a pre-written alternative explanation in Response_Flag_Reason__c. Present these as &quot;Partially met&quot; with the alternative.
+- NO_MATCH (ruleId = &apos;NO_MATCH&apos;): No rule matched. These need AI-generated answers from Knowledge retrieval. Present these as &quot;Needs research&quot; and offer to generate answers.
+
+When the user asks about yellows, distinguish between these two types.</description>
+            <developerName>instructions_0_1772400000000</developerName>
+            <language>en_US</language>
+            <masterLabel>instructions_0_1772400000000</masterLabel>
+            <sortOrder>2</sortOrder>
+        </genAiPluginInstructions>
         <language>en_US</language>
         <localActionLinks>
             <functionName>Utopia_Triage_and_Route_Project_1797x000000MzZV</functionName>
@@ -150,7 +198,7 @@ RULES:
         </localActions>
         <localActions>
             <fullName>Utopia_Triage_and_Route_Project_1797x000000MzZV</fullName>
-            <description>Use this action when the user asks to triage, flag, or analyze an RFP project. It runs 64 deterministic rules on every requirement, flags them Red/Yellow/Green, and resolves which content lanes to activate based on deal context. Always run this before generating answers.</description>
+            <description>Use this action when the user asks to triage, flag, or analyze an RFP project. It runs 74 deterministic rules on every requirement, flags them Red/Yellow/Green, and resolves which content lanes to activate based on deal context. Always run this before generating answers.</description>
             <developerName>Utopia_Triage_and_Route_Project_1797x000000MzZV</developerName>
             <invocationTarget>AIRFX_AgentAction</invocationTarget>
             <invocationTargetType>apex</invocationTargetType>

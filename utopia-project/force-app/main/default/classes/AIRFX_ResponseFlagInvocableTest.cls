@@ -577,7 +577,7 @@ private class AIRFX_ResponseFlagInvocableTest {
     @IsTest
     static void noRuleMatch_shouldBeYellow() {
         AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
-            'Describe your approach to project management and agile methodology.',
+            'What is your corporate social responsibility program?',
             '', '', ''
         );
         System.assertEquals('Yellow', d.flag);
