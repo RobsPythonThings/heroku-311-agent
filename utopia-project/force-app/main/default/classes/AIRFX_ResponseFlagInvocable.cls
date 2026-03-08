@@ -496,6 +496,15 @@ public with sharing class AIRFX_ResponseFlagInvocable {
                     decision.flag = FLAG_GREEN;
                     decision.reason = rule.reason;
                     decision.ruleId = rule.id;
+                    // Gate 2.5: Conditional commitment language check
+                    String commitmentMatch = detectConditionalCommitment(qLower);
+                    if (commitmentMatch != null) {
+                        decision.flag = FLAG_YELLOW;
+                        decision.reason = rule.reason
+                            + ' However, the question contains conditional commitment language (\u201c'
+                            + commitmentMatch + '\u201d) \u2014 customer-specific requirements are not yet defined. Human review required.';
+                        decision.ruleId = rule.id + '_CONDITIONAL';
+                    }
                     return decision;
                 }
                 when 'BINARY_CAN_DIFFERENTLY' {
@@ -1306,7 +1315,7 @@ public with sharing class AIRFX_ResponseFlagInvocable {
         // =================================================================
 
         rules.add(binaryCannot('DEDICATED_HARDWARE',
-            new List<String>{'dedicated hardware', 'dedicated instance', 'dedicated equipment', 'dedicated server', 'dedicated infrastructure', 'private hardware'},
+            new List<String>{'dedicated hardware', 'dedicated instance', 'dedicated equipment', 'dedicated server', 'dedicated infrastructure', 'dedicated database instance', 'dedicated database', 'private hardware'},
             'Salesforce cannot offer dedicated hardware. Salesforce is a multitenant SaaS platform.'));
 
         rules.add(binaryCannotWithExclusions('PRIVATE_CLOUD',

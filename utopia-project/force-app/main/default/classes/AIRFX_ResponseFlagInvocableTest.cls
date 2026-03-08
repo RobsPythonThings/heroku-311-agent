@@ -341,6 +341,17 @@ private class AIRFX_ResponseFlagInvocableTest {
     }
 
     @IsTest
+    static void dedicatedDatabaseInstance_shouldBeRed() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'We need a dedicated database instance.',
+            '', '', ''
+        );
+        System.assertEquals('Red', d.flag);
+        System.assertEquals('DEDICATED_HARDWARE', d.ruleId);
+        System.assert(d.reason.contains('multitenant'), 'Should mention multitenant');
+    }
+
+    @IsTest
     static void privateCloud_shouldBeRed() {
         AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
             'Solution must be deployed in agency private cloud environment.',

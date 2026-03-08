@@ -1,0 +1,28 @@
+{
+  "required" : [ "question" ],
+  "unevaluatedProperties" : false,
+  "properties" : {
+    "question" : {
+      "title" : "Question",
+      "description" : "The standalone question to answer — no project context needed",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : true
+    },
+    "countryCode" : {
+      "title" : "Country Code",
+      "description" : "Optional 2-letter country code for region-specific context (e.g. US, DE, AU)",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : true
+    },
+    "product" : {
+      "title" : "Product",
+      "description" : "Optional product context (e.g. Sales Cloud, B2B Commerce)",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : true
+    }
+  },
+  "lightning:type" : "lightning__objectType"
+}
