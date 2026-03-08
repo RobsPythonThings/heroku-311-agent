@@ -64,12 +64,13 @@ private class AIRFX_ResponseFlagInvocableTest {
     }
 
     @IsTest
-    static void uptime_999_shouldBeGreen() {
+    static void uptime_999_shouldBeYellow() {
+        // Mike Rosa: 99.9% is an SLA commitment — needs SE review even though it matches our SLA
         AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
             'The system must maintain 99.9% uptime as measured monthly.',
             '', '', ''
         );
-        System.assertEquals('Green', d.flag, '99.9% is at the standard SLA = Green');
+        System.assertEquals('Yellow', d.flag, '99.9% is an SLA commitment = Yellow per Mike Rosa');
         System.assertEquals('UPTIME', d.ruleId);
     }
 
@@ -158,15 +159,14 @@ private class AIRFX_ResponseFlagInvocableTest {
     }
 
     @IsTest
-    static void uptime_999_exactBoundary_shouldBeGreen() {
-        // 99.9% is the exact standard SLA — should be Green, not Yellow
+    static void uptime_999_exactBoundary_shouldBeYellow() {
+        // Mike Rosa: exact 99.9% SLA is Yellow — SE needs to review contractual commitment
         AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
             'Vendor must guarantee at least 99.9% uptime for all production services.',
             '', '', 'US'
         );
-        System.assertEquals('Green', d.flag, '99.9% is the standard SLA boundary = Green');
+        System.assertEquals('Yellow', d.flag, '99.9% is an SLA commitment = Yellow per Mike Rosa');
         System.assertEquals('UPTIME', d.ruleId);
-        System.assert(d.reason.contains('Requirement met'), 'Should confirm requirement met');
     }
 
     @IsTest
@@ -2231,13 +2231,80 @@ private class AIRFX_ResponseFlagInvocableTest {
     }
 
     @IsTest
-    static void dataResidency_norway_shouldBeRed() {
+    static void dataResidency_norway_shouldBeYellow() {
         AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
             'Can Salesforce store all data exclusively in Norway?',
             '', '', 'NO'
         );
-        System.assertEquals('Red', d.flag, 'Norway is not a Hyperforce region');
+        System.assertEquals('Yellow', d.flag, 'Norway has no Hyperforce region but has nearby EU options — Yellow not Red');
         System.assertEquals('DATA_RESIDENCY', d.ruleId);
+        System.assert(d.reason.contains('Norway'), 'Should mention Norway');
+        System.assert(d.reason.contains('Sweden'), 'Should mention nearby Sweden region');
+        System.assert(d.reason.contains('Account Executive'), 'Should defer to AE');
+    }
+
+    @IsTest
+    static void dataResidency_norway_nonResidencyQuestion_shouldNotFireRule() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Do you have a GDPR Data Processing Agreement?',
+            '', '', 'NO'
+        );
+        System.assertNotEquals('DATA_RESIDENCY', d.ruleId,
+            'Non-residency questions from Norway should not trigger DATA_RESIDENCY rule');
+    }
+
+    @IsTest
+    static void dataResidency_norway_passwordQuestion_shouldNotFireRule() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'What is your password complexity policy?',
+            '', '', 'NO'
+        );
+        System.assertNotEquals('DATA_RESIDENCY', d.ruleId,
+            'Password question from Norway must not trigger DATA_RESIDENCY');
+    }
+
+    @IsTest
+    static void dataResidency_finland_shouldBeYellow() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'All data must reside in Finland.',
+            '', '', 'FI'
+        );
+        System.assertEquals('Yellow', d.flag, 'Finland has no Hyperforce region but has nearby EU options');
+        System.assertEquals('DATA_RESIDENCY', d.ruleId);
+        System.assert(d.reason.contains('Sweden'), 'Should mention nearby Sweden region');
+    }
+
+    @IsTest
+    static void dataResidency_belgium_shouldBeYellow() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Data must be hosted in Belgium per data sovereignty requirements.',
+            '', '', 'BE'
+        );
+        System.assertEquals('Yellow', d.flag, 'Belgium has no Hyperforce region but has nearby EU options');
+        System.assertEquals('DATA_RESIDENCY', d.ruleId);
+        System.assert(d.reason.contains('France'), 'Should mention nearby France region');
+    }
+
+    @IsTest
+    static void dataResidency_thailand_shouldBeYellow() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'All data must reside in Thailand.',
+            '', '', 'TH'
+        );
+        System.assertEquals('Yellow', d.flag, 'Thailand has no Hyperforce region but has nearby APAC options');
+        System.assertEquals('DATA_RESIDENCY', d.ruleId);
+        System.assert(d.reason.contains('Singapore'), 'Should mention nearby Singapore region');
+    }
+
+    @IsTest
+    static void dataResidency_china_stillRed() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Data must reside in China.',
+            '', '', 'CN'
+        );
+        System.assertEquals('Red', d.flag, 'China has no Hyperforce region and no nearby options');
+        System.assertEquals('DATA_RESIDENCY', d.ruleId);
+        System.assert(d.reason.contains('NOT'), 'Should state not supported');
     }
 
     @IsTest
@@ -2432,5 +2499,251 @@ private class AIRFX_ResponseFlagInvocableTest {
         // "ai feature" is now a security term, so this should NOT be auto-Green
         // It will hit NO_MATCH_SECURITY → Yellow, which is acceptable (safe direction)
         System.assertNotEquals('ACCESSIBILITY_508', d.ruleId);
+    }
+
+    // =========================================================================
+    // GATE 2.5: CONDITIONAL COMMITMENT LANGUAGE DETECTOR
+    // =========================================================================
+    // Tests derived from Mike Rosa's expert review — 15 records where Mike
+    // flagged Yellow but the engine auto-Greened.
+
+    @IsTest
+    static void gate25_meetOrExceed_shouldBeYellow() {
+        // GPS-0329/0540: "meet or exceed minimum Commerce requirements, which will be provided at or near Contract execution"
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Allowing accounts to be configured with strong passwords and passphrases, multi-factor authentication, and recovery processes that meet or exceed minimum Commerce requirements, which will be provided at or near Contract execution.',
+            '', '', ''
+        );
+        System.assertEquals('Yellow', d.flag, 'meet or exceed + future requirements should be Yellow');
+        System.assert(d.ruleId.endsWith('_CONDITIONAL'), 'Rule ID should have _CONDITIONAL suffix: ' + d.ruleId);
+    }
+
+    @IsTest
+    static void gate25_solutionDesign_shouldBeYellow() {
+        // GPS-4204: "based on solution design"
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'EAMS will meet requirements on role-based access delegations based (always or for a limited time depending upon need of users) on solution design',
+            '', '', ''
+        );
+        System.assertEquals('Yellow', d.flag, 'based on solution design should be Yellow');
+        System.assert(d.ruleId.endsWith('_CONDITIONAL'), 'Rule ID should have _CONDITIONAL suffix: ' + d.ruleId);
+    }
+
+    @IsTest
+    static void gate25_complyWith_unknownRequirements_shouldBeYellow() {
+        // GPS-4189: "comply with required technical...safeguards...as required by the EAMS solution design"
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'EAMS will comply with required technical, physical (not limited to encryption at rest) and administrative safeguards related to application and data as required by the EAMS solution design.',
+            '', '', ''
+        );
+        System.assertEquals('Yellow', d.flag, 'comply with + solution design should be Yellow');
+        System.assert(d.ruleId.endsWith('_CONDITIONAL'), 'Rule ID should have _CONDITIONAL suffix: ' + d.ruleId);
+    }
+
+    @IsTest
+    static void gate25_openEndedCompliance_shouldBeYellow() {
+        // GPS-0306: "rules, laws, regulations, and policies" — too open-ended
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Fully integrate and interface with all Department required external and internal partners based on federal, state, and Department business rules, laws, regulations, and policies, including referral tracking among WIOA partners.',
+            '', '', ''
+        );
+        System.assertEquals('Yellow', d.flag, 'open-ended rules/laws/regulations should be Yellow');
+        System.assert(d.ruleId.endsWith('_CONDITIONAL'), 'Rule ID should have _CONDITIONAL suffix: ' + d.ruleId);
+    }
+
+    @IsTest
+    static void gate25_slaReference_shouldBeYellow() {
+        // GPS-2504: "SLA - Data Backup"
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'SLA - Data Backup: If an SLA exists, A daily backup of technical operating data is required.',
+            '', '', ''
+        );
+        System.assertEquals('Yellow', d.flag, 'SLA reference should be Yellow');
+        System.assert(d.ruleId.endsWith('_CONDITIONAL'), 'Rule ID should have _CONDITIONAL suffix: ' + d.ruleId);
+    }
+
+    @IsTest
+    static void gate25_inAccordanceWith_policies_shouldBeYellow() {
+        // GPS-1336: "in accordance with...data retention policies"
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'The solution shall provide comprehensive audit logging capabilities that capture detailed records of all user and system activities. Logs must be retained in accordance with Commonwealth of Virginia data retention policies.',
+            '', '', ''
+        );
+        System.assertEquals('Yellow', d.flag, 'in accordance with + retention policies should be Yellow');
+        System.assert(d.ruleId.endsWith('_CONDITIONAL'), 'Rule ID should have _CONDITIONAL suffix: ' + d.ruleId);
+    }
+
+    @IsTest
+    static void gate25_asRequiredBy_unknownParty_shouldBeYellow() {
+        // "as required by" + non-standard reference
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'The contractor shall implement encryption as required by the State agency security requirements for all data at rest.',
+            '', '', ''
+        );
+        System.assertEquals('Yellow', d.flag, 'as required by + unknown party should be Yellow');
+        System.assert(d.ruleId.endsWith('_CONDITIONAL'), 'Rule ID should have _CONDITIONAL suffix: ' + d.ruleId);
+    }
+
+    @IsTest
+    static void gate25_complyWithKnownStandard_shouldStayGreen() {
+        // "comply with HIPAA" should NOT trigger Gate 2.5 — known standard
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Does the solution comply with HIPAA requirements for encryption of data at rest?',
+            '', '', ''
+        );
+        // Should stay Green (or whatever the BINARY_CAN rule sets)
+        // Key test: should NOT have _CONDITIONAL suffix
+        System.assert(!d.ruleId.endsWith('_CONDITIONAL'),
+            'comply with known standard (HIPAA) should not trigger Gate 2.5: ' + d.ruleId);
+    }
+
+    @IsTest
+    static void gate25_complyWithFedRAMP_shouldStayGreen() {
+        // "comply with FedRAMP" should NOT trigger Gate 2.5
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Does the solution comply with FedRAMP requirements for access control?',
+            '', '', ''
+        );
+        System.assert(!d.ruleId.endsWith('_CONDITIONAL'),
+            'comply with known standard (FedRAMP) should not trigger Gate 2.5: ' + d.ruleId);
+    }
+
+    @IsTest
+    static void gate25_simpleEncryptionQuestion_shouldStayGreen() {
+        // Simple capability question without conditional language should stay Green
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Does the system support encryption at rest and in transit?',
+            '', '', ''
+        );
+        System.assertEquals('Green', d.flag, 'Simple encryption question should stay Green');
+        System.assert(!d.ruleId.endsWith('_CONDITIONAL'),
+            'Simple capability question should not trigger Gate 2.5: ' + d.ruleId);
+    }
+
+    @IsTest
+    static void gate25_simpleMFAQuestion_shouldStayGreen() {
+        // Simple MFA question should stay Green
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Does the system support multi-factor authentication?',
+            '', '', ''
+        );
+        System.assertEquals('Green', d.flag, 'Simple MFA question should stay Green');
+        System.assert(!d.ruleId.endsWith('_CONDITIONAL'),
+            'Simple MFA question should not trigger Gate 2.5: ' + d.ruleId);
+    }
+
+    @IsTest
+    static void gate25_simpleBackupQuestion_shouldStayGreen() {
+        // Simple backup question without SLA should stay Green
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Does the system perform regular data backups?',
+            '', '', ''
+        );
+        System.assertEquals('Green', d.flag, 'Simple backup question should stay Green');
+        System.assert(!d.ruleId.endsWith('_CONDITIONAL'),
+            'Simple backup question should not trigger Gate 2.5: ' + d.ruleId);
+    }
+
+    @IsTest
+    static void gate25_serviceLevelAgreement_shouldBeYellow() {
+        // "service level agreement" should be Yellow — either via Gate 2.5 or NO_MATCH_SECURITY
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'The vendor must provide a service level agreement for backup and disaster recovery.',
+            '', '', ''
+        );
+        System.assertEquals('Yellow', d.flag, 'service level agreement should be Yellow');
+        // Could be _CONDITIONAL (if rule matched first) or NO_MATCH_SECURITY — both correct
+    }
+
+    @IsTest
+    static void gate25_whichWillBeProvided_shouldBeYellow() {
+        // Future requirements language — should be Yellow
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'The vendor must implement access controls consistent with security requirements which will be provided during the onboarding phase.',
+            '', '', ''
+        );
+        System.assertEquals('Yellow', d.flag, 'which will be provided should be Yellow');
+        // Could be _CONDITIONAL (if BINARY_CAN matched) or NO_MATCH_SECURITY — both correct
+    }
+
+    @IsTest
+    static void gate25_detectMethod_directTest() {
+        // Direct test of the detectConditionalCommitment method
+        System.assertNotEquals(null,
+            AIRFX_ResponseFlagInvocable.detectConditionalCommitment('we will meet or exceed your requirements'));
+        System.assertNotEquals(null,
+            AIRFX_ResponseFlagInvocable.detectConditionalCommitment('comply with all security controls'));
+        System.assertNotEquals(null,
+            AIRFX_ResponseFlagInvocable.detectConditionalCommitment('sla - data backup recovery'));
+        System.assertNotEquals(null,
+            AIRFX_ResponseFlagInvocable.detectConditionalCommitment('based on solution design'));
+        System.assertNotEquals(null,
+            AIRFX_ResponseFlagInvocable.detectConditionalCommitment('requirements which will be provided later'));
+        System.assertNotEquals(null,
+            AIRFX_ResponseFlagInvocable.detectConditionalCommitment('in accordance with customer retention policies'));
+        System.assertNotEquals(null,
+            AIRFX_ResponseFlagInvocable.detectConditionalCommitment('as required by the agency'));
+        // Should NOT trigger for known standards
+        System.assertEquals(null,
+            AIRFX_ResponseFlagInvocable.detectConditionalCommitment('comply with hipaa encryption requirements'));
+        System.assertEquals(null,
+            AIRFX_ResponseFlagInvocable.detectConditionalCommitment('comply with nist 800-53 controls'));
+        System.assertEquals(null,
+            AIRFX_ResponseFlagInvocable.detectConditionalCommitment('comply with fedramp requirements'));
+    }
+
+    @IsTest
+    static void gate25_containsKnownStandard_directTest() {
+        // Direct test of containsKnownStandard helper
+        System.assertEquals(true, AIRFX_ResponseFlagInvocable.containsKnownStandard('hipaa requirements'));
+        System.assertEquals(true, AIRFX_ResponseFlagInvocable.containsKnownStandard('fedramp authorization'));
+        System.assertEquals(true, AIRFX_ResponseFlagInvocable.containsKnownStandard('iso 27001 certified'));
+        System.assertEquals(true, AIRFX_ResponseFlagInvocable.containsKnownStandard('pci dss compliant'));
+        System.assertEquals(true, AIRFX_ResponseFlagInvocable.containsKnownStandard('nist 800-53'));
+        System.assertEquals(true, AIRFX_ResponseFlagInvocable.containsKnownStandard('fips 140-2'));
+        System.assertEquals(true, AIRFX_ResponseFlagInvocable.containsKnownStandard('gdpr data protection'));
+        System.assertEquals(true, AIRFX_ResponseFlagInvocable.containsKnownStandard('cjis security policy'));
+        System.assertEquals(false, AIRFX_ResponseFlagInvocable.containsKnownStandard('customer security requirements'));
+        System.assertEquals(false, AIRFX_ResponseFlagInvocable.containsKnownStandard('agency defined controls'));
+    }
+
+    @IsTest
+    static void gate25_containsSLAReference_directTest() {
+        // Direct test of SLA detection with word boundary
+        System.assertEquals(true, AIRFX_ResponseFlagInvocable.containsSLAReference('sla - data backup'));
+        System.assertEquals(true, AIRFX_ResponseFlagInvocable.containsSLAReference('the sla for uptime'));
+        System.assertEquals(true, AIRFX_ResponseFlagInvocable.containsSLAReference('service level agreement'));
+        System.assertEquals(true, AIRFX_ResponseFlagInvocable.containsSLAReference('what are your slas'));
+        // Should NOT match substrings
+        System.assertEquals(false, AIRFX_ResponseFlagInvocable.containsSLAReference('legislation requirements'));
+        System.assertEquals(false, AIRFX_ResponseFlagInvocable.containsSLAReference('translation services'));
+    }
+
+    @IsTest
+    static void gate25_binaryCannotNotAffected() {
+        // Gate 2.5 should NOT affect BINARY_CANNOT rules — Red stays Red
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Can Salesforce provide source code escrow that will meet or exceed our requirements?',
+            '', '', ''
+        );
+        // Source code escrow is BINARY_CANNOT → Red. Gate 2.5 should not interfere.
+        System.assertEquals('Red', d.flag, 'BINARY_CANNOT should not be affected by Gate 2.5');
+    }
+
+    @IsTest
+    static void gate25_reasonContainsExplanation() {
+        // Verify the Yellow reason includes the conditional language explanation
+        // Use a question that hits a BINARY_CAN rule (encryption) + conditional language
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Does the system support encryption at rest that will meet or exceed our security requirements?',
+            '', '', ''
+        );
+        System.assertEquals('Yellow', d.flag, 'Should be Yellow due to conditional language');
+        System.assert(d.reason.contains('conditional commitment language'),
+            'Reason should explain the conditional language: ' + d.reason);
+        System.assert(d.reason.contains('Human review required'),
+            'Reason should mention human review: ' + d.reason);
+        System.assert(d.ruleId.endsWith('_CONDITIONAL'),
+            'Rule ID should have _CONDITIONAL suffix: ' + d.ruleId);
     }
 }

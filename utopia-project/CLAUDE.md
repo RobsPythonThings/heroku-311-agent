@@ -31,8 +31,8 @@ genAiPlannerBundles/
 |-------|---------|
 | `AIRFX_AgentAction` | Invocable entry point. Resolves project, calls flagging + content routing. Writes `Security_Flag__c`, `Response_Flag_Reason__c`, `Question_Classification__c`. |
 | `AIRFX_SecurityPreFilter` | Keyword pre-filter. ~160 FUNCTIONAL_TERMS, ~87 SECURITY_TERMS (added AI data privacy terms 2026-03-08). Word-boundary matching. Classifies questions as functional (auto-Green) or security (pass to rules). |
-| `AIRFX_ResponseFlagInvocable` | Core 94+-rule deterministic flag engine. First match wins. NO_MATCH split: no security terms → Green (functional), security terms → Yellow (needs review). Confidence scoring hits all 6 CMDTs. |
-| `AIRFX_ResponseFlagInvocableTest` | 216 tests. Covers all rule types, NO_MATCH split, classification, obligation, product dimensions, adversarial, YELLOW mining, uptime tiers, and confidence scoring. |
+| `AIRFX_ResponseFlagInvocable` | Core 94+-rule deterministic flag engine. First match wins. Gate 2.5 conditional commitment detector downgrades Green → Yellow when question contains open-ended compliance language. NO_MATCH split: no security terms → Green (functional), security terms → Yellow (needs review). Confidence scoring hits all 6 CMDTs. |
+| `AIRFX_ResponseFlagInvocableTest` | 236 tests. Covers all rule types, NO_MATCH split, classification, obligation, product dimensions, adversarial, YELLOW mining, uptime tiers, confidence scoring, and Gate 2.5 conditional commitment detection. |
 | `AIRFX_ConversationalAnswer` | Standalone Q&A — no project/record context needed. Queries all 6 CMDTs for grounding, calls DataCloud_RFP_Answer template with ADL retrievers. Prevents "Record not found" errors on conversational questions. |
 | `AIRFX_ConversationalAnswerTest` | 5 tests. Input validation, CMDT context with/without country/product, null safety. |
 | `AIRFX_GenerateAnswer` | Single answer via `ConnectApi.EinsteinLLM.generateMessagesForPromptTemplate('DataCloud_RFP_Answer', ...)` |
@@ -66,11 +66,14 @@ genAiPlannerBundles/
 ```
 Question → AIRFX_AgentAction.triageProject()
   → Gate 1: AIRFX_SecurityPreFilter.evaluate(question)
-      if skipAsGreen=true → GREEN (classification: Functional)
+      if skipAsGreen=true → check Gate 2.5, then GREEN (classification: Functional)
   → Gate 2: AIRFX_ResponseFlagInvocable (94+ rules, first match wins)
-      if rule matches → flag per rule (classification: Security)
+      if BINARY_CAN matches → check Gate 2.5, then GREEN (classification: Security)
+  → Gate 2.5: detectConditionalCommitment(question)
+      if conditional language found → YELLOW (overrides Green from Gate 1/2/3)
+      bypasses known standards (HIPAA, FedRAMP, NIST, etc.)
   → Gate 3: NO_MATCH split
-      if no security terms → GREEN "NO_MATCH_FUNCTIONAL" (classification: Functional)
+      if no security terms → check Gate 2.5, then GREEN "NO_MATCH_FUNCTIONAL"
       if security terms → YELLOW "NO_MATCH_SECURITY" (classification: Security)
 ```
 
@@ -151,6 +154,7 @@ Functional questions (no security terms) that don't match rules are auto-Green (
 - **Live validation**: Engine confirmed on P-0042 (348q, 294G/54Y/0R), P-0014 (66q), P-4331 (471q), P-6405 (409q, 360G/49Y/0R), P-6360 (27q, 21G/6Y/0R)
 - **CSV validation**: 6,539 historical questions processed (262 batches, 0 failures)
 - **Mike gospel rows**: 79 certified regression test rows
+- **Mike validation**: 90.5% agreement (286/316) with expert judgment (post-Gate 2.5)
 
 ## Active Docs (`docs/`)
 
@@ -172,6 +176,8 @@ Functional questions (no security terms) that don't match rules are auto-Green (
 | `yellow_to_green_upgrades.md` | Yellow-to-Green conversion tracking |
 | `p6360_triage_audit.md` | P-6360 triage audit: 24/27 correct (89%), 3 misflags, root causes |
 | `p6360_hard_audit.md` | P-6360 hard audit: full answer quality review (3 STRONG, 2 BORDERLINE, 1 WEAK) |
+| `gate25_validation.md` | Gate 2.5 conditional commitment detector: validation results, Mike comparison, org impact |
+| `mike_final_validation.md` | Mike Rosa validation: 316 records, agreement analysis, error direction |
 | `source_docs/` | Fetched compliance source documents |
 
 Superseded files archived to `docs/archive/`.
@@ -185,7 +191,7 @@ sf project deploy start --source-dir force-app/main/default/classes -o <org-alia
 # Deploy specific files
 sf project deploy start --source-dir force-app/main/default/classes/AIRFX_ResponseFlagInvocable.cls force-app/main/default/classes/AIRFX_ResponseFlagInvocableTest.cls --wait 10
 
-# Run all AIRFX tests (221 tests)
+# Run all AIRFX tests (241 tests)
 sf apex run test --class-names AIRFX_ResponseFlagInvocableTest AIRFX_ConversationalAnswerTest --wait 10
 
 # Deploy agent bundle

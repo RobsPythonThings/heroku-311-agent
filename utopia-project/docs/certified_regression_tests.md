@@ -18,20 +18,20 @@ test is a regression that requires investigation.
 | 4 | GPS-4423 | Yellow | Provide configurable risk indicators, rules and scoring, with support  |
 | 5 | GPS-4424 | Green | Offer secure, role-based access control (including need-to-know and fi |
 | 6 | GPS-0140 | Yellow | Response and recovery times in the event of system disruptions: Respon |
-| 7 | GPS-0188 | Green | Fully integrate and interface with all Department required external an |
+| 7 | GPS-0329 | Yellow | Allowing accounts to be configured with strong passwords and passphras |
 | 8 | GPS-0192 | Yellow | Providing the appropriate level of assurance for maintaining the confi |
 | 9 | GPS-0193 | Yellow | Facilitating compliance with Department information, security policies |
 | 10 | GPS-0202 | Yellow | As applicable, utilize system development and data security best pract |
 | 11 | GPS-0203 | Yellow | Any development must include, at a minimum, a process for continual vu |
 | 12 | GPS-0205 | Yellow | Audit information, including, but not limited to, physical access, log |
-| 13 | GPS-0211 | Green | Allowing accounts to be configured with strong passwords and passphras |
+| 13 | GPS-0306 | Yellow | Fully integrate and interface...based on federal, state, and Departmen |
 | 14 | GPS-0213 | Yellow | Providing the ability to manage, change, and disable default settings  |
 | 15 | GPS-0243 | Yellow | Describe your proposed solution's capabilities for meeting 60GG-2 F.A. |
 | 16 | GPS-0265 | Yellow | Response and recovery times in the event of system disruptions: Respon |
 | 17 | GPS-0269 | Yellow | What are the standard response and recovery times in the event of syst |
 | 18 | GPS-0270 | Yellow | Response and recovery times in the event of system disruptions: Respon |
 | 19 | GPS-0478 | Yellow | What are the standard response and recovery times in the event of syst |
-| 20 | GPS-0517 | Green | Fully integrate and interface with all Department required external an |
+| 20 | GPS-0540 | Yellow | Allowing accounts to be configured with strong passwords and passphras |
 | 21 | GPS-1162 | Green | The solution shall support Multi-Factor Authentication (MFA) for both  |
 | 22 | GPS-1163 | Green | The solution shall be compatible with Okta, the Commonwealth of Virgin |
 | 23 | GPS-1166 | Green | The solution shall support encryption of data both in transit and at r |
@@ -100,3 +100,6 @@ applied to the old engine. The current engine's answer is more accurate.
 | GPS-0480 | Yellow | Green | MAINTENANCE_WINDOW rule improvement |
 | GPS-3902 | Red | Yellow | Uptime tier changed: 99.9% is Yellow (achievable) |
 | GPS-4045 | Red | Yellow | Uptime tier changed: 99.9% is Yellow (achievable) |
+| GPS-0211 | Green | Yellow | Gate 2.5: "meet or exceed...which will be provided" triggers conditional commitment. Mike gave conflicting feedback (Green on GPS-0211, Yellow on GPS-0329/0540 — same question). Safer to Yellow. |
+| GPS-0188 | Green | Yellow | Same question as GPS-0306 ("rules, laws, regulations"). Mike said GPS-0306 should be Yellow. "hosted" is a security term → NO_MATCH_SECURITY. |
+| GPS-0517 | Green | Yellow | Same question as GPS-0306. Mike confirmed Green on original engine, but the question contains open-ended compliance language. |

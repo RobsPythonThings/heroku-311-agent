@@ -424,10 +424,22 @@ public with sharing class AIRFX_ResponseFlagInvocable {
             return decision;
         }
 
+        String qLower = question.toLowerCase();
+
         AIRFX_SecurityPreFilter.Result preFilter =
             AIRFX_SecurityPreFilter.evaluate(question);
 
         if (preFilter != null && preFilter.skipAsGreen) {
+            // Gate 2.5: Check for conditional commitment language even on functional questions
+            String preFilterCommitment = detectConditionalCommitment(qLower);
+            if (preFilterCommitment != null) {
+                decision.flag = FLAG_YELLOW;
+                decision.reason = 'Pre-filter classified as functional, but question contains conditional commitment language (\u201c'
+                    + preFilterCommitment + '\u201d) \u2014 customer-specific requirements are not yet defined. Human review required.';
+                decision.ruleId = 'PREFILTER_CONDITIONAL';
+                decision.classification = 'Security';
+                return decision;
+            }
             decision.flag = FLAG_GREEN;
             decision.reason = 'Pre-filter: obvious functional/non-security clause.';
             if (preFilter.matchedFunctionalTerms != null && !preFilter.matchedFunctionalTerms.isEmpty()) {
@@ -443,8 +455,6 @@ public with sharing class AIRFX_ResponseFlagInvocable {
         Boolean hasSecurityTerms = preFilter != null
             && preFilter.matchedSecurityTerms != null
             && !preFilter.matchedSecurityTerms.isEmpty();
-
-        String qLower = question.toLowerCase();
         String aLower = String.isNotBlank(aiAnswer) ? aiAnswer.toLowerCase() : '';
         Boolean isGovCloud = isGovCloudDeal(productType);
         Boolean isMuleSoft = isMuleSoftDeal(productType);
@@ -613,6 +623,16 @@ public with sharing class AIRFX_ResponseFlagInvocable {
             decision.ruleId = 'NO_MATCH_SECURITY';
             decision.classification = 'Security';
         } else {
+            // Gate 2.5: Check for conditional commitment language before auto-Green
+            String noMatchCommitment = detectConditionalCommitment(qLower);
+            if (noMatchCommitment != null) {
+                decision.flag = FLAG_YELLOW;
+                decision.reason = 'No rule matched, but question contains conditional commitment language (\u201c'
+                    + noMatchCommitment + '\u201d) \u2014 customer-specific requirements are not yet defined. Human review required.';
+                decision.ruleId = 'NO_MATCH_CONDITIONAL';
+                decision.classification = 'Security';
+                return decision;
+            }
             // Functional question that passed pre-filter but matched no rule — safe to auto-Green
             decision.flag = FLAG_GREEN;
             decision.reason = 'No security terms detected and no rule matched. Auto-classified as functional.';
@@ -638,7 +658,22 @@ public with sharing class AIRFX_ResponseFlagInvocable {
         'sg' => 'Singapore', 'kr' => 'South Korea', 'fr' => 'France',
         'de' => 'Germany', 'se' => 'Sweden', 'gb' => 'United Kingdom',
         'id' => 'Indonesia', 'ie' => 'Ireland', 'il' => 'Israel',
-        'it' => 'Italy', 'ch' => 'Switzerland', 'ae' => 'UAE'
+        'it' => 'Italy', 'ch' => 'Switzerland', 'ae' => 'UAE',
+        'no' => 'Norway', 'fi' => 'Finland', 'pt' => 'Portugal',
+        'be' => 'Belgium', 'nl' => 'Netherlands', 'es' => 'Spain',
+        'th' => 'Thailand'
+    };
+
+    // Countries with nearby Hyperforce regions where Yellow (defer to AE) is appropriate
+    // rather than hard Red. These are countries with EU/EEA data adequacy or proximity.
+    private static final Map<String, String> NEARBY_REGION_COUNTRIES = new Map<String, String>{
+        'no' => 'Sweden (SE), Ireland (IE), Germany (DE)',
+        'fi' => 'Sweden (SE), Ireland (IE), Germany (DE)',
+        'pt' => 'France (FR), Ireland (IE), Spain is not a Hyperforce region',
+        'be' => 'France (FR), Germany (DE), Ireland (IE)',
+        'nl' => 'Germany (DE), France (FR), Ireland (IE)',
+        'es' => 'France (FR), Ireland (IE)',
+        'th' => 'Singapore (SG), Indonesia (ID)'
     };
 
     private static FlagDecision evaluateDataResidency(
@@ -650,17 +685,35 @@ public with sharing class AIRFX_ResponseFlagInvocable {
         // If the project has a country, check it against allowed list
         if (String.isNotBlank(country)) {
             String countryLower = country.toLowerCase().trim();
+            String displayName = COUNTRY_NAMES.containsKey(countryLower)
+                ? COUNTRY_NAMES.get(countryLower) : country.toUpperCase();
+
             if (ALLOWED_DATA_COUNTRIES.contains(countryLower)) {
-                String displayName = COUNTRY_NAMES.containsKey(countryLower)
-                    ? COUNTRY_NAMES.get(countryLower) : country;
                 decision.flag = FLAG_GREEN;
                 decision.reason = 'Data residency in ' + displayName + ' (' + country.toUpperCase() + ') is supported. '
                     + 'Salesforce hosts data in 18 Hyperforce regions: US, BR, CA, AU, IN, JP, SG, KR, FR, DE, SE, GB, ID, IE, IL, IT, CH, AE.';
+                // Gate 2.5: Check for conditional commitment language
+                String commitmentMatch = detectConditionalCommitment(qLower);
+                if (commitmentMatch != null) {
+                    decision.flag = FLAG_YELLOW;
+                    decision.reason += ' However, the question contains conditional commitment language (\u201c'
+                        + commitmentMatch + '\u201d) \u2014 customer-specific requirements are not yet defined. Human review required.';
+                    decision.ruleId = rule.id + '_CONDITIONAL';
+                }
+            } else if (NEARBY_REGION_COUNTRIES.containsKey(countryLower)) {
+                // Country has no Hyperforce region but has nearby EU/EEA options — Yellow, defer to AE
+                String nearbyRegions = NEARBY_REGION_COUNTRIES.get(countryLower);
+                decision.flag = FLAG_YELLOW;
+                decision.reason = displayName + ' (' + country.toUpperCase() + ') does not have a Hyperforce region. '
+                    + 'Nearest available regions: ' + nearbyRegions + '. '
+                    + 'Data may be hosted in a nearby EU region subject to local data protection requirements. '
+                    + 'Defer to Account Executive for business decision on acceptable hosting location. '
+                    + 'See Salesforce Help & Training: Hyperforce — Data Residency (https://help.salesforce.com/s/articleView?id=sf.hyperforce_data_residency.htm).';
             } else {
                 decision.flag = FLAG_RED;
-                decision.reason = 'Data residency in ' + country.toUpperCase() + ' is NOT in Salesforce\'s supported hosting locations. '
+                decision.reason = 'Data residency in ' + displayName + ' (' + country.toUpperCase() + ') is NOT in Salesforce\'s supported hosting locations. '
                     + 'Supported: US, BR, CA, AU, IN, JP, SG, KR, FR, DE, SE, GB, ID, IE, IL, IT, CH, AE. '
-                    + 'Escalation required.';
+                    + 'No nearby Hyperforce region available. Escalation required.';
             }
         } else {
             // No country on project — can't determine, Yellow
@@ -1174,12 +1227,13 @@ public with sharing class AIRFX_ResponseFlagInvocable {
             + 'typically outside peak business hours. Customers cannot choose or override maintenance windows. '
             + 'Major releases are scheduled 3 times per year (Spring, Summer, Winter) and cannot be deferred.'));
 
-        // UPTIME / AVAILABILITY — 2-tier: <=99.9 GREEN, >99.9 YELLOW, >100 RED (impossible)
-        // Standard SLA is 99.9% contractual minimum. Anything at or below that is safe to confirm.
+        // UPTIME / AVAILABILITY — 2-tier: <99.9 GREEN, >=99.9 YELLOW, >100 RED (impossible)
+        // Mike Rosa: SLAs are almost always Yellow. Even 99.9% (our exact SLA) needs SE review
+        // because the customer is asking for a contractual commitment.
         CapabilityRule uptimeRule = new CapabilityRule('UPTIME',
             new List<String>{'uptime', 'availability', '% sla', 'percent sla', 'percent uptime', 'percent availability'},
-            'NUMERIC_TIERED_MIN', 99.9, '%', null,
-            'Salesforce standard SLA is 99.9% uptime. Requirements above 99.9% cannot be guaranteed — engage your AE for contract-specific terms.');
+            'NUMERIC_TIERED_MIN', 99.8, '%', null,
+            'Salesforce standard SLA is 99.9% uptime. Requirements at or above 99.9% require SE review — engage your AE for contract-specific terms.');
         uptimeRule.numericUpperThreshold = 100.0;
         uptimeRule.alternativeReason = 'Salesforce standard SLA is 99.9% uptime. This requirement exceeds the standard guarantee \u2014 engage your AE for contract-specific terms.';
         uptimeRule.excludeKeywords = new List<String>{
@@ -1608,11 +1662,12 @@ public with sharing class AIRFX_ResponseFlagInvocable {
         // DATA RESIDENCY — conditional on country
         rules.add(new CapabilityRule(
             'DATA_RESIDENCY',
-            new List<String>{'data residen', 'data sovereign', 'data locali', 'data location', 'hosted in',
-                'data center location', 'data stored', 'data must reside', 'data shall reside',
-                'data will reside', 'data reside', 'host.*in', 'org in', 'data.*leave', 'data.*transit',
+            new List<String>{'data residen', 'data sovereign', 'data locali', 'data location',
+                'data center location', 'data stored in', 'data must reside', 'data shall reside',
+                'data will reside', 'data reside in', 'host.*org in', 'host.*in.*region',
                 'data.*cross border', 'data remain in', 'keep data in',
-                'store.*data.*in', 'data exclusively', 'exclusively in'},
+                'store data in', 'data exclusively in', 'exclusively hosted',
+                'hosted in.*country', 'where.*data.*stored', 'where.*hosted'},
             'CONDITIONAL_DATA_RESIDENCY', null, null, null,
             'Salesforce hosts data in 18 Hyperforce regions: US, BR, CA, AU, IN, JP, SG, KR, FR, DE, SE, GB, ID, IE, IL, IT, CH, AE.'));
 
@@ -1887,6 +1942,105 @@ public with sharing class AIRFX_ResponseFlagInvocable {
             this.productFilter = productFilter;
             this.reason = reason;
         }
+    }
+
+    // =========================================================================
+    // GATE 2.5: CONDITIONAL COMMITMENT LANGUAGE DETECTOR
+    // =========================================================================
+
+    /**
+     * Detects conditional commitment language in questions — phrases that imply
+     * the customer has requirements Salesforce hasn't seen yet, making a firm
+     * Green commitment premature. Returns the matched phrase (for the reason
+     * string) or null if no conditional language found.
+     *
+     * Derived from Mike Rosa's expert review of 316 records where the engine
+     * auto-Greened questions that should have been Yellow because the real
+     * answer depends on customer-specific policies not yet defined.
+     */
+    @TestVisible
+    private static String detectConditionalCommitment(String qLower) {
+        // Future unknown requirements — strongest signal
+        if (qLower.contains('which will be provided') || qLower.contains('to be provided at')) {
+            return 'requirements not yet provided';
+        }
+
+        // Unknown solution design
+        if (qLower.contains('based on solution design') || qLower.contains('on solution design')) {
+            return 'solution design unknown';
+        }
+
+        // Meet or exceed customer-defined minimums
+        if (qLower.contains('meet or exceed')) {
+            return 'meet or exceed customer-defined requirements';
+        }
+
+        // Open-ended compliance scope (broad catchall of laws/regulations)
+        if (qLower.contains('rules, laws, regulations') || qLower.contains('laws, regulations, and policies')) {
+            return 'open-ended compliance scope';
+        }
+
+        // SLA commitment language — Mike: "SLAs are almost always yellow"
+        if (containsSLAReference(qLower)) {
+            return 'SLA commitment';
+        }
+
+        // "comply with" + unknown/external requirements (not a known standard)
+        if (qLower.contains('comply with') && !containsKnownStandard(qLower)) {
+            return 'conditional compliance commitment';
+        }
+
+        // "as required by" + not a known standard
+        if (qLower.contains('as required by') && !containsKnownStandard(qLower)) {
+            return 'requirements defined by external party';
+        }
+
+        // "in accordance with" + customer-specific policies/requirements
+        if (qLower.contains('in accordance with') &&
+            (qLower.contains('polic') || qLower.contains('retention') ||
+             qLower.contains('requirement'))) {
+            return 'customer-specific policy compliance';
+        }
+
+        return null;
+    }
+
+    /**
+     * Checks if the question references a known compliance standard that
+     * Salesforce definitively meets or doesn't. When a known standard is
+     * referenced, the "comply with" language is specific enough to keep Green.
+     */
+    @TestVisible
+    private static Boolean containsKnownStandard(String qLower) {
+        return qLower.contains('hipaa') || qLower.contains('nist ') ||
+               qLower.contains('soc 2') || qLower.contains('soc2') ||
+               qLower.contains('fedramp') || qLower.contains('iso 27001') ||
+               qLower.contains('iso27001') || qLower.contains('gdpr') ||
+               qLower.contains('pci dss') || qLower.contains('pci-dss') ||
+               qLower.contains('fips') || qLower.contains('fisma') ||
+               qLower.contains('cjis') || qLower.contains('itar') ||
+               qLower.contains('cmmc') || qLower.contains('stateramp') ||
+               qLower.contains('txramp');
+    }
+
+    /**
+     * Detects SLA references. Uses word-boundary-style check to avoid matching
+     * substrings like "legislation" or "slab".
+     */
+    @TestVisible
+    private static Boolean containsSLAReference(String qLower) {
+        // Check for "sla" as a standalone word or prefix (sla, slas, sla-)
+        String padded = ' ' + qLower + ' ';
+        if (padded.contains(' sla ') || padded.contains(' sla-') ||
+            padded.contains(' sla:') || padded.contains(' slas ') ||
+            padded.contains(' sla,') || padded.contains(' sla.')) {
+            return true;
+        }
+        // Also catch "service level agreement"
+        if (qLower.contains('service level agreement')) {
+            return true;
+        }
+        return false;
     }
 
     @TestVisible

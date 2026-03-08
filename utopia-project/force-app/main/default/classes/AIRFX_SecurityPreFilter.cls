@@ -114,7 +114,10 @@ public with sharing class AIRFX_SecurityPreFilter {
         'store all data','data exclusively',
         'ismap','certified','certification','certifications',
         'artificial intelligence','ai feature','ai features','ai training','ai model',
-        'used for other clients','shared with other','non-private'
+        'used for other clients','shared with other','non-private',
+        'confidentiality','confidential','activity log','activity logs',
+        'risk indicator','risk indicators','alerting','detection',
+        'insurance'
     };
 
     public static Result evaluate(String question) {
