@@ -112,7 +112,9 @@ public with sharing class AIRFX_SecurityPreFilter {
         'azure tenant','our tenant','customer tenant',
         'dedicated support','dedicated engineer','assigned support','named support',
         'store all data','data exclusively',
-        'ismap','certified','certification','certifications'
+        'ismap','certified','certification','certifications',
+        'artificial intelligence','ai feature','ai features','ai training','ai model',
+        'used for other clients','shared with other','non-private'
     };
 
     public static Result evaluate(String question) {

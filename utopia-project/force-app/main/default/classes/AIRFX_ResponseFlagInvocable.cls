@@ -1394,7 +1394,7 @@ public with sharing class AIRFX_ResponseFlagInvocable {
             'Salesforce utilizes Cloudflare for WAF, DDoS prevention, and IP reputation filtering at the platform edge. This is platform-managed and not customer-configurable. Customers requiring custom WAF rules should use third-party solutions in front of Experience Cloud sites.'));
 
         rules.add(binaryCanDifferently('ACCESSIBILITY_508',
-            new List<String>{'section 508', '\\b508\\b.*compliance', '\\b508\\b.*conform', 'wcag 2', 'vpat', 'accessibility conformance'},
+            new List<String>{'section 508', '\\b508\\b.*compliance', '\\b508\\b.*conform', 'wcag 2', '\\bwcag\\b', '\\bada\\b.*complian', 'vpat', 'accessibility conformance'},
             'Salesforce publishes product-specific Accessibility Conformance Reports (ACRs) demonstrating substantial WCAG 2.1 Level A/AA conformance for Lightning Experience. Full 100% conformance is not claimed across all products and criteria. ACRs are available at salesforce.com/company/legal/508_accessibility/.'));
 
         rules.add(binaryCanDifferently('CDP_BACKUP',

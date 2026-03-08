@@ -159,13 +159,11 @@ public with sharing class AIRFX_AgentAction {
             lines.add('Unflagged: ' + unflagged);
         }
 
-        // Content sources
-        if (!lanes.isEmpty()) {
-            lines.add('');
-            lines.add('📡 Content sources: ' + String.join(lanes, ', '));
-            if (String.isNotBlank(sourceFilter)) {
-                lines.add('HECVAT filter: ' + sourceFilter.replace('_', ' '));
-            }
+        // Grounding sources
+        lines.add('');
+        lines.add('📡 Grounded in: HECVAT Assessments · SPARC Docs · CMDT (regions, certifications, features) · Compliance Portal');
+        if (String.isNotBlank(sourceFilter)) {
+            lines.add('HECVAT filter: ' + sourceFilter.replace('_', ' '));
         }
 
         lines.add('');

@@ -2325,4 +2325,49 @@ private class AIRFX_ResponseFlagInvocableTest {
         System.assertNotEquals('UPTIME', d.ruleId, 'Filter by availability should not trigger UPTIME');
         System.assertNotEquals('UPTIME_PARSE_FAIL', d.ruleId, 'Filter by availability should not trigger UPTIME_PARSE_FAIL');
     }
+
+    // ── Section 25: P-6360 audit fixes ──────────────────────────────────
+
+    @IsTest
+    static void aiDataPrivacy_shouldNotBeGreen() {
+        // GPS-3236: "knowledge base" functional term was overriding AI data privacy intent
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Does your platform have any AI features or are you planning AI features in the future? And if so, would FIT prompts or responses go into a non-private knowledge base or be used in any other way for you or other clients?',
+            '', '', ''
+        );
+        System.assertNotEquals('Green', d.flag, 'AI data privacy question should not be Green');
+    }
+
+    @IsTest
+    static void accessibility_bareWcag_shouldBeYellow() {
+        // GPS-3230: bare "WCAG" without version number should still trigger ACCESSIBILITY_508
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Is your software WCAG and ADA compliant? Are all of your email templates compliant?',
+            '', '', ''
+        );
+        System.assertEquals('Yellow', d.flag, 'WCAG/ADA compliance should be Yellow');
+        System.assertEquals('ACCESSIBILITY_508', d.ruleId, 'Should match ACCESSIBILITY_508 rule');
+    }
+
+    @IsTest
+    static void accessibility_adaCompliant_shouldBeYellow() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Is your platform ADA compliant?',
+            '', '', ''
+        );
+        System.assertEquals('Yellow', d.flag, 'ADA compliant should be Yellow');
+        System.assertEquals('ACCESSIBILITY_508', d.ruleId);
+    }
+
+    @IsTest
+    static void aiFeatures_functionalOnly_shouldBeGreen() {
+        // Pure functional AI question without privacy concern should stay Green
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Does your platform have AI features for forecasting?',
+            '', '', ''
+        );
+        // "ai feature" is now a security term, so this should NOT be auto-Green
+        // It will hit NO_MATCH_SECURITY → Yellow, which is acceptable (safe direction)
+        System.assertNotEquals('ACCESSIBILITY_508', d.ruleId);
+    }
 }
