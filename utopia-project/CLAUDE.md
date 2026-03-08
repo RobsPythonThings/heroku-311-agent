@@ -127,7 +127,7 @@ Country_Capability__mdt
 ## Roadmap (Priority Order)
 
 1. **Country CMDT build** — Create `Country_Capability__mdt` with country×product×capability matrix. Wire into engine + prompt template.
-2. **Manual source doc downloads** — 5 docs need manual fetch (fedramp, shield, irap, mulesoft, tableau). See `docs/review-needed.md`.
+2. **Manual source doc downloads** — 5 docs need manual fetch (fedramp, shield, irap, mulesoft, tableau). See `docs/archive/review-needed.md`.
 3. **More CAN_DIFFERENTLY rules** — product-specific on-prem (MuleSoft, Tableau Server), per-product ACRs, breach notification timeline.
 4. **Bid-specific answer grounding** — inject customer name, industry, region into prompt template.
 5. **Full CMDT rule migration** — move `buildRules()` data to `Capability_Rule__mdt`. Hybrid: Apex engine logic + CMDT rule data.
@@ -138,6 +138,28 @@ Country_Capability__mdt
 - **Estimated max capacity**: ~530 records per invocation
 - **Live validation**: Engine confirmed on P-0042 (348 questions, 288G/60Y/0R), P-0014 (66 questions), P-4331 (471 questions)
 - **CSV validation**: 6,539 historical questions processed (262 batches, 0 failures)
+
+## Active Docs (`docs/`)
+
+| File | Purpose |
+|------|---------|
+| `accuracy_corrections.md` | 14 cross-reference findings against Spring '26 grounding — KB staleness audit |
+| `accuracy_gauntlet.md` | 20-question stress test: Run 1 (10/20), root causes, fixes, Run 2 (20/20) |
+| `yellow_triage_analysis.md` | P-0042 Yellow breakdown (45→28 path), category analysis, conversion recommendations |
+| `suspicious_reds.md` | Red audit: 51 records, 4 action items (SOURCE_CODE, CUI, CUSTOMER_VM, Norway) |
+| `morning_fixes_results.md` | 5 targeted fixes: SOURCE_CODE, CUI, CUSTOMER_VM, BREACH_TIMELINE, SECURITY_POSTURE |
+| `project_health_report.md` | Overall engine health: rule coverage, test counts, performance, deployment status |
+| `cmdt_wiring_verification.md` | Regulatory_Framework__mdt CMDT integration verification |
+| `benchmark_final.md` | Latest benchmark results (P-0042, P-0014, P-4331) |
+| `csv_final_accuracy_report.md` | CSV validation: 6,539 historical questions, accuracy breakdown |
+| `adversarial_tests.md` | Adversarial test scenarios and results |
+| `production_readiness.md` | Production readiness checklist |
+| `SE_GUIDE.md` | SE-facing guide for using AIRFX flags |
+| `monday_slack.md` | Slack update draft for Monday standup |
+| `yellow_to_green_upgrades.md` | Yellow-to-Green conversion tracking |
+| `source_docs/` | Fetched compliance source documents |
+
+Superseded files archived to `docs/archive/`.
 
 ## Deployment
 
