@@ -163,6 +163,9 @@ public with sharing class AIRFX_ResponseFlagInvocable {
         // Cache CMDT context per country+product pair to avoid SOQL limits
         Map<String, String> cmdtContextCache = new Map<String, String>();
 
+        // Bulk-load all CMDT data for confidence scoring (avoids SOQL-in-loop)
+        CMDTScoreCache scoreCache = buildCMDTScoreCache();
+
         for (Id recId : idsToProcess) {
             FlagResult fr = new FlagResult();
             fr.responseId = recId;
@@ -204,7 +207,7 @@ public with sharing class AIRFX_ResponseFlagInvocable {
                 fr.CMDTCapabilityContext = cmdtContextCache.get(cacheKey);
 
                 // Calculate confidence score
-                decision.confidenceScore = calculateConfidence(decision, country, productType);
+                decision.confidenceScore = calculateConfidence(decision, country, productType, scoreCache);
                 fr.confidenceScore = decision.confidenceScore;
 
                 // Stage the update
@@ -774,7 +777,7 @@ public with sharing class AIRFX_ResponseFlagInvocable {
     // =========================================================================
 
     @TestVisible
-    private static Integer calculateConfidence(FlagDecision decision, String country, String productType) {
+    private static Integer calculateConfidence(FlagDecision decision, String country, String productType, CMDTScoreCache cache) {
         Integer score = 0;
 
         // 1. Keywords matched: +10 each, max 30
@@ -790,17 +793,15 @@ public with sharing class AIRFX_ResponseFlagInvocable {
         } else if (ruleId.endsWith('_PARSE_FAIL')) {
             score += 0;
         } else if (ruleId == 'PREFILTER_NON_SECURITY') {
-            // Pre-filter handled below
             score += 0;
         } else {
             hasRuleMatch = true;
-            // Additional bonus by rule type — includes base for deterministic match
             if (decision.flag == 'Red') {
-                score += 25 + 20; // BINARY_CANNOT: high base + full rule bonus
+                score += 25 + 20;
             } else if (decision.flag == 'Yellow') {
-                score += 15 + 10; // BINARY_CAN_DIFFERENTLY: lower base + partial bonus
+                score += 15 + 10;
             } else if (decision.flag == 'Green') {
-                score += 25 + 20; // BINARY_CAN or numeric met: high base + full bonus
+                score += 25 + 20;
             }
         }
 
@@ -809,32 +810,217 @@ public with sharing class AIRFX_ResponseFlagInvocable {
             score += -10;
         }
 
-        // 4. CMDT record exists for country/product = +20
-        // 5. CMDT Confidence__c: VERIFIED +15, INFERRED +5, NEEDS_REVIEW 0
-        // Only apply CMDT bonus for rule-matched or security questions (not NO_MATCH_FUNCTIONAL/PREFILTER)
+        // Only apply CMDT bonuses for security questions
         Boolean isSecurity = hasRuleMatch || ruleId == 'NO_MATCH_SECURITY';
-        if (isSecurity && String.isNotBlank(country)) {
-            String countryUpper = country.toUpperCase();
-            List<Hyperforce_Region__mdt> hfRegions = [
-                SELECT Confidence__c
-                FROM Hyperforce_Region__mdt
-                WHERE Active__c = true AND Country_Code__c = :countryUpper
-                LIMIT 1
-            ];
-            if (!hfRegions.isEmpty()) {
-                score += 20; // CMDT record exists
-                String conf = hfRegions[0].Confidence__c;
-                if (conf == 'VERIFIED') {
-                    score += 15;
-                } else if (conf == 'INFERRED') {
+        if (!isSecurity) {
+            return Math.max(0, Math.min(100, score));
+        }
+
+        String countryUpper = String.isNotBlank(country) ? country.toUpperCase() : '';
+        Set<String> productTokens = normalizeProductTokens(productType);
+
+        // 4. Hyperforce_Region__mdt: +20 exists, +15 VERIFIED / +5 INFERRED
+        if (String.isNotBlank(countryUpper) && cache.hfByCountry.containsKey(countryUpper)) {
+            score += 20;
+            String conf = cache.hfByCountry.get(countryUpper);
+            if (conf == 'VERIFIED') {
+                score += 15;
+            } else if (conf == 'INFERRED') {
+                score += 5;
+            }
+        }
+
+        // 5. Certification__mdt: +15 if cert exists for product, +5 if Status = CURRENT
+        if (!productTokens.isEmpty()) {
+            Boolean certFound = false;
+            Boolean certActive = false;
+            for (String certProduct : cache.certsByProduct.keySet()) {
+                if (productOverlaps(productTokens, certProduct)) {
+                    certFound = true;
+                    if (cache.certsByProduct.get(certProduct) == 'CURRENT') {
+                        certActive = true;
+                    }
+                }
+            }
+            if (certFound) {
+                score += 15;
+                if (certActive) {
                     score += 5;
                 }
-                // NEEDS_REVIEW = 0
+            }
+        }
+
+        // 6. Regulatory_Framework__mdt: +15 if framework exists for country, +5 if adequate
+        if (String.isNotBlank(countryUpper) && cache.regsByCountry.containsKey(countryUpper)) {
+            score += 15;
+            if (cache.regsByCountry.get(countryUpper) == true) {
+                score += 5;
+            }
+        }
+
+        // 7. Feature_Availability__mdt: +10 if flagged feature exists, -5 if add-on required
+        if (hasRuleMatch && String.isNotBlank(decision.ruleId)) {
+            String ruleIdLower = decision.ruleId.toLowerCase();
+            for (String featureKey : cache.featuresByName.keySet()) {
+                if (ruleIdLower.contains(featureKey) || featureKey.contains(ruleIdLower)) {
+                    score += 10;
+                    if (cache.featuresByName.get(featureKey) == false) {
+                        score += -5; // Add-on required
+                    }
+                    break;
+                }
+            }
+        }
+
+        // 8. Product_Region__mdt: +10 if product/country combo exists and available
+        if (String.isNotBlank(countryUpper) && !productTokens.isEmpty()) {
+            for (String prKey : cache.prodRegionKeys.keySet()) {
+                String[] parts = prKey.split('\\|');
+                if (parts.size() == 2 && parts[1] == countryUpper && productOverlaps(productTokens, parts[0])) {
+                    if (cache.prodRegionKeys.get(prKey) == true) {
+                        score += 10;
+                    }
+                    break;
+                }
             }
         }
 
         // Clamp 0-100
         return Math.max(0, Math.min(100, score));
+    }
+
+    // =========================================================================
+    // CMDT SCORE CACHE — bulk-loaded once before the processing loop
+    // =========================================================================
+
+    @TestVisible
+    private class CMDTScoreCache {
+        // Hyperforce: country_code(upper) → Confidence__c
+        public Map<String, String> hfByCountry;
+        // Certification: product(upper) → best Status__c (CURRENT wins over others)
+        public Map<String, String> certsByProduct;
+        // Regulatory: country_code(upper) → Adequacy_Decision__c (boolean)
+        public Map<String, Boolean> regsByCountry;
+        // Feature: feature_name(lower) → Included_In_Base__c
+        public Map<String, Boolean> featuresByName;
+        // Product_Region: "PRODUCT|COUNTRY" → Available__c
+        public Map<String, Boolean> prodRegionKeys;
+
+        public CMDTScoreCache() {
+            this.hfByCountry = new Map<String, String>();
+            this.certsByProduct = new Map<String, String>();
+            this.regsByCountry = new Map<String, Boolean>();
+            this.featuresByName = new Map<String, Boolean>();
+            this.prodRegionKeys = new Map<String, Boolean>();
+        }
+    }
+
+    @TestVisible
+    private static CMDTScoreCache buildCMDTScoreCache() {
+        CMDTScoreCache cache = new CMDTScoreCache();
+
+        // Hyperforce_Region__mdt
+        for (Hyperforce_Region__mdt hf : [
+            SELECT Country_Code__c, Confidence__c
+            FROM Hyperforce_Region__mdt WHERE Active__c = true
+        ]) {
+            String key = hf.Country_Code__c != null ? hf.Country_Code__c.toUpperCase() : '';
+            cache.hfByCountry.put(key, hf.Confidence__c);
+        }
+
+        // Certification__mdt — keep best status per product
+        for (Certification__mdt c : [
+            SELECT Product__c, Status__c
+            FROM Certification__mdt WHERE Active__c = true
+        ]) {
+            String key = c.Product__c != null ? c.Product__c.toUpperCase() : '';
+            String existing = cache.certsByProduct.get(key);
+            // CURRENT wins over any other status
+            if (existing == null || c.Status__c == 'CURRENT') {
+                cache.certsByProduct.put(key, c.Status__c);
+            }
+        }
+
+        // Regulatory_Framework__mdt
+        for (Regulatory_Framework__mdt r : [
+            SELECT Country_Code__c, Adequacy_Decision__c
+            FROM Regulatory_Framework__mdt WHERE Active__c = true
+        ]) {
+            String key = r.Country_Code__c != null ? r.Country_Code__c.toUpperCase() : '';
+            // If any framework for this country is adequate, mark true
+            Boolean existing = cache.regsByCountry.get(key);
+            if (existing == null || r.Adequacy_Decision__c == true) {
+                cache.regsByCountry.put(key, r.Adequacy_Decision__c);
+            }
+        }
+
+        // Feature_Availability__mdt
+        for (Feature_Availability__mdt f : [
+            SELECT Feature__c, Included_In_Base__c
+            FROM Feature_Availability__mdt WHERE Active__c = true
+        ]) {
+            String key = f.Feature__c != null ? f.Feature__c.toLowerCase() : '';
+            cache.featuresByName.put(key, f.Included_In_Base__c);
+        }
+
+        // Product_Region__mdt
+        for (Product_Region__mdt pr : [
+            SELECT Product__c, Country_Code__c, Available__c
+            FROM Product_Region__mdt WHERE Active__c = true
+        ]) {
+            String product = pr.Product__c != null ? pr.Product__c.toUpperCase() : '';
+            String ctry = pr.Country_Code__c != null ? pr.Country_Code__c.toUpperCase() : '';
+            cache.prodRegionKeys.put(product + '|' + ctry, pr.Available__c);
+        }
+
+        return cache;
+    }
+
+    /**
+     * Splits a semicolon-separated Product_Type__c into normalized uppercase tokens.
+     * "Core - Experience Cloud;Mulesoft" → {'CORE', 'EXPERIENCE CLOUD', 'MULESOFT'}
+     * Strips common prefixes like "Core - " to extract the meaningful product name,
+     * but also keeps root tokens like "CORE" for broad matching.
+     */
+    @TestVisible
+    private static Set<String> normalizeProductTokens(String productType) {
+        Set<String> tokens = new Set<String>();
+        if (String.isBlank(productType)) return tokens;
+
+        for (String part : productType.split(';')) {
+            String trimmed = part.trim().toUpperCase();
+            if (String.isBlank(trimmed)) continue;
+            tokens.add(trimmed);
+
+            // Also extract sub-parts around " - " for cross-matching
+            // "Core - Experience Cloud" → also add "CORE" and "EXPERIENCE CLOUD"
+            if (trimmed.contains(' - ')) {
+                for (String sub : trimmed.split(' - ')) {
+                    String subTrimmed = sub.trim();
+                    if (subTrimmed.length() > 2) {
+                        tokens.add(subTrimmed);
+                    }
+                }
+            }
+        }
+        return tokens;
+    }
+
+    /**
+     * Checks if a CMDT product value overlaps with any of the normalized project product tokens.
+     * Uses bidirectional contains for fuzzy matching across naming conventions.
+     * E.g., "SALESFORCE CORE" overlaps with token "CORE"; "MULESOFT" overlaps with "MULESOFT".
+     */
+    @TestVisible
+    private static Boolean productOverlaps(Set<String> projectTokens, String cmdtProduct) {
+        if (String.isBlank(cmdtProduct)) return false;
+        String upper = cmdtProduct.toUpperCase();
+        for (String token : projectTokens) {
+            if (token == upper || token.contains(upper) || upper.contains(token)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     // =========================================================================
