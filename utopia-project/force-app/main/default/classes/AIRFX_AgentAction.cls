@@ -147,39 +147,16 @@ public with sharing class AIRFX_AgentAction {
             return String.join(lines, '\n');
         }
 
+        lines.add('The project has been triaged. Let me know if you\'d like to generate answers for the Yellow questions.');
         lines.add('📊 Project ' + project.Name + ' (' + productDisplay + ' / ' + countryDisplay + ') — ' + total + ' questions triaged');
         lines.add('');
 
-        // Flag breakdown
+        // Flag breakdown — counts only, details on request
         lines.add('🔴 Red (cannot meet): ' + redCount);
         lines.add('🟢 Green (auto-verified): ' + greenCount);
         lines.add('🟡 Yellow (security — need AI answers): ' + yellowCount);
         if (unflagged > 0) {
             lines.add('Unflagged: ' + unflagged);
-        }
-
-        // Red and Green details
-        if (redCount > 0 || greenCount > 0) {
-            lines.add('');
-            List<GPS_ResponseNew__c> flagged = [
-                SELECT Id, Question__c, Security_Flag__c, Response_Flag_Reason__c
-                FROM GPS_ResponseNew__c
-                WHERE GPS_Projects__c = :projectId
-                AND Security_Flag__c IN ('Red', 'Green')
-                ORDER BY Security_Flag__c DESC
-                LIMIT 20
-            ];
-            for (GPS_ResponseNew__c r : flagged) {
-                String emoji = r.Security_Flag__c == 'Red' ? '🔴' : '🟢';
-                String q = r.Question__c != null && r.Question__c.length() > 100
-                    ? r.Question__c.left(100) + '...'
-                    : r.Question__c;
-                String reason = r.Response_Flag_Reason__c != null && r.Response_Flag_Reason__c.length() > 120
-                    ? r.Response_Flag_Reason__c.left(120) + '...'
-                    : r.Response_Flag_Reason__c;
-                lines.add(emoji + ': "' + q + '"');
-                lines.add('  → ' + reason);
-            }
         }
 
         // Content sources
@@ -190,6 +167,9 @@ public with sharing class AIRFX_AgentAction {
                 lines.add('HECVAT filter: ' + sourceFilter.replace('_', ' '));
             }
         }
+
+        lines.add('');
+        lines.add('I can explain any flag, answer Yellow questions, or pull supporting citations — just ask.');
 
         return String.join(lines, '\n');
     }
