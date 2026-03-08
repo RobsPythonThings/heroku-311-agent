@@ -79,6 +79,9 @@ public with sharing class AIRFX_ResponseFlagInvocable {
 
         @InvocableVariable(label='Error Message')
         public String errorMessage;
+
+        @InvocableVariable(label='CMDT Capability Context' description='Plain-English capability summary from CMDT for prompt template grounding')
+        public String CMDTCapabilityContext;
     }
 
     @InvocableMethod(
@@ -187,6 +190,9 @@ public with sharing class AIRFX_ResponseFlagInvocable {
                 fr.ruleId = decision.ruleId;
                 fr.success = true;
 
+                // Build CMDT capability context for prompt template grounding
+                fr.CMDTCapabilityContext = buildCMDTCapabilityContext(country, productType);
+
                 // Stage the update
                 GPS_ResponseNew__c upd = new GPS_ResponseNew__c(
                     Id = rec.Id,
@@ -221,6 +227,138 @@ public with sharing class AIRFX_ResponseFlagInvocable {
         }
 
         return results;
+    }
+
+    // =========================================================================
+    // CSV VALIDATION HELPER
+    // =========================================================================
+
+    /**
+     * Bulk-evaluate questions without DML. Used for offline CSV validation.
+     * Returns list of pipe-delimited strings: flag||ruleId||reason
+     */
+    public static List<String> validateQuestions(List<String> questions) {
+        List<CapabilityRule> rules = buildRules();
+        List<String> results = new List<String>();
+        for (String q : questions) {
+            FlagDecision d = evaluate(q, null, '', '', rules);
+            results.add(d.flag + '||' + d.ruleId + '||' + d.reason);
+        }
+        return results;
+    }
+
+    // =========================================================================
+    // CMDT CAPABILITY CONTEXT BUILDER
+    // =========================================================================
+
+    /**
+     * Builds a plain-English capability summary from the 5 CMDT objects
+     * for a given country and product. Returns empty string if all records
+     * are Active__c = false (expected until activation).
+     */
+    public static String buildCMDTCapabilityContext(String country, String productType) {
+        if (String.isBlank(country) && String.isBlank(productType)) {
+            return '';
+        }
+
+        List<String> lines = new List<String>();
+        String countryUpper = String.isNotBlank(country) ? country.toUpperCase() : '';
+
+        // 1. Hyperforce Region availability
+        if (String.isNotBlank(countryUpper)) {
+            List<Hyperforce_Region__mdt> hfRegions = [
+                SELECT Country_Code__c, Country_Name__c, Available__c, AWS_Region__c, Notes__c
+                FROM Hyperforce_Region__mdt
+                WHERE Active__c = true AND Country_Code__c = :countryUpper
+                LIMIT 1
+            ];
+            if (!hfRegions.isEmpty()) {
+                Hyperforce_Region__mdt hf = hfRegions[0];
+                lines.add('Salesforce Hyperforce available in ' + hf.Country_Name__c + ': '
+                    + (hf.Available__c ? 'yes (AWS region: ' + hf.AWS_Region__c + ')' : 'no') + '.');
+                if (String.isNotBlank(hf.Notes__c)) {
+                    lines.add('CDN note: ' + hf.Notes__c);
+                }
+            }
+        }
+
+        // 2. Product-Region availability
+        if (String.isNotBlank(countryUpper)) {
+            List<Product_Region__mdt> prodRegions = [
+                SELECT Product__c, Available__c, Caveat__c
+                FROM Product_Region__mdt
+                WHERE Active__c = true AND Country_Code__c = :countryUpper
+                ORDER BY Product__c
+            ];
+            for (Product_Region__mdt pr : prodRegions) {
+                String line = pr.Product__c + ' data residency in ' + countryUpper + ': '
+                    + (pr.Available__c ? 'yes' : 'no') + '.';
+                if (String.isNotBlank(pr.Caveat__c)) {
+                    line += ' ' + pr.Caveat__c;
+                }
+                lines.add(line);
+            }
+        }
+
+        // 3. Applicable certifications
+        List<Certification__mdt> certs = [
+            SELECT Product__c, Certification__c, Level__c, Status__c, Scope_Notes__c
+            FROM Certification__mdt
+            WHERE Active__c = true AND Status__c = 'CURRENT'
+            ORDER BY Product__c
+        ];
+        if (!certs.isEmpty()) {
+            List<String> certList = new List<String>();
+            for (Certification__mdt c : certs) {
+                String entry = c.Product__c + ': ' + c.Certification__c;
+                if (String.isNotBlank(c.Level__c)) {
+                    entry += ' (' + c.Level__c + ')';
+                }
+                certList.add(entry);
+            }
+            lines.add('Certifications applicable: ' + String.join(certList, '; ') + '.');
+        }
+
+        // 4. Feature availability notes (add-ons)
+        List<Feature_Availability__mdt> features = [
+            SELECT Feature__c, Included_In_Base__c, Add_On_Name__c, Limitations__c
+            FROM Feature_Availability__mdt
+            WHERE Active__c = true
+            ORDER BY Feature__c
+        ];
+        for (Feature_Availability__mdt f : features) {
+            String line = f.Feature__c + ': '
+                + (f.Included_In_Base__c ? 'included in base' : 'paid add-on');
+            if (String.isNotBlank(f.Add_On_Name__c)) {
+                line += ' (' + f.Add_On_Name__c + ')';
+            }
+            if (String.isNotBlank(f.Limitations__c)) {
+                line += '. ' + f.Limitations__c;
+            }
+            lines.add(line);
+        }
+
+        // 5. Hard Nos
+        List<Hard_No__mdt> hardNos = [
+            SELECT Label__c, Reason__c
+            FROM Hard_No__mdt
+            WHERE Active__c = true
+            ORDER BY Label__c
+        ];
+        if (!hardNos.isEmpty()) {
+            List<String> hnList = new List<String>();
+            for (Hard_No__mdt hn : hardNos) {
+                hnList.add(hn.Label__c + ' — ' + hn.Reason__c);
+            }
+            lines.add('Known hard nos: ' + String.join(hnList, '; ') + '.');
+        }
+
+        if (lines.isEmpty()) {
+            return '';
+        }
+
+        lines.add('Active__c = false records are excluded — context only reflects activated rules.');
+        return String.join(lines, '\n');
     }
 
     // =========================================================================

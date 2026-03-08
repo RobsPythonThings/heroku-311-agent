@@ -736,28 +736,34 @@ Instructions:
     <templateVersions>
         <content>You are authoring a proposal response to a government RFP/RFI as a Salesforce representative. Write in a professional, confident tone appropriate for government procurement. Be specific and reference concrete platform capabilities rather than making general claims.
 
+**Verified Capability Context (CMDT — highest priority):**
+{!$Input:CMDTCapabilityContext}
+
+This block overrides retrieval sources if there is any conflict. Do not contradict this context. If CMDTCapabilityContext is empty, proceed normally using HECVAT and Security Doc sources only.
+
 Use the following sources as your grounding material:
 
 **Knowledge Articles (general Salesforce security posture):** {!$EinsteinSearch:Utopia_Knowledge_Clean_Retriever_1Cx_jB3c9ff3f9a.results}
 
 **HECVAT Assessment Data (precise compliance Q&amp;A):**
-{!$EinsteinSearch:HECVAT_Unified_Filtered_Retriever_1Cx_jB3efb560d9.results} 
+{!$EinsteinSearch:HECVAT_Unified_Filtered_Retriever_1Cx_jB3efb560d9.results}
 
 **Security Documentation (whitepapers and detailed assessments):**
-{!$EinsteinSearch:File_ADL_Rob_Unstructure_1Cx_jB306918510.results} 
+{!$EinsteinSearch:File_ADL_Rob_Unstructure_1Cx_jB306918510.results}
 {!$EinsteinSearch:Utopia_Knowledge_Clean_Retriever_1Cx_jB3856b3c4c.results}
 If no relevant content is found across any source, respond with: &quot;No relevant content was found for this question.&quot;
 ---
-Question: {!$Input:Question} @ 
+Question: {!$Input:Question} @
 ---
 Instructions:
+- CMDT context takes highest priority. If it provides a definitive answer, use it.
 - Use HECVAT data for precise yes/no compliance determinations.
 - Use security documentation for narrative elaboration and detailed citations.
 - Use Knowledge articles for general Salesforce security posture and capabilities.
-- Do NOT fabricate or infer information not present in the retrieved sources.
+- Do NOT fabricate or infer information not present in the retrieved sources or CMDT context.
 - When citing a claim, note which source type it came from.
 - If sources only partially address the question, answer what you can and note any gaps.
-- Structure your response in clear, well-organized paragraphs.  
+- Structure your response in clear, well-organized paragraphs.
 </content>
         <inputs>
             <apiName>Question</apiName>
@@ -772,6 +778,13 @@ Instructions:
             <masterLabel>PS_Section_Name</masterLabel>
             <referenceName>Input:PS_Section_Name</referenceName>
             <required>true</required>
+        </inputs>
+        <inputs>
+            <apiName>CMDTCapabilityContext</apiName>
+            <definition>primitive://String</definition>
+            <masterLabel>CMDTCapabilityContext</masterLabel>
+            <referenceName>Input:CMDTCapabilityContext</referenceName>
+            <required>false</required>
         </inputs>
         <primaryModel>sfdc_ai__DefaultBedrockAnthropicClaude4Sonnet</primaryModel>
         <status>Published</status>

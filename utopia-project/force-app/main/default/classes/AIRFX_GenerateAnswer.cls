@@ -20,10 +20,15 @@ public with sharing class AIRFX_GenerateAnswer {
                           required=true)
         public String responseId;
         
-        @InvocableVariable(label='Framework' 
+        @InvocableVariable(label='Framework'
                           description='Compliance framework context (e.g. HECVAT, FedRAMP). Optional — defaults to HECVAT.'
                           required=false)
         public String framework;
+
+        @InvocableVariable(label='CMDT Capability Context'
+                          description='Plain-English capability summary from CMDT. Auto-populated by AIRFX engine if available.'
+                          required=false)
+        public String CMDTCapabilityContext;
     }
     
     public class AnswerResult {
@@ -82,8 +87,16 @@ public with sharing class AIRFX_GenerateAnswer {
             String framework = String.isNotBlank(req.framework) ? req.framework : 'HECVAT';
             String sectionName = resolveSectionName(response, framework);
             
+            // 2b. Build CMDT context if not provided
+            String cmdtContext = req.CMDTCapabilityContext;
+            if (String.isBlank(cmdtContext)) {
+                String country = response.GPS_Projects__r != null ? response.GPS_Projects__r.Country__c : '';
+                String product = response.GPS_Projects__r != null ? response.GPS_Projects__r.Product_Type__c : '';
+                cmdtContext = AIRFX_ResponseFlagInvocable.buildCMDTCapabilityContext(country, product);
+            }
+
             // 3. Call ConnectApi to generate answer via Prompt Builder
-            String generatedAnswer = callPromptTemplate(response.Question__c, sectionName);
+            String generatedAnswer = callPromptTemplate(response.Question__c, sectionName, cmdtContext);
             
             // 4. Write answer back to the record
             GPS_ResponseNew__c toUpdate = new GPS_ResponseNew__c(
@@ -144,27 +157,32 @@ public with sharing class AIRFX_GenerateAnswer {
      * Call ConnectApi to generate an answer via the DataCloud_RFP_Answer template.
      * Proven working from deployed Apex (Feb 26 evening).
      */
-    private static String callPromptTemplate(String questionText, String sectionName) {
-        ConnectApi.EinsteinPromptTemplateGenerationsInput input = 
+    private static String callPromptTemplate(String questionText, String sectionName, String cmdtContext) {
+        ConnectApi.EinsteinPromptTemplateGenerationsInput input =
             new ConnectApi.EinsteinPromptTemplateGenerationsInput();
-        
+
         input.additionalConfig = new ConnectApi.EinsteinLlmAdditionalConfigInput();
         input.additionalConfig.applicationName = 'PromptTemplateGenerationsInvocable';
         input.isPreview = false;
-        
-        Map<String, ConnectApi.WrappedValue> params = 
+
+        Map<String, ConnectApi.WrappedValue> params =
             new Map<String, ConnectApi.WrappedValue>();
-        
+
         // Question input
         ConnectApi.WrappedValue questionVal = new ConnectApi.WrappedValue();
         questionVal.value = questionText;
         params.put('Input:Question', questionVal);
-        
+
         // Section name for Knowledge retriever pre-filter
         ConnectApi.WrappedValue sectionVal = new ConnectApi.WrappedValue();
         sectionVal.value = sectionName;
         params.put('Input:PS_Section_Name', sectionVal);
-        
+
+        // CMDT capability context for grounding
+        ConnectApi.WrappedValue cmdtVal = new ConnectApi.WrappedValue();
+        cmdtVal.value = String.isNotBlank(cmdtContext) ? cmdtContext : '';
+        params.put('Input:CMDTCapabilityContext', cmdtVal);
+
         input.inputParams = params;
         
         ConnectApi.EinsteinPromptTemplateGenerationsRepresentation output = 
