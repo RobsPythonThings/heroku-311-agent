@@ -509,6 +509,19 @@ public with sharing class AIRFX_ResponseFlagInvocable {
         List<CapabilityRule> rules = new List<CapabilityRule>();
 
         // =================================================================
+        // BREACH NOTIFICATION METHOD — must fire before numeric BREACH_NOTIFY
+        // Catches requirements that specify a notification method SF cannot meet
+        // (e.g., phone, fax, in-person) even if the timeframe is acceptable.
+        // =================================================================
+
+        rules.add(binaryCanDifferently('BREACH_NOTIFY_METHOD',
+            new List<String>{'breach.*phone', 'breach.*fax', 'breach.*in-person', 'breach.*in person',
+                'notify.*breach.*phone', 'notify.*breach.*fax',
+                'notification.*breach.*phone', 'notification.*breach.*fax'},
+            'Salesforce notifies customers of security incidents via email, not by phone, fax, or in-person. '
+            + 'The intent of timely breach notification is met, but the specific delivery method cannot be guaranteed.'));
+
+        // =================================================================
         // NUMERIC RULES
         // =================================================================
 
@@ -549,7 +562,7 @@ public with sharing class AIRFX_ResponseFlagInvocable {
             'Salesforce cannot provide source code. Inapplicable to SaaS subscription through multitenant architecture.'));
 
         rules.add(binaryCannot('DEDICATED_HARDWARE',
-            new List<String>{'dedicated hardware', 'dedicated instance', 'dedicated equipment', 'dedicated server', 'dedicated infrastructure'},
+            new List<String>{'dedicated hardware', 'dedicated instance', 'dedicated equipment', 'dedicated server', 'dedicated infrastructure', 'private hardware'},
             'Salesforce cannot offer dedicated hardware. Salesforce is a multitenant SaaS platform.'));
 
         rules.add(binaryCannotWithExclusions('PRIVATE_CLOUD',
@@ -621,7 +634,7 @@ public with sharing class AIRFX_ResponseFlagInvocable {
             'Salesforce cannot seek customer approval before making changes. Upgrade and maintenance schedules are set by Salesforce.'));
 
         rules.add(binaryCannot('CUSTOMER_AUDIT_SCHEDULE',
-            new List<String>{'audit on demand', 'audit at any time', 'unlimited audit', 'unrestricted audit'},
+            new List<String>{'audit on demand', 'audit at any time', 'unlimited audit', 'unrestricted audit', 'on-site audit', 'on site audit', 'on-site security audit', 'audit.*data center'},
             'Salesforce can only allow audits under conditions described in our contracts.'));
 
         rules.add(binaryCannot('DEFER_UPGRADES',

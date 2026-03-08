@@ -1019,4 +1019,23 @@ private class AIRFX_ResponseFlagInvocableTest {
         System.assertEquals(7, greens, 'Should have 7 Green flags');
         System.assertEquals(6, yellows, 'Should have 6 Yellow flags');
     }
+
+    // =========================================================================
+    // 8. PREFILTER — "support" must not auto-green security questions
+    // =========================================================================
+
+    @IsTest
+    static void preFilter_euDataProcessing_shouldNotBeAutoGreened() {
+        // "support" in "must support the processing" should NOT trigger
+        // the functional pre-filter. This question contains security terms
+        // (residency/reside) and must pass through to the rules engine.
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'The platform must support the processing of data within the EU/EEA, so that it is not transferred outside',
+            '', '', ''
+        );
+        System.assertNotEquals('Green', d.flag,
+            'EU/EEA data processing question must NOT be auto-greened by pre-filter');
+        System.assertNotEquals('PREFILTER_NON_SECURITY', d.ruleId,
+            'Should not hit the pre-filter non-security rule');
+    }
 }
