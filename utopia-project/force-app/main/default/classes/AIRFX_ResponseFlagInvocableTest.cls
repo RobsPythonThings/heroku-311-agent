@@ -2304,4 +2304,25 @@ private class AIRFX_ResponseFlagInvocableTest {
         System.assertEquals('Yellow', d.flag, '72-hour breach notification should be Yellow');
         System.assertEquals('BREACH_NOTIFY_TIMELINE', d.ruleId);
     }
+
+    @IsTest
+    static void uptime_registerAvailability_shouldNotTrigger() {
+        // "Register availability" is a CRM functional term, not system uptime
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Register availability',
+            '', '', ''
+        );
+        System.assertNotEquals('UPTIME', d.ruleId, 'Register availability should not trigger UPTIME');
+        System.assertNotEquals('UPTIME_PARSE_FAIL', d.ruleId, 'Register availability should not trigger UPTIME_PARSE_FAIL');
+    }
+
+    @IsTest
+    static void uptime_filterByAvailability_shouldNotTrigger() {
+        AIRFX_ResponseFlagInvocable.FlagDecision d = eval(
+            'Filter by availability',
+            '', '', ''
+        );
+        System.assertNotEquals('UPTIME', d.ruleId, 'Filter by availability should not trigger UPTIME');
+        System.assertNotEquals('UPTIME_PARSE_FAIL', d.ruleId, 'Filter by availability should not trigger UPTIME_PARSE_FAIL');
+    }
 }

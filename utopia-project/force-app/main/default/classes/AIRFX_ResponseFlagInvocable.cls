@@ -949,6 +949,11 @@ public with sharing class AIRFX_ResponseFlagInvocable {
             'Salesforce maximum achievable uptime is 99.9%. Requirements above 99.9% cannot be guaranteed but Salesforce can discuss SLA options with your AE.');
         uptimeRule.numericUpperThreshold = 100.0;
         uptimeRule.alternativeReason = 'Salesforce standard SLA commits to 99.7% uptime. Requirements up to 99.9% may be achievable with explicit approval \u2014 please engage your AE.';
+        uptimeRule.excludeKeywords = new List<String>{
+            'register availability', 'filter by availability', 'filter availability',
+            'check availability', 'volunteer availability', 'schedule availability',
+            'staff availability', 'resource availability', 'room availability'
+        };
         rules.add(uptimeRule);
 
         // RPO — 4 hours (lower = more demanding)
